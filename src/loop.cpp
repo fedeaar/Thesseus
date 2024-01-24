@@ -1,74 +1,4 @@
 #include "loop.h"
-#include <vector>
-
-//
-// data
-//
-
-struct __attribute__((__packed__)) data {
-  GLfloat x, y, z, s, t;
-};
-
-std::vector<attribute> attr = {
-  {GL_FLOAT, 3, GL_FALSE},
-  {GL_FLOAT, 2, GL_FALSE},
-};
-
-std::vector<data> buffer = {
-  {-0.5f, -0.5f, -0.5f, 0.0f, 0.0f},
-  { 0.5f, -0.5f, -0.5f, 1.0f, 0.0f},
-  { 0.5f,  0.5f, -0.5f, 1.0f, 1.0f},
-  { 0.5f,  0.5f, -0.5f, 1.0f, 1.0f},
-  {-0.5f,  0.5f, -0.5f, 0.0f, 1.0f},
-  {-0.5f, -0.5f, -0.5f, 0.0f, 0.0f},
-
-  {-0.5f, -0.5f,  0.5f, 0.0f, 0.0f},
-  { 0.5f, -0.5f,  0.5f, 1.0f, 0.0f},
-  { 0.5f,  0.5f,  0.5f, 1.0f, 1.0f},
-  { 0.5f,  0.5f,  0.5f, 1.0f, 1.0f},
-  {-0.5f,  0.5f,  0.5f, 0.0f, 1.0f},
-  {-0.5f, -0.5f,  0.5f, 0.0f, 0.0f},
-
-  {-0.5f,  0.5f,  0.5f, 1.0f, 0.0f},
-  {-0.5f,  0.5f, -0.5f, 1.0f, 1.0f},
-  {-0.5f, -0.5f, -0.5f, 0.0f, 1.0f},
-  {-0.5f, -0.5f, -0.5f, 0.0f, 1.0f},
-  {-0.5f, -0.5f,  0.5f, 0.0f, 0.0f},
-  {-0.5f,  0.5f,  0.5f, 1.0f, 0.0f},
-
-  { 0.5f,  0.5f,  0.5f, 1.0f, 0.0f},
-  { 0.5f,  0.5f, -0.5f, 1.0f, 1.0f},
-  { 0.5f, -0.5f, -0.5f, 0.0f, 1.0f},
-  { 0.5f, -0.5f, -0.5f, 0.0f, 1.0f},
-  { 0.5f, -0.5f,  0.5f, 0.0f, 0.0f},
-  { 0.5f,  0.5f,  0.5f, 1.0f, 0.0f},
-
-  {-0.5f, -0.5f, -0.5f, 0.0f, 1.0f},
-  { 0.5f, -0.5f, -0.5f, 1.0f, 1.0f},
-  { 0.5f, -0.5f,  0.5f, 1.0f, 0.0f},
-  { 0.5f, -0.5f,  0.5f, 1.0f, 0.0f},
-  {-0.5f, -0.5f,  0.5f, 0.0f, 0.0f},
-  {-0.5f, -0.5f, -0.5f, 0.0f, 1.0f},
-
-  {-0.5f,  0.5f, -0.5f, 0.0f, 1.0f},
-  { 0.5f,  0.5f, -0.5f, 1.0f, 1.0f},
-  { 0.5f,  0.5f,  0.5f, 1.0f, 0.0f},
-  { 0.5f,  0.5f,  0.5f, 1.0f, 0.0f},
-  {-0.5f,  0.5f,  0.5f, 0.0f, 0.0f},
-  {-0.5f,  0.5f, -0.5f, 0.0f, 1.0f}
-};
-
-glm::vec3 cubePositions[] = {
-  glm::vec3(0.0f, 0.0f, 0.0f),
-  glm::vec3(2.0f, 5.0f, -15.0f),
-  glm::vec3(-1.5f, -2.2f, -2.5f),
-  glm::vec3(-3.8f, -2.0f, -12.3f),
-  glm::vec3(2.4f, -0.4f, -3.5f),
-  glm::vec3(-1.7f, 3.0f, -7.5f),
-  glm::vec3(1.3f, -2.0f, -2.5f),
-  glm::vec3(1.5f, 2.0f, -2.5f),
-  glm::vec3(1.5f, 0.2f, -1.5f),
-  glm::vec3(-1.3f, 1.0f, -1.5f)};
 
 //
 // global
@@ -77,10 +7,6 @@ glm::vec3 cubePositions[] = {
 struct state* globalRef = NULL;
 Shader program;
 Camera camera;
-VAO<data> vao(buffer, attr);
-std::shared_ptr<VAO<data>> vao_ptr(&vao, [](VAO<data>*) {
-}); // no need to delete as it is static
-std::vector<Model<data>> models {};
 Texture2D texture1("./res/tex/container.jpg");
 Texture2D texture2("./res/tex/awesome.png");
 std::vector<texture_param> params = {
@@ -89,6 +15,8 @@ std::vector<texture_param> params = {
   {GL_TEXTURE_MIN_FILTER,          GL_LINEAR},
   {GL_TEXTURE_MAG_FILTER,          GL_LINEAR}
 };
+Model<models::cube::data> cube = models::cube::create();
+
 f32 intensity = 0.5;
 f32 last_tick = 0.0f;
 const u8* state = SDL_GetKeyboardState(NULL);
@@ -131,17 +59,11 @@ bool loop::init(struct state* global) {
   SDL_ShowCursor(0);
   SDL_SetRelativeMouseMode(SDL_TRUE);
   program.load("./res/shaders/main.vs", "./res/shaders/main.fs");
-  vao.load();
   texture1.load(params);
   texture2.load(params);
   program.use();
   program.set_uniform("texture1", 0);
   program.set_uniform("texture2", 1);
-  for (auto& pos : cubePositions) {
-    models.push_back(Model<data> {
-      vao_ptr, pos, 0, {1.0f, 0.3f, 0.5f}
-    });
-  }
   // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // wireframe
   return true;
 }
@@ -149,7 +71,6 @@ bool loop::init(struct state* global) {
 void loop::close() {
   texture1.destroy();
   texture2.destroy();
-  vao.destroy();
   program.destroy();
 }
 
@@ -175,11 +96,8 @@ void loop::render() {
   program.use();
   program.set_uniform("mix_intensity", clamp(intensity, 0.0f, 1.0f));
   program.set_uniform("view", camera.view_matrix());
-  program.set_uniform(
-    "projection",
-    camera.proj_matrix(
-      (f32)globalRef->screen_width / (f32)globalRef->screen_height));
-  for (unsigned int i = 0; i < 10; i++) {
-    models[i].render(program);
-  };
+  program.set_uniform("projection",
+                      camera.proj_matrix((f32)globalRef->screen_width /
+                                         (f32)globalRef->screen_height));
+  cube.render(program);
 }

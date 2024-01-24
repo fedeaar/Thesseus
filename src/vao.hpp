@@ -5,7 +5,8 @@
 #include <GL/glew.h>
 #include <vector>
 
-struct attribute {
+struct attribute
+{
   GLuint gl_type, length;
   GLboolean normalize;
 };
@@ -17,12 +18,15 @@ private:
   std::vector<T> buffer;
   std::vector<attribute> structure;
   GLuint vao, vbo;
+  bool _is_loaded = false;
 
 public:
   VAO(const std::vector<T>& buffer, const std::vector<attribute>& structure);
   ~VAO();
 
   void destroy();
+
+  bool is_loaded();
 
   void load();
   void draw();

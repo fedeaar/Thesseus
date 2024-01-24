@@ -1,14 +1,16 @@
-#ifndef PLAYGROUND_
-#define PLAYGROUND_
+#ifndef LOOP_
+#define LOOP_
 
 #include "camera.h"
 #include "context.h"
 #include "core/inline.hpp"
 #include "model.hpp"
+#include "model/basic.h"
 #include "shader.h"
 #include "texture.h"
 #include "vao.hpp"
 #include <SDL2/SDL.h>
+#include <vector>
 
 namespace loop {
 
@@ -17,6 +19,6 @@ void close();
 void handle(const SDL_Event& e);
 void render();
 
-} // namespace playground
+} // namespace loop
 
-#endif // PLAYGROUND_
+#endif // LOOP_

@@ -7,6 +7,13 @@ Model<T>::Model(std::shared_ptr<VAO<T>> vao, v3f position, f32 angle, v3f axis)
     : vao(vao), position(position), angle(angle), axis(axis) {}
 
 template <typename T>
+Model<T>::~Model() {
+  if (vao.unique()) {
+    vao->destroy();
+  }
+}
+
+template <typename T>
 void Model<T>::rotate(f32 new_angle, v3f new_axis) {
   axis = new_axis;
   angle = new_angle;
