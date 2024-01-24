@@ -6,7 +6,7 @@ make ;
 while getopts ":r" option; do
     case $option in
         r)  # run build
-            ./out
+            ./bin/out
             exit;;
     esac
 done

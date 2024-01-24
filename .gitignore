@@ -1,5 +1,5 @@
 lib
-build
+bin
 *.cmake
 CMakeCache.txt
 Makefile
