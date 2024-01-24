@@ -12,7 +12,7 @@ include_directories("./lib/stb" "./lib/glm")
 
 file(GLOB_RECURSE resources res/*)
 file(REMOVE_RECURSE ${build_dir})
-file(COPY ${resources} DESTINATION ${build_dir}/res)
+file(COPY res DESTINATION ${build_dir})
 
 file(GLOB_RECURSE sources_main src/*.cpp src/*.h)
 
