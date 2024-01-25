@@ -6,7 +6,7 @@
 #include "core/inline.hpp"
 #include "model.hpp"
 #include "model/basic.h"
-#include "shader.h"
+#include "shaders/shader.h"
 #include "texture.h"
 #include "vao.hpp"
 #include <SDL2/SDL.h>

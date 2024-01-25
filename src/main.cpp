@@ -10,9 +10,9 @@
 //
 
 state global {
-  640,          // screen_width
-  480,          // screen_height
-  "Thesseus"    // name
+  640,       // screen_width
+  480,       // screen_height
+  "Thesseus" // name
 };
 
 //
@@ -32,12 +32,11 @@ int main(int argc, char* args[]) {
   if (!loop::init(&global)) {
     close(1);
   }
-  bool quit = false;
   SDL_Event e;
-  while (!quit) {
+  while (!global.quit) {
     while (SDL_PollEvent(&e) != 0) {
       if (e.type == SDL_QUIT) {
-        quit = true;
+        global.quit = true;
       } else {
         loop::handle(e);
       }

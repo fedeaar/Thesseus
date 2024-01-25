@@ -7,12 +7,15 @@
 #include <SDL2/SDL_opengl.h>
 #include <string>
 
-struct state {
+struct state
+{
   uint screen_width, screen_height;
   std::string name;
 
   SDL_Window* window = NULL;
   SDL_GLContext gl_context = NULL;
+
+  bool quit = false;
 };
 
 namespace context {

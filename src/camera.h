@@ -3,7 +3,7 @@
 
 #include "core/inline.hpp"
 #include "core/types.h"
-#include "shader.h"
+#include "shaders/shader.h"
 
 #include <cmath>
 #include <glm/glm.hpp>
@@ -17,9 +17,21 @@ private:
   f32 _yaw, _pitch;
 
 public:
-  enum Movement { TOWARDS, AGAINST, UPWARDS, DOWNWARDS, LEFT, RIGHT };
+  enum Movement
+  {
+    TOWARDS,
+    AGAINST,
+    UPWARDS,
+    DOWNWARDS,
+    LEFT,
+    RIGHT
+  };
 
-  enum Rotation { YAW, PITCH };
+  enum Rotation
+  {
+    YAW,
+    PITCH
+  };
 
   Camera(
     f32 speed = 0.05f,

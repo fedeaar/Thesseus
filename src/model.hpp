@@ -2,7 +2,7 @@
 #define MODEL_
 
 #include "core/types.h"
-#include "shader.h"
+#include "shaders/shader.h"
 #include "texture.h"
 #include "vao.hpp"
 #include <glm/glm.hpp>
