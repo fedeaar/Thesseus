@@ -4,11 +4,8 @@
 #include "camera.h"
 #include "context.h"
 #include "core/inline.hpp"
-#include "model.hpp"
-#include "model/basic.h"
-#include "shaders/shader.h"
-#include "texture.h"
-#include "vao.hpp"
+#include "model/cube/decl.h"
+#include "shader/default-3d/decl.h"
 #include <SDL2/SDL.h>
 #include <vector>
 

@@ -1,13 +1,14 @@
-#ifndef TEXTURE_
-#define TEXTURE_
+#ifndef MODEL_TEXTURE_
+#define MODEL_TEXTURE_
 
-#include "core/io/io.h"
-#include "core/types.h"
+#include "../core/io/io.h"
+#include "../core/types.h"
 #include <GL/glew.h>
 #include <string>
 #include <vector>
 
-struct texture_param {
+struct texture_param
+{
   GLenum name;
   GLuint value;
 };
@@ -29,4 +30,4 @@ public:
   void bind(GLenum texture_number);
 };
 
-#endif // TEXTURE_
+#endif // MODEL_TEXTURE_

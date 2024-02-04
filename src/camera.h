@@ -3,7 +3,6 @@
 
 #include "core/inline.hpp"
 #include "core/types.h"
-#include "shaders/shader.h"
 
 #include <cmath>
 #include <glm/glm.hpp>

@@ -35,7 +35,6 @@ m4f Camera::proj_matrix(f32 aspect) {
 }
 
 void Camera::move(Camera::Movement type) {
-  std::cout << _speed << std::endl;
   switch (type) {
   case TOWARDS:
     _position += _speed * _front;
