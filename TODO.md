@@ -15,3 +15,5 @@ TODO:
 - > define proper game loop
 - > add collision
 - > add physics
+
+- IO img.cpp use sharedptr

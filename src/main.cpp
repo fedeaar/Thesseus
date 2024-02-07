@@ -1,18 +1,18 @@
-#include "loop.h"
-
 #include <GL/glew.h>
 #include <GL/glu.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
 
+#include "loop.h"
+
 //
 // global
 //
 
-state global {
-  640,       // screen_width
-  480,       // screen_height
-  "Thesseus" // name
+state global{
+    640,        // screen_width
+    480,        // screen_height
+    "Thesseus"  // name
 };
 
 //

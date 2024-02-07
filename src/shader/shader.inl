@@ -3,12 +3,17 @@ inline void Shader::set_uniform(const std::string& ref, bool val) {
   glUniform1i(glGetUniformLocation(handle, ref.c_str()), (int)val);
 }
 
-inline void Shader::set_uniform(const std::string& ref, int val) {
+inline void Shader::set_uniform(const std::string& ref, u32 val) {
+  // TODO: error checking
+  glUniform1ui(glGetUniformLocation(handle, ref.c_str()), val);
+}
+
+inline void Shader::set_uniform(const std::string& ref, i32 val) {
   // TODO: error checking
   glUniform1i(glGetUniformLocation(handle, ref.c_str()), val);
 }
 
-inline void Shader::set_uniform(const std::string& ref, float val) {
+inline void Shader::set_uniform(const std::string& ref, f32 val) {
   // TODO: error checking
   glUniform1f(glGetUniformLocation(handle, ref.c_str()), val);
 }
@@ -20,15 +25,12 @@ inline void Shader::set_uniform(const std::string& ref, const v3f& val) {
 
 inline void Shader::set_uniform(const std::string& ref, const v4f& val) {
   // TODO: error checking
-  glUniform4f(
-    glGetUniformLocation(handle, ref.c_str()), val.x, val.y, val.z, val.w);
+  glUniform4f(glGetUniformLocation(handle, ref.c_str()), val.x, val.y, val.z,
+              val.w);
 }
 
 inline void Shader::set_uniform(const std::string& ref, const m4f& val) {
   // TODO: error checking;
-  glUniformMatrix4fv(
-    glGetUniformLocation(handle, ref.c_str()),
-    1,
-    GL_FALSE,
-    glm::value_ptr(val));
+  glUniformMatrix4fv(glGetUniformLocation(handle, ref.c_str()), 1, GL_FALSE,
+                     glm::value_ptr(val));
 }

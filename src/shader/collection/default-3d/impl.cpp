@@ -1,4 +1,4 @@
-#include "decl.h"
+#include "../collection.h"
 
 const Shader::input shaders::Default3d::format[1] = {{gl_float, 3}};
 

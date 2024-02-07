@@ -5,13 +5,12 @@ std::string io::text::read(const std::string& path) {
   stream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
   try {
     stream.open(path);
-    std::string data(
-      (std::istreambuf_iterator<char>(stream)),
-      (std::istreambuf_iterator<char>()));
+    std::string data((std::istreambuf_iterator<char>(stream)),
+                     (std::istreambuf_iterator<char>()));
     stream.close();
     return data;
   } catch (std::ifstream::failure& e) {
-    std::cerr << "fileError: " + path + "could not be read." << std::endl;
+    std::cerr << "fileError: " + path + " could not be read." << std::endl;
     throw e;
   }
 }

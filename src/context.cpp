@@ -4,8 +4,7 @@
 // init
 //
 
-bool context::init(struct state* state) {
-
+bool context::init(state* state) {
   // Initialize SDL
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     printf("Failed to initialize: %s\n", SDL_GetError());
@@ -18,13 +17,10 @@ bool context::init(struct state* state) {
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
   // Create window
-  state->window = SDL_CreateWindow(
-    state->name.c_str(),
-    SDL_WINDOWPOS_UNDEFINED,
-    SDL_WINDOWPOS_UNDEFINED,
-    state->screen_width,
-    state->screen_height,
-    SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+  state->window = SDL_CreateWindow(state->name.c_str(), SDL_WINDOWPOS_UNDEFINED,
+                                   SDL_WINDOWPOS_UNDEFINED, state->screen_width,
+                                   state->screen_height,
+                                   SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
   if (state->window == NULL) {
     printf("Failed to create window: %s\n", SDL_GetError());
     return false;
@@ -41,9 +37,8 @@ bool context::init(struct state* state) {
   glewExperimental = GL_TRUE;
   GLenum glewError = glewInit();
   if (glewError != GLEW_OK) {
-    printf(
-      "Failed to initialze Glew. GLEW Error: %s\n",
-      glewGetErrorString(glewError));
+    printf("Failed to initialze Glew. GLEW Error: %s\n",
+           glewGetErrorString(glewError));
     return false;
   }
 

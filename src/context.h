@@ -5,10 +5,10 @@
 #include <GL/glu.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
+
 #include <string>
 
-struct state
-{
+struct state {
   uint screen_width, screen_height;
   std::string name;
 
@@ -23,6 +23,6 @@ namespace context {
 bool init(struct state* state);
 void close(struct state* state);
 
-} // namespace context
+}  // namespace context
 
-#endif // CONTEXT_
+#endif  // CONTEXT_

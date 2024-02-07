@@ -20,8 +20,9 @@ class Shader {
   void load(const std::string& vs_path, const std::string& fs_path);
 
   inline void set_uniform(const std::string& ref, bool val);
-  inline void set_uniform(const std::string& ref, int val);
-  inline void set_uniform(const std::string& ref, float val);
+  inline void set_uniform(const std::string& ref, u32 val);
+  inline void set_uniform(const std::string& ref, i32 val);
+  inline void set_uniform(const std::string& ref, f32 val);
   inline void set_uniform(const std::string& ref, const v3f& val);
   inline void set_uniform(const std::string& ref, const v4f& val);
   inline void set_uniform(const std::string& ref, const m4f& val);

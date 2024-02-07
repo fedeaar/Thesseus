@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 
+#include "../core/gl_cast.hpp"
 #include "../core/types.h"
 #include "../shader/shader.h"
 
@@ -16,7 +17,7 @@ class Raw {
     bool operator==(const attribute& rhs) const;
   };
   struct full_attribute {
-    attribute embedded;
+    attribute attr;
     u32 start;
     u32 size;
 
@@ -50,7 +51,7 @@ class Raw {
 
   bool operator==(const Raw& rhs) const;
 
-  friend std::ostream& operator<<(std::ostream& stream, Raw rhs);
+  friend std::ostream& operator<<(std::ostream& stream, const Raw& rhs);
 };
 
 #include "raw.inl"

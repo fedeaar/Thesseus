@@ -5,7 +5,7 @@
 //
 
 struct state* globalRef = NULL;
-shaders::Default3d program {};
+shaders::Default3d program{};
 Camera camera;
 Model<shaders::Default3d> cube = models::cube::create();
 
@@ -49,14 +49,14 @@ bool mouse_lock = true;
 
 void loop::handle(const SDL_Event& e) {
   switch (e.type) {
-  case SDL_MOUSEMOTION:
-    if (first_mouse) {
-      first_mouse = false;
+    case SDL_MOUSEMOTION:
+      if (first_mouse) {
+        first_mouse = false;
+        break;
+      }
+      camera.rotate(Camera::YAW, e.motion.xrel);
+      camera.rotate(Camera::PITCH, e.motion.yrel);
       break;
-    }
-    camera.rotate(Camera::YAW, e.motion.xrel);
-    camera.rotate(Camera::PITCH, e.motion.yrel);
-    break;
   }
 }
 
@@ -73,9 +73,7 @@ bool loop::init(struct state* global) {
   return true;
 }
 
-void loop::close() {
-  program.destroy();
-}
+void loop::close() { program.destroy(); }
 
 void loop::render() {
   camera.set_speed(0.25f * (1 - delta()));
@@ -83,7 +81,7 @@ void loop::render() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   program.use();
   program.set_view(camera.view_matrix());
-  program.set_projection(camera.proj_matrix(
-    (f32)globalRef->screen_width / (f32)globalRef->screen_height));
+  program.set_projection(camera.proj_matrix((f32)globalRef->screen_width /
+                                            (f32)globalRef->screen_height));
   cube.render(program);
 }

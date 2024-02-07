@@ -1,15 +1,15 @@
-#ifndef SHADER_DEFAULT3D_
-#define SHADER_DEFAULT3D_
+#ifndef SHADER_COLLECTION_
+#define SHADER_COLLECTION_
+
+#include <glm/gtc/type_ptr.hpp>
 
 #include "../../core/types.h"
 #include "../shader.h"
-#include <glm/gtc/type_ptr.hpp>
 
 namespace shaders {
 
 class Default3d : public Shader {
-
-public:
+ public:
   static const Shader::input format[1];
 
   Default3d();
@@ -23,6 +23,18 @@ public:
   void set_object_color(const v3f& color);
   void set_light_color(const v3f& color);
 };
-} // namespace shaders
 
-#endif // SHADER_DEFAULT3D_
+class Default3dTextured : public Default3d {
+ public:
+  static const Shader::input format[2];
+
+  Default3dTextured();
+  ~Default3dTextured();
+
+  void load();
+
+  void set_texture(const u32& number);
+};
+}  // namespace shaders
+
+#endif  // SHADER_COLLECTION_

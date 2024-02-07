@@ -1,7 +1,7 @@
-inline Raw::full_attribute Raw::extend_format(const Raw::attribute& attribute,
+inline Raw::full_attribute Raw::extend_format(const Raw::attribute& data,
                                               u32 start) {
-  const u32 size = attribute.format.length * sizeof(attribute.format.gl_type);
-  return {attribute, start, size};
+  const u32 size = data.format.length * gl_sizeof(data.format.gl_type);
+  return {data, start, size};
 }
 
 inline std::vector<Raw::full_attribute> Raw::extend_format(
@@ -9,7 +9,7 @@ inline std::vector<Raw::full_attribute> Raw::extend_format(
   std::vector<Raw::full_attribute> out;
   u32 start = 0;
   for (const Raw::attribute& data : format) {
-    const u32 size = data.format.length * sizeof(data.format.gl_type);
+    const u32 size = data.format.length * gl_sizeof(data.format.gl_type);
     out.push_back({data, start, size});
     start += size;
   }

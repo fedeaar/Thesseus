@@ -2,13 +2,9 @@
 
 Texture2D::Texture2D(const std::string& path) : path(path) {}
 
-Texture2D::~Texture2D() {
-  destroy();
-}
+Texture2D::~Texture2D() { destroy(); }
 
-void Texture2D::destroy() {
-  glDeleteTextures(1, &texture);
-}
+void Texture2D::destroy() { glDeleteTextures(1, &texture); }
 
 void Texture2D::load(const std::vector<texture_param>& params) {
   glGenTextures(1, &texture);
@@ -16,8 +12,8 @@ void Texture2D::load(const std::vector<texture_param>& params) {
   for (const texture_param& param : params) {
     glTexParameteri(GL_TEXTURE_2D, param.name, param.value);
   }
-  image =
-    io::image::raw(path, &texture_width, &texture_height, &texture_channels, 0);
+  image = io::image::raw(path, &texture_width, &texture_height,
+                         &texture_channels, 0);
   // TODO: all formats
   GLuint format;
   if (texture_channels == 3) {
@@ -26,16 +22,8 @@ void Texture2D::load(const std::vector<texture_param>& params) {
     format = GL_RGBA;
   }
   if (image) {
-    glTexImage2D(
-      GL_TEXTURE_2D,
-      0,
-      format,
-      texture_width,
-      texture_height,
-      0,
-      format,
-      GL_UNSIGNED_BYTE,
-      image);
+    glTexImage2D(GL_TEXTURE_2D, 0, format, texture_width, texture_height, 0,
+                 format, GL_UNSIGNED_BYTE, image);
     glGenerateMipmap(GL_TEXTURE_2D);
   } else {
     // TODO: proper error handling

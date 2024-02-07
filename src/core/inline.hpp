@@ -16,4 +16,4 @@ inline static T clamp(T v, T a, T b) {
   return min(max(v, a), b);
 }
 
-#endif // INLINE_
+#endif  // INLINE_

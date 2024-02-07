@@ -43,19 +43,21 @@ class Reformatter {
 
   Raw result_;
 
-  void _init_format();
-  void _init_format_move(const move& elem, u32 idx);
-  void _init_format_move_cast(const move_cast& elem, u32 idx);
+  inline void _init_format();
+  inline void _init_format_move(const move& elem, u32 idx);
+  inline void _init_format_move_cast(const move_cast& elem, u32 idx);
 
-  void _raw_copy();
-  void _move_copy(const move& elem, u32 idx);
-  void _move_cast_copy(const move_cast& elem, u32 idx);
-  void _copy_int_cast(const move_cast& elem, u32 idx);
+  inline void _raw_copy();
+  inline void _move_copy(const move& elem, u32 idx);
+  inline void _move_cast_copy(const move_cast& elem, u32 idx);
+  inline void _copy_int_cast(const move_cast& elem, u32 idx);
 
  public:
   Reformatter(const Raw& raw, const std::vector<action>& actions);
 
   Raw get();
 };
+
+#include "reformatter.inl"
 
 #endif  // MODEL_REFORMATTER_
