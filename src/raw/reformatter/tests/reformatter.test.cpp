@@ -1,7 +1,7 @@
-#include "reformatter.h"
+#include "../reformatter.h"
 
+#include "../../raw.h"
 #include "gtest/gtest.h"
-#include "raw.h"
 
 namespace {
 
