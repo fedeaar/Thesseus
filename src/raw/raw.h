@@ -1,5 +1,5 @@
-#ifndef MODEL_RAW_
-#define MODEL_RAW_
+#ifndef RAW_
+#define RAW_
 
 #include <memory>
 #include <vector>
@@ -12,7 +12,7 @@ class Raw {
  public:
   struct attribute {
     Shader::input format;
-    GLboolean normalize;
+    bool is_normalized;
 
     bool operator==(const attribute& rhs) const;
   };
@@ -33,8 +33,8 @@ class Raw {
 
  private:
   std::shared_ptr<void> raw_ = NULL;
-  u32 size_ = 0, length_ = 0, stride_ = 0;
   std::vector<full_attribute> format_;
+  u32 size_ = 0, length_ = 0, stride_ = 0;
 
  public:
   Raw();
@@ -56,4 +56,4 @@ class Raw {
 
 #include "raw.inl"
 
-#endif  // MODEL_RAW_
+#endif  // RAW_

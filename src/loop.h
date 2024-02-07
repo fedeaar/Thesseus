@@ -8,7 +8,7 @@
 #include "camera/camera.h"
 #include "context.h"
 #include "core/inline.hpp"
-#include "model/cube/decl.h"
+#include "model/collection/collection.h"
 #include "shader/collection/collection.h"
 
 namespace loop {

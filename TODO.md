@@ -17,3 +17,6 @@ TODO:
 - > add physics
 
 - IO img.cpp use sharedptr
+- one test per file
+
+- assert Model is create with valid vao

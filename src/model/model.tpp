@@ -3,32 +3,38 @@
 //
 
 template <typename T>
-Model<T>::Model(std::shared_ptr<VAO> vao, v3f position, f32 angle, v3f axis)
-    : vao(vao), position(position), angle(angle), axis(axis) {}
+Model<T>::Model(std::shared_ptr<VAO> vao) : vao_(vao) {}
 
 template <typename T>
 Model<T>::~Model() {
-  if (vao.unique()) {
-    vao->destroy();
+  if (vao_.unique()) {
+    vao_->destroy();
   }
 }
 
 template <typename T>
-void Model<T>::rotate(f32 new_angle, v3f new_axis) {
-  axis = new_axis;
-  angle = new_angle;
+void Model<T>::use_texture(const std::shared_ptr<Texture2D>& texture,
+                           u8 position) {
+  textures_[position] = texture;
+};
+
+template <typename T>
+void Model<T>::rotate(f32 angle, v3f axis) {
+  axis_ = axis;
+  angle_ = angle;
 }
 
 template <typename T>
-void Model<T>::place(v3f new_position) {
-  position = new_position;
+void Model<T>::place(v3f position) {
+  position_ = position;
 }
 
 template <typename T>
-void Model<T>::render(T& program) {
+void Model<T>::render(T& shader) {
   glm::mat4 transform = m4f(1.0f);
-  transform = glm::translate(transform, position);
-  transform = glm::rotate(transform, angle, axis);
-  program.set_model(transform);
-  vao->draw();
+  transform = glm::translate(transform, position_);
+  transform = glm::rotate(transform, angle_, axis_);
+  shader.set_model(transform);
+  shader.use();
+  vao_->draw();
 }

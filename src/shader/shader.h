@@ -11,9 +11,22 @@
 #include "../core/types.h"
 
 class Shader {
+ public:
+  enum shader_type {
+    FRAGMENT_SHADER = GL_FRAGMENT_SHADER,
+    VERTEX_SHADER = GL_VERTEX_SHADER
+  };
+  struct input {
+    GL_Type gl_type;
+    u8 length;
+
+    bool operator==(const input& rhs) const;
+  };
+
  private:
-  GLuint handle = 0;
-  bool bound = false;
+  std::vector<input> format_;
+  u32 handle_ = 0;
+  bool bound_ = false;
 
  protected:
   void attach(const std::string& vs_source, const std::string& fs_source);
@@ -28,18 +41,6 @@ class Shader {
   inline void set_uniform(const std::string& ref, const m4f& val);
 
  public:
-  enum shader_type {
-    FRAGMENT_SHADER = GL_FRAGMENT_SHADER,
-    VERTEX_SHADER = GL_VERTEX_SHADER
-  };
-
-  struct input {
-    GL_Type gl_type;
-    u8 length;
-
-    bool operator==(const input& rhs) const;
-  };
-
   Shader();
   ~Shader();
 

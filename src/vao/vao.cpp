@@ -4,12 +4,7 @@
 // public
 //
 
-VAO::VAO(std::shared_ptr<void> raw, u32 size,
-         const std::vector<VAO::attribute>& structure)
-    : raw_(raw), size_(size), structure_(structure) {
-  stride_ = VAO::stride(structure);
-  length_ = size / stride_;
-};
+VAO::VAO(std::shared_ptr<Raw> raw) : raw_(raw){};
 
 VAO::~VAO() { destroy(); }
 
@@ -17,18 +12,20 @@ void VAO::load() {
   if (is_loaded_) {
     return;
   }
+  const Raw& raw = *raw_.get();
+  const std::vector<Raw::full_attribute>& format = raw.format();
   glGenVertexArrays(1, &vao_);
   glGenBuffers(1, &vbo_);
   glBindVertexArray(vao_);
   glBindBuffer(GL_ARRAY_BUFFER, vbo_);
-  glBufferData(GL_ARRAY_BUFFER, size_, raw_.get(), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, raw.size(), raw.data().get(), GL_STATIC_DRAW);
   u32 start = 0;
-  for (u32 i = 0; i < structure_.size(); ++i) {
-    glVertexAttribPointer(i, structure_[i].format.length,
-                          structure_[i].format.gl_type, structure_[i].normalize,
-                          stride_, (void*)start);
+  for (u32 i = 0; i < format.size(); ++i) {
+    glVertexAttribPointer(
+        i, format[i].attr.format.length, format[i].attr.format.gl_type,
+        !format[i].attr.is_normalized, raw.stride(), (void*)start);
     glEnableVertexAttribArray(i);
-    start += structure_[i].format.length * sizeof(structure_[i].format.gl_type);
+    start += format[i].size;
   }
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
@@ -51,6 +48,6 @@ void VAO::draw() {
     load();
   }
   glBindVertexArray(vao_);
-  glDrawArrays(GL_TRIANGLES, 0, length_);
+  glDrawArrays(GL_TRIANGLES, 0, raw_->length());
   glBindVertexArray(0);
 }

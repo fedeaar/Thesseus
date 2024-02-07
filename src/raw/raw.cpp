@@ -39,7 +39,7 @@ u32 Raw::stride() const { return stride_; }
 //
 
 bool Raw::attribute::operator==(const attribute& rhs) const {
-  return format == format && normalize == normalize;
+  return format == format && is_normalized == is_normalized;
 }
 
 bool Raw::full_attribute::operator==(const full_attribute& rhs) const {

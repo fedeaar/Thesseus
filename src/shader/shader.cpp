@@ -45,26 +45,26 @@ GLuint _attach(const std::string& vs_source, const std::string& fs_source) {
 //
 
 void Shader::load(const std::string& vs_path, const std::string& fs_path) {
-  if (bound) {
+  if (bound_) {
     destroy();
     std::cerr << "ShaderWarning: bound program replaced."
               << std::endl;  // TODO: proper warnings
   }
   const std::string vs_source = io::text::read(vs_path);
   const std::string fs_source = io::text::read(fs_path);
-  handle = _attach(vs_source, fs_source);
-  bound = true;
+  handle_ = _attach(vs_source, fs_source);
+  bound_ = true;
 }
 
 void Shader::attach(const std::string& vs_source,
                     const std::string& fs_source) {
-  if (bound) {
+  if (bound_) {
     destroy();
     std::cerr << "ShaderWarning: bound program replaced."
               << std::endl;  // TODO: proper warnings
   }
-  handle = _attach(vs_source, fs_source);
-  bound = true;
+  handle_ = _attach(vs_source, fs_source);
+  bound_ = true;
 }
 
 //
@@ -81,10 +81,10 @@ Shader::~Shader() { destroy(); }
 
 void Shader::destroy() {
   // TODO: check if handle is valid
-  glDeleteProgram(handle);
+  glDeleteProgram(handle_);
 }
 
 void Shader::use() {
   // TODO: check if handle is valid
-  glUseProgram(handle);
+  glUseProgram(handle_);
 }

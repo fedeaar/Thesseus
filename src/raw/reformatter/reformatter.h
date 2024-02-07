@@ -1,10 +1,10 @@
-#ifndef MODEL_REFORMATTER_
-#define MODEL_REFORMATTER_
+#ifndef RAW_REFORMATTER_
+#define RAW_REFORMATTER_
 
-#include "../core/gl_cast.hpp"
-#include "../core/types.h"
-#include "../shader/shader.h"
-#include "raw.h"
+#include "../../core/gl_cast.hpp"
+#include "../../core/types.h"
+#include "../../shader/shader.h"
+#include "../raw.h"
 
 class Reformatter {
  public:
@@ -60,4 +60,4 @@ class Reformatter {
 
 #include "reformatter.inl"
 
-#endif  // MODEL_REFORMATTER_
+#endif  // RAW_REFORMATTER_

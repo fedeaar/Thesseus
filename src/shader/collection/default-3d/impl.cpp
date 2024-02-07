@@ -7,7 +7,8 @@ shaders::Default3d::Default3d() : Shader() {}
 shaders::Default3d::~Default3d() {}
 
 void shaders::Default3d::load() {
-  Shader::load("./shader/default-3d/main.vs", "./shader/default-3d/main.fs");
+  Shader::load("./shader/collection/default-3d/main.vs",
+               "./shader/collection/default-3d/main.fs");
 }
 
 void shaders::Default3d::set_model(const m4f& model) {

@@ -6,8 +6,8 @@
 
 #include "../core/types.h"
 #include "../shader/shader.h"
-#include "texture.h"
-#include "vao.h"
+#include "../texture/texture.h"
+#include "../vao/vao.h"
 
 template <typename T>
 class Model {
@@ -15,17 +15,20 @@ class Model {
                 "template must derive from shaders::Default3d");
 
  private:
-  std::shared_ptr<VAO> vao;
-  v3f position, axis;
-  f32 angle;
+  std::shared_ptr<VAO> vao_;
+  std::shared_ptr<Texture2D> textures_[16] = {};
+  v3f position_ = {0.0f, 0.0f, 0.0f};
+  v3f axis_ = {0.0f, 0.0f, 1.0f};
+  f32 angle_ = 0.0f;
 
  public:
-  Model(std::shared_ptr<VAO> vao, v3f position = {0.0f, 0.0f, 0.0f},
-        f32 angle = 0.0f, v3f axis = {0.0f, 0.0f, 1.0f});
+  Model(std::shared_ptr<VAO> vao);
   ~Model();
 
-  void rotate(f32 new_angle, v3f new_axis);
-  void place(v3f new_position);
+  void use_texture(const std::shared_ptr<Texture2D>& texture, u8 position);
+
+  void rotate(f32 angle, v3f axis);
+  void place(v3f position);
 
   void render(T& shader);
 };
