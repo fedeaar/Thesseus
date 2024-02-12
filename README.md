@@ -10,7 +10,10 @@ sudo apt-get install build-essential cmake gcc clang
 sudo apt-get install libxmu-dev libxi-dev libgl-dev
 
 # install project deps
-git submodule init --recursive
+git submodule update --init --recursive --progress
+
+# if any is missing
+git submodule update --force
 ```
 
 ## build proyect
