@@ -17,10 +17,9 @@ bool context::init(state* state) {
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
   // Create window
-  state->window = SDL_CreateWindow(state->name.c_str(), SDL_WINDOWPOS_UNDEFINED,
-                                   SDL_WINDOWPOS_UNDEFINED, state->screen_width,
+  state->window = SDL_CreateWindow(state->name.c_str(), state->screen_width,
                                    state->screen_height,
-                                   SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+                                   SDL_WINDOW_OPENGL | SDL_WINDOW_MAXIMIZED);
   if (state->window == NULL) {
     printf("Failed to create window: %s\n", SDL_GetError());
     return false;

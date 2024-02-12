@@ -1,7 +1,7 @@
 #include <GL/glew.h>
 #include <GL/glu.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_opengl.h>
 
 #include "loop.h"
 
@@ -35,7 +35,7 @@ int main(int argc, char* args[]) {
   SDL_Event e;
   while (!global.quit) {
     while (SDL_PollEvent(&e) != 0) {
-      if (e.type == SDL_QUIT) {
+      if (e.type == SDL_EVENT_QUIT) {
         global.quit = true;
       } else {
         loop::handle(e);

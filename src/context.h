@@ -3,8 +3,8 @@
 
 #include <GL/glew.h>
 #include <GL/glu.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_opengl.h>
 
 #include <string>
 

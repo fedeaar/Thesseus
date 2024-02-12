@@ -2,7 +2,7 @@
 build_name="";
 compile() {
     echo "compiling $1."
-    cmake . -DBUILD=$1
+    cmake .. -DBUILD=$1
     build_name=$1 
     make 
 }

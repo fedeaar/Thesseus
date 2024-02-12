@@ -1,8 +1,3 @@
-lib
-bin
-*.cmake
-CMakeCache.txt
-Makefile
-out
-CMakeFiles
-.vscode
+build/*
+!/build/build.sh
+lib/*

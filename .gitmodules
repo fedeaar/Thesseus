@@ -7,3 +7,9 @@
 [submodule "lib/googletest"]
 	path = lib/googletest
 	url = https://github.com/google/googletest.git
+[submodule "lib/glew-cmake"]
+	path = lib/glew-cmake
+	url = https://github.com/Perlmint/glew-cmake
+[submodule "lib/SDL"]
+	path = lib/SDL
+	url = https://github.com/libsdl-org/SDL

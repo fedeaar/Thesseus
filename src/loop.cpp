@@ -56,7 +56,7 @@ bool mouse_lock = true;
 
 void loop::handle(const SDL_Event& e) {
   switch (e.type) {
-    case SDL_MOUSEMOTION:
+    case SDL_EVENT_MOUSE_MOTION:
       if (first_mouse) {
         first_mouse = false;
         break;
@@ -73,7 +73,11 @@ void loop::handle(const SDL_Event& e) {
 
 bool loop::init(struct state* global) {
   globalRef = global;
-  SDL_ShowCursor(!mouse_lock);
+  if (mouse_lock) {
+    SDL_HideCursor();
+  } else {
+    SDL_ShowCursor();
+  }
   SDL_SetRelativeMouseMode(mouse_lock ? SDL_TRUE : SDL_FALSE);
   program1.load();
   program2.load();
