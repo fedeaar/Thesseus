@@ -26,7 +26,7 @@ cd build
 # build debug version
 ./build.sh -d
 
-# build test suit
+# build test suite
 ./build.sh -t
 
 # to run, add -r flag, for example
