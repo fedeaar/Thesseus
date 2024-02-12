@@ -1,0 +1,47 @@
+---
+BasedOnStyle: Google
+# AlignAfterOpenBracket: AlwaysBreak
+# AlignArrayOfStructures: Right
+# AlignEscapedNewlines: Right
+# AlignOperands: Align
+# AlignTrailingComments: Always
+# AllowAllParametersOfDeclarationOnNextLine: false
+# AllowShortBlocksOnASingleLine: Empty
+# AllowShortFunctionsOnASingleLine: Empty
+# AlwaysBreakTemplateDeclarations: Yes
+# BinPackArguments: false
+# BinPackParameters: false
+# BitFieldColonSpacing: Both
+# BraceWrapping:
+#   AfterEnum: true
+#   AfterStruct: true
+#   SplitEmptyFunction: false
+# BreakBeforeBraces: Custom
+# BreakStringLiterals: true
+# ColumnLimit: 80
+# ContinuationIndentWidth: 2
+# EmptyLineBeforeAccessModifier: Always
+# FixNamespaceComments: true
+# IndentWidth: 2
+# InsertNewlineAtEOF: true
+# IntegerLiteralSeparator:
+#   Binary: 4
+#   Decimal: 4
+#   Hex: 4
+# MaxEmptyLinesToKeep: 1
+# PointerAlignment: Left
+# QualifierAlignment: Custom
+# QualifierOrder: ['inline', 'static', 'const', 'type']
+# ReferenceAlignment: Left
+# ReflowComments: true
+# SeparateDefinitionBlocks: Always
+# SortIncludes: CaseInsensitive
+# SpaceAfterTemplateKeyword: true
+# SpaceBeforeAssignmentOperators: true
+# SpaceBeforeCaseColon: false
+# SpaceBeforeCpp11BracedList: true
+# SpaceBeforeInheritanceColon: true
+# SpacesBeforeTrailingComments: 1
+# SpacesInAngles: Never
+# UseTab: false
+---

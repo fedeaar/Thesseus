@@ -6,4 +6,3 @@ Makefile
 out
 CMakeFiles
 .vscode
-.clang-format
