@@ -17,6 +17,7 @@ git submodule update --force
 ```
 
 ## build proyect
+
 ```bash
 cd build
 
@@ -31,4 +32,8 @@ cd build
 
 # to run, add -r flag. for example:
 ./build.sh -b -r
+
+# to build a different scene, add -s flag and specify 
+# path in scene/collection folder. for example:
+./build.sh -b -s "two_cubes.scene.cpp"
 ```

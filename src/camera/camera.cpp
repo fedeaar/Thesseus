@@ -15,10 +15,11 @@ inline v3f _direction(f32 yaw, f32 pitch) {
 // public
 //
 
-Camera::Camera(f32 speed, f32 fov, f32 sensitivity, f32 yaw, f32 pitch,
-               const v3f& position)
-    : _speed(speed),
+Camera::Camera(f32 aspect, f32 fov, f32 speed, f32 sensitivity, f32 yaw,
+               f32 pitch, const v3f& position)
+    : _aspect_ratio(aspect),
       _fov(fov),
+      _speed(speed),
       _sensitivity(sensitivity),
       _yaw(yaw),
       _pitch(pitch),
@@ -26,12 +27,12 @@ Camera::Camera(f32 speed, f32 fov, f32 sensitivity, f32 yaw, f32 pitch,
       _front(_direction(yaw, pitch)),
       _up({0.0f, 0.1f, 0.0f}){};
 
-m4f Camera::view_matrix() {
+m4f Camera::view_matrix() const {
   return glm::lookAt(_position, _position + _front, _up);
 }
 
-m4f Camera::proj_matrix(f32 aspect) {
-  return glm::perspective(glm::radians(_fov), aspect, 0.1f, 100.0f);
+m4f Camera::proj_matrix() const {
+  return glm::perspective(glm::radians(_fov), _aspect_ratio, 0.1f, 100.0f);
 }
 
 void Camera::move(Camera::Movement type) {
@@ -70,3 +71,5 @@ void Camera::rotate(Camera::Rotation type, f32 angle) {
 }
 
 void Camera::set_speed(f32 speed) { _speed = speed; }
+
+void Camera::set_aspect(f32 aspect) { _aspect_ratio = aspect; }

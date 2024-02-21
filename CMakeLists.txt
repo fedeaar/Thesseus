@@ -23,19 +23,20 @@ file(COPY src/shader DESTINATION ${build_dir} FILES_MATCHING REGEX "^.+(\.vs|\.f
 
 # options
 set(BUILD "build" CACHE STRING "type of output: debug | build | test")
+set(SCENE "two_cubes.scene.cpp" CACHE STRING "what scene to render from scene/collection")
 
 # build
 file(GLOB_RECURSE sources_main src/*.cpp src/*.h)
 
 if (${BUILD} STREQUAL "build")
-  list(FILTER sources_main EXCLUDE REGEX ".*\\.test\\.cpp")
-  add_executable(build ${sources_main})
+  list(FILTER sources_main EXCLUDE REGEX ".*\\.(test|scene)\\.cpp")
+  add_executable(build ${sources_main} src/scene/collection/${SCENE})
   target_compile_options(build PUBLIC -std=c++1y -Wall -Wfloat-conversion -w)
   target_link_libraries(build PUBLIC GL GLU SDL3::SDL3 libglew_static)
 
 elseif (${BUILD} STREQUAL "debug")
-  list(FILTER sources_main EXCLUDE REGEX ".*\\.test\\.cpp")
-  add_executable(debug ${sources_main})
+  list(FILTER sources_main EXCLUDE REGEX ".*\\.(test|scene)\\.cpp")
+  add_executable(debug ${sources_main} src/scene/collection/${SCENE})
   target_compile_options(debug PUBLIC -std=c++1y -Wall -Wfloat-conversion -w --debug)
   target_link_libraries(debug PUBLIC GL GLU SDL3::SDL3 libglew_static)
 

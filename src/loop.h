@@ -3,13 +3,9 @@
 
 #include <SDL3/SDL.h>
 
-#include <vector>
-
 #include "camera/camera.h"
 #include "context.h"
-#include "core/inline.hpp"
-#include "model/collection/collection.h"
-#include "shader/collection/collection.h"
+#include "scene/scene.h"
 
 namespace loop {
 
