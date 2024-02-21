@@ -6,5 +6,8 @@ uniform vec3 light_color;
 out vec4 out_color;
 
 void main() {
-  out_color = vec4(light_color * object_color, 1.0);
+  float ambientStrength = 0.1;
+  vec3 ambient = ambientStrength * light_color;
+
+  out_color = vec4(ambient * object_color, 1.0);
 }

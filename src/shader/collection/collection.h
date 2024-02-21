@@ -35,6 +35,17 @@ class Default3dTextured : public Default3d {
 
   void set_texture(const u32& number);
 };
+
+class LightSource : public Default3d {
+ public:
+  static const Shader::input format[1];
+
+  LightSource();
+  ~LightSource();
+
+  void load();
+};
+
 }  // namespace shaders
 
 #endif  // SHADER_COLLECTION_

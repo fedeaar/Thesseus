@@ -17,6 +17,7 @@ namespace cube {
 
 Model<shaders::Default3d> create_default3d_model();
 Model<shaders::Default3dTextured> create_default3dTextured_model();
+Model<shaders::LightSource> create_lightSource_model();
 
 };  // namespace cube
 
