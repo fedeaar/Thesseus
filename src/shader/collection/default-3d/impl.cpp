@@ -28,5 +28,5 @@ void shaders::Default3d::set_object_color(const v3f& color) {
 }
 
 void shaders::Default3d::set_light_color(const v3f& color) {
-  set_uniform("set_light_color", color);
+  set_uniform("light_color", color);
 }
