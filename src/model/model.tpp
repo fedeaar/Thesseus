@@ -30,10 +30,16 @@ void Model<T>::place(v3f position) {
 }
 
 template <typename T>
+void Model<T>::scale(v3f scale) {
+  scale_ = scale;
+}
+
+template <typename T>
 void Model<T>::render(T& shader) {
   glm::mat4 transform = m4f(1.0f);
   transform = glm::translate(transform, position_);
   transform = glm::rotate(transform, angle_, axis_);
+  transform = glm::scale(transform, scale_);
   shader.set_model(transform);
   shader.use();
   vao_->draw();

@@ -18,6 +18,7 @@ class Model {
   std::shared_ptr<VAO> vao_;
   std::shared_ptr<Texture2D> textures_[16] = {};
   v3f position_ = {0.0f, 0.0f, 0.0f};
+  v3f scale_ = {1.0f, 1.0f, 1.0f};
   v3f axis_ = {0.0f, 0.0f, 1.0f};
   f32 angle_ = 0.0f;
 
@@ -29,6 +30,7 @@ class Model {
 
   void rotate(f32 angle, v3f axis);
   void place(v3f position);
+  void scale(v3f scale);
 
   void render(T& shader);
 };
