@@ -29,6 +29,6 @@ cd build
 # build test suite
 ./build.sh -t
 
-# to run, add -r flag, for example
+# to run, add -r flag. for example:
 ./build.sh -b -r
 ```
