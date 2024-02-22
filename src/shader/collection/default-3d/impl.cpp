@@ -1,6 +1,7 @@
 #include "../collection.h"
 
-const Shader::input shaders::Default3d::format[1] = {{gl_float, 3}};
+const Shader::input shaders::Default3d::format[2] = {{gl_float, 3},
+                                                     {gl_float, 3}};
 
 shaders::Default3d::Default3d() : Shader() {}
 
@@ -29,4 +30,8 @@ void shaders::Default3d::set_object_color(const v3f& color) {
 
 void shaders::Default3d::set_light_color(const v3f& color) {
   set_uniform("light_color", color);
+}
+
+void shaders::Default3d::set_light_pos(const v3f& pos) {
+  set_uniform("light_pos", pos);
 }

@@ -10,7 +10,7 @@ namespace shaders {
 
 class Default3d : public Shader {
  public:
-  static const Shader::input format[1];
+  static const Shader::input format[2];
 
   Default3d();
   ~Default3d();
@@ -22,6 +22,7 @@ class Default3d : public Shader {
   void set_projection(const m4f& proj);
   void set_object_color(const v3f& color);
   void set_light_color(const v3f& color);
+  void set_light_pos(const v3f& pos);
 };
 
 class Default3dTextured : public Default3d {
