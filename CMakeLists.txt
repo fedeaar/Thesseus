@@ -24,6 +24,8 @@ file(COPY src/shader DESTINATION ${build_dir} FILES_MATCHING REGEX "^.+(\.vs|\.f
 # options
 set(BUILD "build" CACHE STRING "type of output: debug | build | test")
 set(SCENE "two_cubes.scene.cpp" CACHE STRING "what scene to render from scene/collection")
+set(FLAGS -std=c++1y -Wconversion -Wnarrowing -Wall -Wfloat-conversion -w)
+set(LINK GL GLU SDL3::SDL3 libglew_static)
 
 # build
 file(GLOB_RECURSE sources_main src/*.cpp src/*.h)
@@ -31,21 +33,22 @@ file(GLOB_RECURSE sources_main src/*.cpp src/*.h)
 if (${BUILD} STREQUAL "build")
   list(FILTER sources_main EXCLUDE REGEX ".*\\.(test|scene)\\.cpp")
   add_executable(build ${sources_main} src/scene/collection/${SCENE})
-  target_compile_options(build PUBLIC -std=c++1y -Wall -Wfloat-conversion -w)
-  target_link_libraries(build PUBLIC GL GLU SDL3::SDL3 libglew_static)
+  target_compile_options(build PUBLIC ${FLAGS})
+  target_link_libraries(build PUBLIC ${LINK})
 
 elseif (${BUILD} STREQUAL "debug")
   list(FILTER sources_main EXCLUDE REGEX ".*\\.(test|scene)\\.cpp")
   add_executable(debug ${sources_main} src/scene/collection/${SCENE})
-  target_compile_options(debug PUBLIC -std=c++1y -Wall -Wfloat-conversion -w --debug)
-  target_link_libraries(debug PUBLIC GL GLU SDL3::SDL3 libglew_static)
+  target_compile_options(debug PUBLIC ${FLAGS} --debug)
+  target_link_libraries(debug PUBLIC ${LINK})
 
 elseif (${BUILD} STREQUAL "tests")
+  list(FILTER sources_main EXCLUDE REGEX ".*\\.(scene)\\.cpp")
   add_subdirectory("./lib/googletest")
   include_directories("./lib/googletest/googletest/include")
   list(FILTER sources_main EXCLUDE REGEX "main\\.cpp")
-  add_executable(tests ${sources_main})
-  target_compile_options(tests PUBLIC -std=c++1y -Wall -Wfloat-conversion -w)
-  target_link_libraries(tests PUBLIC GL GLU SDL3::SDL3 libglew_static gtest gtest_main)
+  add_executable(tests ${sources_main} src/scene/collection/${SCENE})
+  target_compile_options(tests PUBLIC ${FLAGS})
+  target_link_libraries(tests PUBLIC ${LINK} gtest gtest_main)
   
 endif()
