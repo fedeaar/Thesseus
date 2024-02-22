@@ -24,6 +24,10 @@ void shaders::Default3d::set_projection(const m4f& proj) {
   set_uniform("projection", proj);
 }
 
+void shaders::Default3d::set_normal_matrix(const m3f& normal) {
+  set_uniform("normal_matrix", normal);
+}
+
 void shaders::Default3d::set_object_color(const v3f& color) {
   set_uniform("object_color", color);
 }

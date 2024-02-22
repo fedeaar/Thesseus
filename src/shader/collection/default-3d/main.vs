@@ -9,10 +9,11 @@ out vec3 fs_pos;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform mat3 normal_matrix;
 
 void main() {
   vec4 model_pos = model * vec4(pos, 1.0);
   gl_Position = projection * view * model_pos;
-  fs_normal = normal;
+  fs_normal = normal_matrix * normal;
   fs_pos = vec3(model_pos);
 }

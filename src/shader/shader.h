@@ -38,6 +38,7 @@ class Shader {
   inline void set_uniform(const std::string& ref, f32 val);
   inline void set_uniform(const std::string& ref, const v3f& val);
   inline void set_uniform(const std::string& ref, const v4f& val);
+  inline void set_uniform(const std::string& ref, const m3f& val);
   inline void set_uniform(const std::string& ref, const m4f& val);
 
  public:

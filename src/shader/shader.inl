@@ -29,6 +29,12 @@ inline void Shader::set_uniform(const std::string& ref, const v4f& val) {
               val.w);
 }
 
+inline void Shader::set_uniform(const std::string& ref, const m3f& val) {
+  // TODO: error checking;
+  glUniformMatrix3fv(glGetUniformLocation(handle_, ref.c_str()), 1, GL_FALSE,
+                     glm::value_ptr(val));
+}
+
 inline void Shader::set_uniform(const std::string& ref, const m4f& val) {
   // TODO: error checking;
   glUniformMatrix4fv(glGetUniformLocation(handle_, ref.c_str()), 1, GL_FALSE,

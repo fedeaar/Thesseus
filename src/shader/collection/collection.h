@@ -23,6 +23,7 @@ class Default3d : public Shader {
   void set_object_color(const v3f& color);
   void set_light_color(const v3f& color);
   void set_light_pos(const v3f& pos);
+  void set_normal_matrix(const m3f& normal);
 };
 
 class Default3dTextured : public Default3d {

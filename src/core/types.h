@@ -21,6 +21,7 @@ typedef double f64;
 typedef glm::vec<2, int> v2i;
 typedef glm::vec3 v3f;
 typedef glm::vec4 v4f;
+typedef glm::mat3 m3f;
 typedef glm::mat4 m4f;
 
 enum GL_Type {

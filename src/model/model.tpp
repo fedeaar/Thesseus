@@ -40,7 +40,9 @@ void Model<T>::render(T& shader) {
   transform = glm::translate(transform, position_);
   transform = glm::rotate(transform, angle_, axis_);
   transform = glm::scale(transform, scale_);
-  shader.set_model(transform);
+  glm::mat3 normal = glm::transpose(glm::inverse((m3f)transform));
   shader.use();
+  shader.set_model(transform);
+  shader.set_normal_matrix(normal);
   vao_->draw();
 }
