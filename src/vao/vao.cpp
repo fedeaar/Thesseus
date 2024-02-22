@@ -19,13 +19,16 @@ void VAO::load() {
   glBindVertexArray(vao_);
   glBindBuffer(GL_ARRAY_BUFFER, vbo_);
   glBufferData(GL_ARRAY_BUFFER, raw.size(), raw.data().get(), GL_STATIC_DRAW);
-  u32 start = 0;
-  for (u32 i = 0; i < format.size(); ++i) {
-    glVertexAttribPointer(
-        i, format[i].attr.format.length, format[i].attr.format.gl_type,
-        !format[i].attr.is_normalized, raw.stride(), (void*)start);
-    glEnableVertexAttribArray(i);
-    start += format[i].size;
+  u32 start = 0, location = 0, stride = raw.stride();
+  for (const auto& data : format) {
+    if (!data.attr.should_skip) {
+      glVertexAttribPointer(location, data.attr.format.length,
+                            data.attr.format.gl_type, !data.attr.is_normalized,
+                            stride, (void*)start);
+      glEnableVertexAttribArray(location);
+      location++;
+    }
+    start += data.size;
   }
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);

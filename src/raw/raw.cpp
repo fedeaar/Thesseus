@@ -8,8 +8,7 @@ Raw::Raw() {}
 
 Raw::Raw(std::shared_ptr<void> raw, u32 size,
          const std::vector<Raw::full_attribute>& format)
-    : raw_(raw), size_(size) {
-  format_ = format;
+    : raw_(raw), size_(size), format_(format) {
   stride_ = Raw::calculate_stride(format_);
   assert(size % stride_ == 0);  // TODO: better exceptions
   length_ = size / stride_;
@@ -39,11 +38,12 @@ u32 Raw::stride() const { return stride_; }
 //
 
 bool Raw::attribute::operator==(const attribute& rhs) const {
-  return format == format && is_normalized == is_normalized;
+  return format == rhs.format && is_normalized == rhs.is_normalized &&
+         should_skip == rhs.should_skip;
 }
 
 bool Raw::full_attribute::operator==(const full_attribute& rhs) const {
-  return attr == attr && start == start && size == size;
+  return attr == rhs.attr && start == rhs.start && size == rhs.size;
 }
 
 bool Raw::operator==(const Raw& rhs) const {

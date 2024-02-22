@@ -13,6 +13,7 @@ class Raw {
   struct attribute {
     Shader::input format;
     bool is_normalized;
+    bool should_skip = false;
 
     bool operator==(const attribute& rhs) const;
   };
