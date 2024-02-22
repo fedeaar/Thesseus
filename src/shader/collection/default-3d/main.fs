@@ -21,9 +21,10 @@ void main() {
   vec3 diffusion = diff * light_color;
   // specular
   float specular_strength = 0.5;
+  float specular_shine = 32;
   vec3 view_dir = normalize(view_pos - fs_pos);
   vec3 reflect_dir = reflect(-light_dir, norm);
-  float spec = pow(max(dot(view_dir, reflect_dir), 0.0), 32);
+  float spec = pow(max(dot(view_dir, reflect_dir), 0.0), specular_shine);
   vec3 specular = specular_strength * spec * light_color;
   // result (phong lighting)
   out_color = vec4((ambient + diffusion + specular) * object_color, 1.0);
