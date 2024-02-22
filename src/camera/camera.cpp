@@ -17,43 +17,43 @@ inline v3f _direction(f32 yaw, f32 pitch) {
 
 Camera::Camera(f32 aspect, f32 fov, f32 speed, f32 sensitivity, f32 yaw,
                f32 pitch, const v3f& position)
-    : _aspect_ratio(aspect),
-      _fov(fov),
-      _speed(speed),
-      _sensitivity(sensitivity),
-      _yaw(yaw),
-      _pitch(pitch),
-      _position(position),
-      _front(_direction(yaw, pitch)),
-      _up({0.0f, 0.1f, 0.0f}){};
+    : aspect_ratio_(aspect),
+      fov_(fov),
+      speed_(speed),
+      sensitivity_(sensitivity),
+      yaw_(yaw),
+      pitch_(pitch),
+      position_(position),
+      front_(_direction(yaw, pitch)),
+      up_({0.0f, 0.1f, 0.0f}){};
 
 m4f Camera::view_matrix() const {
-  return glm::lookAt(_position, _position + _front, _up);
+  return glm::lookAt(position_, position_ + front_, up_);
 }
 
 m4f Camera::proj_matrix() const {
-  return glm::perspective(glm::radians(_fov), _aspect_ratio, 0.1f, 100.0f);
+  return glm::perspective(glm::radians(fov_), aspect_ratio_, 0.1f, 100.0f);
 }
 
 void Camera::move(Camera::Movement type) {
   switch (type) {
     case TOWARDS:
-      _position += _speed * _front;
+      position_ += speed_ * front_;
       break;
     case AGAINST:
-      _position -= _speed * _front;
+      position_ -= speed_ * front_;
       break;
     case UPWARDS:
-      _position += _speed * _up;
+      position_ += speed_ * up_;
       break;
     case DOWNWARDS:
-      _position -= _speed * _up;
+      position_ -= speed_ * up_;
       break;
     case RIGHT:
-      _position += _speed * glm::normalize(glm::cross(_front, _up));
+      position_ += speed_ * glm::normalize(glm::cross(front_, up_));
       break;
     case LEFT:
-      _position -= _speed * glm::normalize(glm::cross(_front, _up));
+      position_ -= speed_ * glm::normalize(glm::cross(front_, up_));
       break;
   }
 }
@@ -61,15 +61,17 @@ void Camera::move(Camera::Movement type) {
 void Camera::rotate(Camera::Rotation type, f32 angle) {
   switch (type) {
     case YAW:
-      _yaw += angle * _sensitivity;
+      yaw_ += angle * sensitivity_;
       break;
     case PITCH:
-      _pitch = clamp(_pitch - angle * _sensitivity, -90.f, 90.f);
+      pitch_ = clamp(pitch_ - angle * sensitivity_, -90.f, 90.f);
       break;
   }
-  _front = _direction(_yaw, _pitch);
+  front_ = _direction(yaw_, pitch_);
 }
 
-void Camera::set_speed(f32 speed) { _speed = speed; }
+void Camera::set_speed(f32 speed) { speed_ = speed; }
 
-void Camera::set_aspect(f32 aspect) { _aspect_ratio = aspect; }
+void Camera::set_aspect(f32 aspect) { aspect_ratio_ = aspect; }
+
+const v3f& Camera::position() const { return position_; };

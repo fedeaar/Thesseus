@@ -10,9 +10,9 @@
 
 class Camera {
  private:
-  v3f _position, _front, _up;
-  f32 _speed, _fov, _sensitivity, _aspect_ratio;
-  f32 _yaw, _pitch;
+  v3f position_, front_, up_;
+  f32 speed_, fov_, sensitivity_, aspect_ratio_;
+  f32 yaw_, pitch_;
 
  public:
   enum Movement { TOWARDS, AGAINST, UPWARDS, DOWNWARDS, LEFT, RIGHT };
@@ -30,6 +30,8 @@ class Camera {
 
   void set_speed(f32 speed);
   void set_aspect(f32 aspect);
+
+  const v3f& position() const;
 };
 
 #endif  // CAMERA_
