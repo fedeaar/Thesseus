@@ -1,5 +1,5 @@
-#ifndef MODEL_MODEL_
-#define MODEL_MODEL_
+#ifndef MODEL_
+#define MODEL_
 
 #include <glm/glm.hpp>
 #include <memory>
@@ -37,4 +37,4 @@ class Model {
 
 #include "model.tpp"
 
-#endif  // MODEL_MODEL_
+#endif  // MODEL_
