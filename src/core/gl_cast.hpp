@@ -1,5 +1,5 @@
-#ifndef COPY_CAST_
-#define COPY_CAST_
+#ifndef CORE_GL_CAST_
+#define CORE_GL_CAST_
 
 #include <iostream>
 #include <typeinfo>
@@ -132,4 +132,4 @@ inline u32 gl_sizeof(GL_Type type) {
   }
 }
 
-#endif  // COPY_CAST_
+#endif  // CORE_GL_CAST_

@@ -1,5 +1,5 @@
-#ifndef TYPES_
-#define TYPES_
+#ifndef CORE_TYPES_
+#define CORE_TYPES_
 
 #include <GL/glew.h>
 
@@ -34,4 +34,4 @@ enum GL_Type {
   gl_double = GL_DOUBLE,
 };
 
-#endif  // TYPES_
+#endif  // CORE_TYPES_

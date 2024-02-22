@@ -1,5 +1,5 @@
-#ifndef MODEL_TEXTURE_
-#define MODEL_TEXTURE_
+#ifndef TEXTURE_
+#define TEXTURE_
 
 #include <GL/glew.h>
 
@@ -30,4 +30,4 @@ class Texture2D {
   void bind(GLenum texture_number);
 };
 
-#endif  // MODEL_TEXTURE_
+#endif  // TEXTURE_

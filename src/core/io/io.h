@@ -1,5 +1,5 @@
-#ifndef IO_
-#define IO_
+#ifndef CORE_IO_
+#define CORE_IO_
 
 #include <fstream>
 #include <iostream>
@@ -25,4 +25,4 @@ void free(u8* image);
 
 }  // namespace io
 
-#endif  // IO_
+#endif  // CORE_IO_
