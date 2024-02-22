@@ -20,10 +20,11 @@ class Default3d : public Shader {
   void set_model(const m4f& model);
   void set_view(const m4f& view);
   void set_projection(const m4f& proj);
+  void set_normal_matrix(const m3f& normal);
   void set_object_color(const v3f& color);
   void set_light_color(const v3f& color);
   void set_light_pos(const v3f& pos);
-  void set_normal_matrix(const m3f& normal);
+  void set_view_pos(const v3f& pos);
 };
 
 class Default3dTextured : public Default3d {

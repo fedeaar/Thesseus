@@ -39,3 +39,7 @@ void shaders::Default3d::set_light_color(const v3f& color) {
 void shaders::Default3d::set_light_pos(const v3f& pos) {
   set_uniform("light_pos", pos);
 }
+
+void shaders::Default3d::set_view_pos(const v3f& pos) {
+  set_uniform("view_pos", pos);
+}

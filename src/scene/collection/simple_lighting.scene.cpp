@@ -19,6 +19,7 @@ void scene::init() {
   lightProgram.load();
   light.place(light_pos);
   light.scale({v3f(0.2f)});
+  cube.scale(v3f{3});
   program.use();
   program.set_object_color({1.0, 0.5, 0.31});
   program.set_light_color({1.0, 1.0, 1.0});
@@ -34,6 +35,7 @@ void scene::render(const Camera& camera) {
   light.render(lightProgram);
   program.use();
   program.set_view(camera.view_matrix());
+  program.set_view_pos(camera.position());
   program.set_projection(camera.proj_matrix());
   cube.render(program);
 }
