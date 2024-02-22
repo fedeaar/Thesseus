@@ -1,5 +1,5 @@
-#ifndef RAW_COLLECTION_
-#define RAW_COLLECTION_
+#ifndef MODEL_COLLECTION_
+#define MODEL_COLLECTION_
 
 #include <functional>
 #include <vector>
@@ -23,4 +23,4 @@ Model<shaders::LightSource> create_lightSource_model();
 
 };  // namespace models
 
-#endif  // RAW_COLLECTION_
+#endif  // MODEL_COLLECTION_
