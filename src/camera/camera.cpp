@@ -25,15 +25,11 @@ Camera::Camera(f32 aspect, f32 fov, f32 speed, f32 sensitivity, f32 yaw,
       pitch_(pitch),
       position_(position),
       front_(_direction(yaw, pitch)),
-      up_({0.0f, 0.1f, 0.0f}){};
-
-m4f Camera::view_matrix() const {
-  return glm::lookAt(position_, position_ + front_, up_);
-}
-
-m4f Camera::proj_matrix() const {
-  return glm::perspective(glm::radians(fov_), aspect_ratio_, 0.1f, 100.0f);
-}
+      up_({0.0f, 1.0f, 0.0f}) {
+  view_matrix_ = glm::lookAt(position_, position_ + front_, up_);
+  proj_matrix_ =
+      glm::perspective(glm::radians(fov_), aspect_ratio_, 0.1f, 100.0f);
+};
 
 void Camera::move(Camera::Movement type) {
   switch (type) {
@@ -56,6 +52,7 @@ void Camera::move(Camera::Movement type) {
       position_ -= speed_ * glm::normalize(glm::cross(front_, up_));
       break;
   }
+  view_matrix_ = glm::lookAt(position_, position_ + front_, up_);
 }
 
 void Camera::rotate(Camera::Rotation type, f32 angle) {
@@ -68,10 +65,19 @@ void Camera::rotate(Camera::Rotation type, f32 angle) {
       break;
   }
   front_ = _direction(yaw_, pitch_);
+  view_matrix_ = glm::lookAt(position_, position_ + front_, up_);
 }
 
 void Camera::set_speed(f32 speed) { speed_ = speed; }
 
-void Camera::set_aspect(f32 aspect) { aspect_ratio_ = aspect; }
+void Camera::set_aspect(f32 aspect) {
+  aspect_ratio_ = aspect;
+  proj_matrix_ =
+      glm::perspective(glm::radians(fov_), aspect_ratio_, 0.1f, 100.0f);
+}
 
 const v3f& Camera::position() const { return position_; };
+
+const m4f& Camera::view_matrix() const { return view_matrix_; }
+
+const m4f& Camera::proj_matrix() const { return proj_matrix_; }

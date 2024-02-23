@@ -13,6 +13,7 @@ class Camera {
   v3f position_, front_, up_;
   f32 speed_, fov_, sensitivity_, aspect_ratio_;
   f32 yaw_, pitch_;
+  m4f view_matrix_, proj_matrix_;
 
  public:
   enum Movement { TOWARDS, AGAINST, UPWARDS, DOWNWARDS, LEFT, RIGHT };
@@ -22,9 +23,6 @@ class Camera {
          f32 sensitivity = 0.1f, f32 yaw = -90, f32 pitch = 0,
          const v3f& position = {0.0f, 0.0f, 0.0f});
 
-  m4f view_matrix() const;
-  m4f proj_matrix() const;
-
   void move(Movement type);
   void rotate(Rotation type, f32 angle);
 
@@ -32,6 +30,8 @@ class Camera {
   void set_aspect(f32 aspect);
 
   const v3f& position() const;
+  const m4f& view_matrix() const;
+  const m4f& proj_matrix() const;
 };
 
 #endif  // CAMERA_
