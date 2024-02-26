@@ -1,5 +1,4 @@
-#include "../collection.h"
-#include "raw.h"
+#include "cube.h"
 
 Model<shaders::Default3d> models::cube::create_default3d_model() {
   std::shared_ptr<void> cube_ptr((void*)&data, [](auto*) {});  // is static

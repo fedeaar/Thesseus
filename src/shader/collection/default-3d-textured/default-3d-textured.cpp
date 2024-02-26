@@ -1,4 +1,4 @@
-#include "../collection.h"
+#include "default-3d-textured.h"
 
 const Shader::input shaders::Default3dTextured::format[2] = {{gl_float, 3},
                                                              {gl_float, 2}};

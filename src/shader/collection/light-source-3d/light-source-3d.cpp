@@ -1,4 +1,4 @@
-#include "../collection.h"
+#include "light-source-3d.h"
 
 const Shader::input shaders::LightSource::format[1] = {{gl_float, 3}};
 
