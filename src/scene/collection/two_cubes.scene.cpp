@@ -4,43 +4,57 @@
 // global
 //
 
-shaders::Default3d program1;
-shaders::Default3dTextured program2;
-Model<shaders::Default3d> cube1 = models::cube::create_default3d_model();
-Model<shaders::Default3dTextured> cube2 =
+shaders::Default3dTextured program;
+shaders::LightSource lightProgram;
+Model<shaders::Default3dTextured> cube =
     models::cube::create_default3dTextured_model();
-Texture2D texture("./res/container.jpg");
+Model<shaders::LightSource> light = models::cube::create_lightSource_model();
+Texture2D texture("./res/container2.png");
+Texture2D specular_map("./res/container2_specular.png");
 std::vector<texture_param> params = {{GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT},
                                      {GL_TEXTURE_WRAP_T, GL_REPEAT},
                                      {GL_TEXTURE_MIN_FILTER, GL_LINEAR},
                                      {GL_TEXTURE_MAG_FILTER, GL_LINEAR}};
-
+v3f light_pos = {1.2f, 1.0f, 2.0f};
 //
 // scene
 //
 
 void scene::init() {
-  program1.load();
-  program2.load();
+  program.load();
+  lightProgram.load();
   texture.load(params);
-  program2.set_texture(0);
-  cube2.place({5, 2, 0});
+  light.scale({v3f(0.2f)});
+  light.place(light_pos);
+  program.use();
+  program.set_material_diffuse_map(0);
+  program.set_material_specular_map(1);
+  program.set_material_specular({0.5f, 0.5f, 0.5f});
+  program.set_material_shininess(32.0f);
+  program.set_light_ambient({0.2f, 0.2f, 0.2f});
+  program.set_light_diffuse({0.5f, 0.5f, 0.5f});
+  program.set_light_specular({1.0f, 1.0f, 1.0f});
+  program.set_light_position(light_pos);
+  lightProgram.use();
+  lightProgram.set_light_color(v3f{1.0});
 }
 
 void scene::destroy() {
   texture.destroy();
-  program1.destroy();
-  program2.destroy();
+  program.destroy();
+  lightProgram.destroy();
 }
 
 void scene::render(const Camera& camera) {
   texture.bind(GL_TEXTURE0);
-  program1.use();
-  program1.set_view(camera.view_matrix());
-  program1.set_projection(camera.proj_matrix());
-  cube1.render(program1);
-  program2.use();
-  program2.set_view(camera.view_matrix());
-  program2.set_projection(camera.proj_matrix());
-  cube2.render(program2);
+  specular_map.bind(GL_TEXTURE1);
+  lightProgram.use();
+  lightProgram.set_view(camera.view_matrix());
+  lightProgram.set_projection(camera.proj_matrix());
+  light.render(lightProgram);
+  program.use();
+  program.set_view(camera.view_matrix());
+  program.set_view_pos(camera.position());
+  program.set_projection(camera.proj_matrix());
+  cube.render(program);
 }

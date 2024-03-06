@@ -11,6 +11,11 @@ void shaders::Default3dTextured::load() {
   Shader::load("./shader/collection/default-3d-textured/main.vs",
                "./shader/collection/default-3d-textured/main.fs");
 }
-void shaders::Default3dTextured::set_texture(const u32& number) {
-  set_uniform("texture_2d", number);
+
+void shaders::Default3dTextured::set_material_diffuse_map(u32 texture) {
+  set_uniform("material.diffuse", texture);
+}
+
+void shaders::Default3dTextured::set_material_specular_map(u32 texture) {
+  set_uniform("material.specular", texture);
 }

@@ -18,7 +18,8 @@ class Default3dTextured : public Default3d {
 
   void load();
 
-  void set_texture(const u32& number);
+  void set_material_diffuse_map(u32 texture);
+  void set_material_specular_map(u32 texture);
 };
 
 }  // namespace shaders

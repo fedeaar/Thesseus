@@ -10,3 +10,7 @@ void shaders::LightSource::load() {
   Shader::load("./shader/collection/light-source-3d/main.vs",
                "./shader/collection/light-source-3d/main.fs");
 }
+
+void shaders::LightSource::set_light_color(const v3f& color) {
+  set_uniform("light_color", color);
+};

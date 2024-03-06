@@ -16,9 +16,9 @@ Model<shaders::Default3dTextured>
 models::cube::create_default3dTextured_model() {
   std::shared_ptr<void> cube_ptr((void*)&data, [](auto*) {});  // is static
   std::vector<Raw::attribute> fmt_vec = {
-      {{gl_float, 3}, true},        // position
-      {{gl_float, 3}, true, true},  // normals (skip)
-      {{gl_float, 2}, true}         // texture coords
+      {{gl_float, 3}, true},  // position
+      {{gl_float, 3}, true},  // normals
+      {{gl_float, 2}, true}   // texture coords
   };
   auto raw_ptr = std::make_shared<Raw>(cube_ptr, sizeof(data), fmt_vec);
   auto vao_ptr = std::make_shared<VAO>(raw_ptr);

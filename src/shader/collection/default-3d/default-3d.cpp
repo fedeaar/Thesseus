@@ -28,14 +28,6 @@ void shaders::Default3d::set_normal_matrix(const m3f& normal) {
   set_uniform("normal_matrix", normal);
 }
 
-void shaders::Default3d::set_light_color(const v3f& color) {
-  set_uniform("light_color", color);
-}
-
-void shaders::Default3d::set_light_pos(const v3f& pos) {
-  set_uniform("light_pos", pos);
-}
-
 void shaders::Default3d::set_view_pos(const v3f& pos) {
   set_uniform("view_pos", pos);
 }
@@ -55,3 +47,19 @@ void shaders::Default3d::set_material_specular(const v3f& specular) {
 void shaders::Default3d::set_material_shininess(f32 shininess) {
   set_uniform("material.shininess", shininess);
 }
+
+void shaders::Default3d::set_light_ambient(const v3f& ambient) {
+  set_uniform("light.ambient", ambient);
+};
+
+void shaders::Default3d::set_light_diffuse(const v3f& diffuse) {
+  set_uniform("light.diffuse", diffuse);
+};
+
+void shaders::Default3d::set_light_specular(const v3f& specular) {
+  set_uniform("light.specular", specular);
+};
+
+void shaders::Default3d::set_light_position(const v3f& pos) {
+  set_uniform("light.position", pos);
+};

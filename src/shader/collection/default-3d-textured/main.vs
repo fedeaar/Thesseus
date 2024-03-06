@@ -1,15 +1,22 @@
 #version 330 core
 
 layout (location = 0) in vec3 pos;
-layout (location = 1) in vec2 texture_coords;
+layout (location = 1) in vec3 normal;
+layout (location = 2) in vec2 texture_coords;
 
+out vec3 fs_normal;
+out vec3 fs_pos;
 out vec2 fs_texture_coords;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform mat3 normal_matrix;
 
 void main() {
-  gl_Position = projection * view * model * vec4(pos, 1.0);
+  vec4 model_pos = model * vec4(pos, 1.0);
+  gl_Position = projection * view * model_pos;
+  fs_normal = normal_matrix * normal;
+  fs_pos = vec3(model_pos);
   fs_texture_coords = texture_coords;
 }

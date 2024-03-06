@@ -3,13 +3,12 @@
 
 #include <vector>
 
+#include "../../../core/types.h"
+#include "../../../raw/reformatter/reformatter.h"
+#include "../../../shader/collection/collection.h"
+#include "../../../shader/shader.h"
 #include "../../../vao/vao.h"
-#include "../../core/types.h"
-#include "../../raw/reformatter/reformatter.h"
-#include "../../shader/collection/collection.h"
-#include "../../shader/shader.h"
-#include "../../vao/vao.h"
-#include "../model.hpp"
+#include "../../model.hpp"
 
 namespace models {
 namespace cube {

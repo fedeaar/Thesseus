@@ -17,6 +17,8 @@ class LightSource : public Default3d {
   ~LightSource();
 
   void load();
+
+  void set_light_color(const v3f& color);
 };
 }  // namespace shaders
 
