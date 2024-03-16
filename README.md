@@ -7,7 +7,7 @@
 sudo apt-get install build-essential cmake gcc clang
 
 # install basic deps
-sudo apt-get install libxmu-dev libxi-dev libgl-dev
+sudo apt-get install libxmu-dev libxi-dev libgl-dev libglu1-mesa-dev
 
 # install project deps
 git submodule update --init --recursive --progress
