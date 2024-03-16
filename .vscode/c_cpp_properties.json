@@ -8,7 +8,7 @@
                 "${workspaceFolder}/lib/stb",
                 "${workspaceFolder}/lib/googletest/googletest/include",
                 "${workspaceFolder}/lib/SDL/include",
-                "${workspaceFolder}/lib/glew-cmake/include",
+                "${workspaceFolder}/lib/glew-cmake/include"
             ],
             "intelliSenseMode": "linux-gcc-x64",
             "compilerPath": "/usr/bin/clang",
