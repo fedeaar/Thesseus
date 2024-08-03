@@ -14,7 +14,7 @@ GLuint _compile(const std::string& source, Shader::shader_type type) {
   if (!success) {
     GLchar buf[512];
     glGetShaderInfoLog(handle, (GLuint)512, NULL, buf);
-    std::cerr << "ShaderCompileError: " + std::string(buf)
+    std::cerr << "Shader Compile Error: " + std::string(buf)
               << std::endl;  // TODO: proper exception
   }
   return handle;
@@ -34,7 +34,7 @@ GLuint _attach(const std::string& vs_source, const std::string& fs_source) {
   if (!success) {
     GLchar buf[512];
     glGetProgramInfoLog(handle, (GLuint)512, NULL, buf);
-    std::cerr << "ShaderLinkError: " + std::string(buf)
+    std::cerr << "Shader Link Error: " + std::string(buf)
               << std::endl;  // TODO: proper exception
   }
   return handle;
@@ -47,7 +47,7 @@ GLuint _attach(const std::string& vs_source, const std::string& fs_source) {
 void Shader::load(const std::string& vs_path, const std::string& fs_path) {
   if (bound_) {
     destroy();
-    std::cerr << "ShaderWarning: bound program replaced."
+    std::cerr << "Shader Warning: bound program replaced."
               << std::endl;  // TODO: proper warnings
   }
   const std::string vs_source = io::text::read(vs_path);
@@ -60,7 +60,7 @@ void Shader::attach(const std::string& vs_source,
                     const std::string& fs_source) {
   if (bound_) {
     destroy();
-    std::cerr << "ShaderWarning: bound program replaced."
+    std::cerr << "Shader Warning: bound program replaced."
               << std::endl;  // TODO: proper warnings
   }
   handle_ = _attach(vs_source, fs_source);

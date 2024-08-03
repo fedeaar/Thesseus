@@ -34,10 +34,10 @@ bool context::init(state* state) {
 
   // Initialize GLEW
   glewExperimental = GL_TRUE;
-  GLenum glewError = glewInit();
-  if (glewError != GLEW_OK) {
+  GLenum glew_error = glewInit();
+  if (glew_error != GLEW_OK) {
     printf("Failed to initialze Glew. GLEW Error: %s\n",
-           glewGetErrorString(glewError));
+           glewGetErrorString(glew_error));
     return false;
   }
 

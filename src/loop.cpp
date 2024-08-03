@@ -4,8 +4,9 @@
 // global
 //
 
-struct state* globalRef = NULL;
-Camera camera;
+struct state* global_ref = NULL;
+Camera camera;  // TODO: camera and 'player' handlers should be abstracted away
+                // to allow swapping
 
 //
 // handlers
@@ -22,7 +23,7 @@ inline f32 delta() {
 const u8* state = SDL_GetKeyboardState(NULL);
 bool first_mouse = true;
 
-void handlePress() {
+void handle_press() {
   if (state[SDL_SCANCODE_W]) {
     camera.move(Camera::TOWARDS);
   }
@@ -42,7 +43,7 @@ void handlePress() {
     camera.move(Camera::RIGHT);
   }
   if (state[SDL_SCANCODE_LALT] && state[SDL_SCANCODE_W]) {
-    globalRef->quit = true;
+    global_ref->quit = true;
   }
 }
 
@@ -62,7 +63,7 @@ void loop::handle(const SDL_Event& e) {
 }
 
 bool loop::init(struct state* global) {
-  globalRef = global;
+  global_ref = global;
   if (mouse_lock) {
     SDL_HideCursor();
   } else {
@@ -70,7 +71,7 @@ bool loop::init(struct state* global) {
   }
   SDL_SetRelativeMouseMode(mouse_lock ? SDL_TRUE : SDL_FALSE);
   f32 aspect_ratio =
-      (f32)globalRef->screen_width / (f32)globalRef->screen_height;
+      (f32)global_ref->screen_width / (f32)global_ref->screen_height;
   camera.set_aspect(aspect_ratio);
   scene::init();
   return true;
@@ -80,7 +81,7 @@ void loop::close() { scene::destroy(); }
 
 void loop::render() {
   camera.set_speed(0.25f * (1 - delta()));
-  handlePress();
+  handle_press();
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   scene::render(camera);
 }

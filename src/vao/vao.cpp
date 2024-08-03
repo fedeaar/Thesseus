@@ -4,7 +4,7 @@
 // public
 //
 
-VAO::VAO(std::shared_ptr<Raw> raw) : raw_(raw){};
+VAO::VAO(std::shared_ptr<Raw> raw) : raw_(raw) {};
 
 VAO::~VAO() { destroy(); }
 

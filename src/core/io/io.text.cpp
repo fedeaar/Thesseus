@@ -10,7 +10,7 @@ std::string io::text::read(const std::string& path) {
     stream.close();
     return data;
   } catch (std::ifstream::failure& e) {
-    std::cerr << "fileError: " + path + " could not be read." << std::endl;
+    std::cerr << "File Error: " + path + " could not be read." << std::endl;
     throw e;
   }
 }
