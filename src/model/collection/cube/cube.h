@@ -73,6 +73,8 @@ const raw_fmt data[length] = {
 Model<shaders::Default3d> create_default3d_model();
 Model<shaders::Default3dTextured> create_default3dTextured_model();
 Model<shaders::LightSource> create_lightSource_model();
+Model<shaders::Default3dTexturedDirectional>
+create_default3dTexturedDirectional_model();
 
 };  // namespace cube
 
