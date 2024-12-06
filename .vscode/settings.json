@@ -84,21 +84,25 @@
         "version": "cpp",
     },
     "C_Cpp.files.exclude": {
+        "build/**": true,
         "lib/**": true,
         "bin/**": true,
         "CMakeFiles/**": true,
     },
     "files.watcherExclude": {
+        "build/**": true,
         "lib/**": true,
         "bin/**": true,
         "CMakeFiles/**": true,
     },
     "search.exclude": {
+        "build/**": true,
         "lib/**": true,
         "bin/**": true,
         "CMakeFiles/**": true,
     },
     "C_Cpp.codeAnalysis.exclude": {
+        "build/**": true,
         "lib/**": true,
         "bin/**": true,
         "CMakeFiles/**": true,
