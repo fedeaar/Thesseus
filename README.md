@@ -22,6 +22,7 @@ git submodule update --force
 ## build proyect
 
 ```bash
+# inside the container
 cd build
 
 # build game
@@ -34,7 +35,10 @@ cd build
 ./build.sh -t
 
 # to run, add -r flag. for example:
-./build.sh -b -r
+./build.sh -t -r
+
+# if running -b or -d versions, this must be done 
+# outside the container (after compiling)
 
 # to build a different scene, add -s flag and specify 
 # path in scene/collection folder. for example:
