@@ -3,17 +3,20 @@
 ## initial setup
 
 ```bash
-# install basic tools
-sudo apt-get install build-essential cmake gcc clang
+# build image with global dependencies
+docker compose -f ./docker/compose.yml up --build
 
-# install basic deps
-sudo apt-get install libxmu-dev libxi-dev libgl-dev libglu1-mesa-dev
-
-# install project deps
+# install local dependencies
 git submodule update --init --recursive --progress
 
 # if any is missing
 git submodule update --force
+```
+
+## running the container
+
+```bash
+./start-container.sh
 ```
 
 ## build proyect
