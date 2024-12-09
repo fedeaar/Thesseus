@@ -3,7 +3,7 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
-#include "../../../core/types.h"
+#include "../../../../core/types.h"
 #include "../../shader.h"
 
 namespace shaders {

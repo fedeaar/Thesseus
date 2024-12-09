@@ -5,9 +5,9 @@
 #include <memory>
 
 #include "../core/types.h"
-#include "../shader/shader.h"
-#include "../texture/texture.h"
-#include "../vao/vao.h"
+#include "../engine/shader/shader.h"
+#include "../engine/texture/texture.h"
+#include "../engine/vao/vao.h"
 
 template <typename T>
 class Model {

@@ -16,11 +16,12 @@ std::vector<texture_param> params = {{GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT},
                                      {GL_TEXTURE_MIN_FILTER, GL_LINEAR},
                                      {GL_TEXTURE_MAG_FILTER, GL_LINEAR}};
 v3f light_pos = {1.2f, 1.0f, 2.0f};
+
 //
 // scene
 //
 
-void scene::init() {
+i32 Scene::init() {
   program.load();
   lightProgram.load();
   texture.load(params);
@@ -37,15 +38,17 @@ void scene::init() {
   program.set_light_position(light_pos);
   lightProgram.use();
   lightProgram.set_light_color(v3f{1.0});
+  return 1;
 }
 
-void scene::destroy() {
+i32 Scene::destroy() {
   texture.destroy();
   program.destroy();
   lightProgram.destroy();
+  return 1;
 }
 
-void scene::render(const Camera& camera) {
+void Scene::render(const Camera& camera) {
   texture.bind(GL_TEXTURE0);
   specular_map.bind(GL_TEXTURE1);
   lightProgram.use();

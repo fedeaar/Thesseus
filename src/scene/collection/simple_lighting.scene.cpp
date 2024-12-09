@@ -18,7 +18,7 @@ v3f light_color;
 // scene
 //
 
-void scene::init() {
+i32 Scene::init() {
   program.load();
   lightProgram.load();
   light.scale({v3f(0.2f)});
@@ -33,12 +33,16 @@ void scene::init() {
   program.set_light_specular({1.0f, 1.0f, 1.0f});
   lightProgram.use();
   lightProgram.set_light_color(v3f{1.0});
+  return 1;
 }
 
-void scene::destroy() { program.destroy(); }
+i32 Scene::destroy() {
+  program.destroy();
+  return 1;
+}
 
 f32 i = 0;
-void scene::render(const Camera& camera) {
+void Scene::render(const Camera& camera) {
   angle = glm::radians(i++);
   light_pos = {cos(angle) * dist, sin(angle) * dist, 0.0};
   // light_color.x = sin(angle * 2.0f) + 0.1;

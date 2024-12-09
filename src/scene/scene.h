@@ -2,15 +2,15 @@
 #define SCENE_
 
 #include "../camera/camera.h"
+#include "../engine/shader/collection/collection.h"
 #include "../model/collection/collection.h"
-#include "../shader/collection/collection.h"
 
-namespace scene {
+class Scene {
+ public:
+  i32 init();
+  i32 destroy();
 
-void init();
-void destroy();
-void render(const Camera& pov);
-
-}  // namespace scene
+  void render(const Camera& camera);
+};
 
 #endif  // SCENE_

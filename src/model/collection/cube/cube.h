@@ -4,10 +4,10 @@
 #include <vector>
 
 #include "../../../core/types.h"
+#include "../../../engine/shader/collection/collection.h"
+#include "../../../engine/shader/shader.h"
+#include "../../../engine/vao/vao.h"
 #include "../../../raw/reformatter/reformatter.h"
-#include "../../../shader/collection/collection.h"
-#include "../../../shader/shader.h"
-#include "../../../vao/vao.h"
 #include "../../model.hpp"
 
 namespace models {

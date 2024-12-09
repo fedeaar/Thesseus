@@ -3,7 +3,7 @@
 
 #include "../../core/gl_cast.hpp"
 #include "../../core/types.h"
-#include "../../shader/shader.h"
+#include "../../engine/shader/shader.h"
 #include "../raw.h"
 
 class Reformatter {

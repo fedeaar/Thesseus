@@ -6,7 +6,7 @@
 
 #include "../core/gl_cast.hpp"
 #include "../core/types.h"
-#include "../shader/shader.h"
+#include "../engine/shader/shader.h"
 
 class Raw {
  public:

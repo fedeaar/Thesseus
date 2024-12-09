@@ -6,8 +6,8 @@
 #include <memory>
 #include <vector>
 
-#include "../core/types.h"
-#include "../raw/raw.h"
+#include "../../core/types.h"
+#include "../../raw/raw.h"
 #include "../shader/shader.h"
 
 class VAO {

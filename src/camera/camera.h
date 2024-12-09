@@ -11,7 +11,7 @@
 class Camera {
  private:
   v3f position_, front_, up_;
-  f32 speed_, fov_, sensitivity_, aspect_ratio_;
+  f32 base_speed_, speed_, fov_, sensitivity_, aspect_ratio_;
   f32 yaw_, pitch_;
   m4f view_matrix_, proj_matrix_;
 
@@ -28,6 +28,7 @@ class Camera {
 
   void set_speed(f32 speed);
   void set_aspect(f32 aspect);
+  void set_frame_delta(f32 tick_delta);
 
   const v3f& position() const;
   const m4f& view_matrix() const;

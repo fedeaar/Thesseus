@@ -27,7 +27,7 @@ v3f light_pos = {3, 3, 3};
 // scene
 //
 
-void scene::init() {
+i32 Scene::init() {
   program.load();
   light_program.load();
   texture.load(params);
@@ -47,14 +47,16 @@ void scene::init() {
   light_program.set_light_color(v3f{1.0});
   light.scale({v3f(0.2f)});
   light.place(light_pos);
+  return 1;
 }
 
-void scene::destroy() {
+i32 Scene::destroy() {
   texture.destroy();
   program.destroy();
+  return 1;
 }
 
-void scene::render(const Camera& camera) {
+void Scene::render(const Camera& camera) {
   texture.bind(GL_TEXTURE0);
   specular_map.bind(GL_TEXTURE1);
   program.use();

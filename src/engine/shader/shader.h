@@ -7,8 +7,8 @@
 #include <string>
 #include <vector>
 
-#include "../core/io/io.h"
-#include "../core/types.h"
+#include "../../core/io/io.h"
+#include "../../core/types.h"
 
 class Shader {
  public:

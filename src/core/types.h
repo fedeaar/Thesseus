@@ -4,6 +4,7 @@
 #include <GL/glew.h>
 
 #include <glm/glm.hpp>
+#include <string>
 
 typedef uint8_t u8;
 typedef uint16_t u16;
@@ -23,6 +24,8 @@ typedef glm::vec3 v3f;
 typedef glm::vec4 v4f;
 typedef glm::mat3 m3f;
 typedef glm::mat4 m4f;
+
+typedef std::string string;
 
 enum GL_Type {
   gl_byte = GL_BYTE,
