@@ -67,7 +67,7 @@ inline void InputHandler::poll_keyboard() {
 // public
 //
 
-InputHandler::InputHandler(EventLoop* loop, RenderEngine* engine,
+InputHandler::InputHandler(EventLoop* loop, VulkanRenderEngine* engine,
                            Camera* camera)
     : loop_(loop), engine_(engine), camera_(camera) {};
 

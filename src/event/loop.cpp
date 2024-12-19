@@ -12,11 +12,6 @@ inline f32 EventLoop::tick_delta() {
 }
 
 i32 EventLoop::init() {
-  // Initialize SDL
-  if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-    printf("Failed to initialize: %s\n", SDL_GetError());
-    return 0;
-  }
   // TODO: proper error handling
   if (!engine_->init()) {
     return 0;
@@ -24,9 +19,9 @@ i32 EventLoop::init() {
   if (!input_handler_.init()) {
     return 0;
   }
-  if (!scene_->init()) {
-    return 0;
-  }
+  // if (!scene_->init()) {
+  //   return 0;
+  // }
   return 1;
 }
 
@@ -35,9 +30,9 @@ i32 EventLoop::destroy() {
   if (!engine_->destroy()) {
     return 0;
   }
-  if (!scene_->destroy()) {
-    return 0;
-  }
+  // if (!scene_->destroy()) {
+  //   return 0;
+  // }
   SDL_Quit();
   return 1;
 }
@@ -48,18 +43,19 @@ inline void EventLoop::tick() {
   input_handler_.poll();
   camera_->set_frame_delta(
       tick_delta());  // TODO: camera should handle this (?)
-  engine_->render(*camera_, *scene_);
+  engine_->render(*camera_ /*, *scene_*/);
 }
 
 //
 // public
 //
 
-EventLoop::EventLoop(RenderEngine* engine, Camera* camera, Scene* scene)
+EventLoop::EventLoop(VulkanRenderEngine* engine,
+                     Camera* camera /*,  Scene* scene */)
     : engine_(engine),
       camera_(camera),
-      input_handler_(this, engine, camera),
-      scene_(scene) {};
+      input_handler_(this, engine, camera)
+/*, scene_(scene) */ {};
 
 i32 EventLoop::run() {
   // TODO: proper error handling

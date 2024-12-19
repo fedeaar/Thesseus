@@ -7,9 +7,12 @@ project(Thesseus)
 
 # deps
 find_package(OpenGL REQUIRED)
-include_directories("./lib/stb" "./lib/glm" "./lib/glew-cmake/include")
+find_package(Vulkan REQUIRED)
+include_directories("./lib/stb" "./lib/glm" "./lib/glew-cmake/include" "./lib/vk-bootstrap/src" "./lib/vulkan-malloc/include")
 add_subdirectory(./lib/SDL/)
 add_subdirectory(./lib/glew-cmake/)
+add_subdirectory(./lib/vk-bootstrap/)
+add_subdirectory(./lib/vulkan-malloc/)
 
 # bin
 set(build_dir "bin")
@@ -25,7 +28,7 @@ file(COPY src/shader DESTINATION ${build_dir} FILES_MATCHING REGEX "^.+(\.vs|\.f
 set(BUILD "build" CACHE STRING "type of output: debug | build | test")
 set(SCENE "two_cubes.scene.cpp" CACHE STRING "what scene to render from scene/collection")
 set(FLAGS -std=c++1y -Wconversion -Wnarrowing -Wall -Wfloat-conversion -w)
-set(LINK GL GLU SDL3::SDL3 libglew_static)
+set(LINK Vulkan::Vulkan GL GLU SDL3::SDL3 libglew_static vk-bootstrap vma)
 
 # build
 file(GLOB_RECURSE sources_main src/*.cpp src/*.h)

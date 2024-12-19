@@ -1,7 +1,6 @@
 #include "camera/camera.h"
 #include "engine/engine.h"
 #include "event/event.h"
-#include "scene/scene.h"
 
 //
 // global
@@ -18,10 +17,9 @@ RenderParams global{
 //
 
 int main(int argc, char* args[]) {
-  RenderEngine engine{global};
+  VulkanRenderEngine engine{global};
   Camera camera(
       engine.get_aspect_ratio());  // FIXME: do not set aspect ratio this way
-  Scene scene;
-  EventLoop main{&engine, &camera, &scene};
+  EventLoop main{&engine, &camera};
   return main.run();
 }

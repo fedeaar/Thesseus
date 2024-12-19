@@ -6,14 +6,14 @@
 #include "../camera/camera.h"
 #include "../core/types.h"
 #include "../engine/engine.h"
-#include "../scene/scene.h"
+// #include "../scene/scene.h"
 
 class EventLoop;
 
 class InputHandler {
  private:
   EventLoop* loop_;
-  RenderEngine* engine_;
+  VulkanRenderEngine* engine_;
   Camera* camera_;
   SDL_Event event_;
   const u8* keyboard_state_ = SDL_GetKeyboardState(NULL);
@@ -25,7 +25,7 @@ class InputHandler {
   inline void poll_keyboard();
 
  public:
-  InputHandler(EventLoop* loop, RenderEngine* engine, Camera* camera);
+  InputHandler(EventLoop* loop, VulkanRenderEngine* engine, Camera* camera);
 
   int init();
 
@@ -36,9 +36,9 @@ class EventLoop {
   friend InputHandler;
 
  private:
-  RenderEngine* engine_;
+  VulkanRenderEngine* engine_;
   Camera* camera_;
-  Scene* scene_;
+  // Scene* scene_;
   InputHandler input_handler_;
   bool quit_ = false;
   f32 last_tick_ = 0.0f;
@@ -52,7 +52,7 @@ class EventLoop {
   inline void tick();
 
  public:
-  EventLoop(RenderEngine* engine, Camera* camera, Scene* scene);
+  EventLoop(VulkanRenderEngine* engine, Camera* camera /*, Scene* scene*/);
   int run();
 };
 
