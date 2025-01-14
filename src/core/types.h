@@ -1,8 +1,6 @@
 #ifndef CORE_TYPES_
 #define CORE_TYPES_
 
-#include <GL/glew.h>
-
 #include <glm/glm.hpp>
 #include <string>
 
@@ -26,16 +24,5 @@ typedef glm::mat3 m3f;
 typedef glm::mat4 m4f;
 
 typedef std::string string;
-
-enum GL_Type {
-  gl_byte = GL_BYTE,
-  gl_unsigned_byte = GL_UNSIGNED_BYTE,
-  gl_short = GL_SHORT,
-  gl_unsigned_short = GL_UNSIGNED_SHORT,
-  gl_int = GL_INT,
-  gl_unsigned_int = GL_UNSIGNED_INT,
-  gl_float = GL_FLOAT,
-  gl_double = GL_DOUBLE,
-};
 
 #endif  // CORE_TYPES_
