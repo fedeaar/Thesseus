@@ -1,48 +1,47 @@
 #!/bin/bash
 
-build_name=""; build_status=0;
-scene_path="two_cubes.scene.cpp";
+build_target=""; build_bin=""; build_status=0;
 run_build=false;
 
 compile() {
-    echo "compiling $build_name with scene $scene_path."
-    cmake .. -DBUILD=$build_name -DSCENE=$scene_path && make
+    echo "compiling $build_target."
+    cmake .. -DCMAKE_BUILD_TYPE=$build_target && make
     build_status=$?
     if [ $build_status == 0 ]; then
-        echo "compiled $build_name with scene $scene_path." 
+        echo "compiled $build_target succesfully." 
     fi
 }
 
 run() {
-    if [ "$build_name" == "" ]; then
-        build_name="build"
+    if [ "$build_bin" == "" ]; then
+        build_bin="build"
     fi
     if [ $build_status == 0 ]; then
         cd bin
-        ./$build_name
+        ./$build_bin
         cd ..
     fi
 }
 
-while getopts "bdtrs:" option; do
+while getopts "bdtr" option; do
     case $option in
         b)  
-            build_name="build"
+            build_target="Release"
+            build_bin="build"
             ;;
         d)
-            build_name="debug"
+            build_target="Debug"
+            build_bin="debug"
             ;;
         t) 
-            build_name="tests"
+            build_target="Test"
+            build_bin="test"
             ;;
         r)
             run_build=true
             ;;
-        s)
-            scene_path=${OPTARG}
-            ;;
     esac
 done
 
-if [ "$build_name" != "" ]; then compile ; fi
+if [ "$build_target" != "" ]; then compile ; fi
 if [ $run_build == true ]; then run ; fi
