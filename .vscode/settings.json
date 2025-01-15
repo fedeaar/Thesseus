@@ -82,6 +82,8 @@
         "locale": "cpp",
         "queue": "cpp",
         "version": "cpp",
+        "shared_mutex": "cpp",
+        "span": "cpp"
     },
     "C_Cpp.files.exclude": {
         "build/**": true,

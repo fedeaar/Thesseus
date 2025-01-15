@@ -8,14 +8,15 @@
                 "${workspaceFolder}/lib/stb",
                 "${workspaceFolder}/lib/googletest/googletest/include",
                 "${workspaceFolder}/lib/SDL/include",
-                "${workspaceFolder}/lib/glew-cmake/include",
                 "${workspaceFolder}/lib/vk-bootstrap/src",
-                "${workspaceFolder}/lib/vulkan-malloc/include"
+                "${workspaceFolder}/lib/vulkan-malloc/include",
+                "${workspaceFolder}/lib/imgui",
+                "${workspaceFolder}/lib/imgui/backends",
             ],
             "intelliSenseMode": "linux-gcc-x64",
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c17",
-            "cppStandard": "c++14"
+            "cppStandard": "c++20"
         }
     ],
     "version": 4
