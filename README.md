@@ -3,20 +3,28 @@
 ## initial setup
 
 ```bash
-# build image with global dependencies
-docker compose -f ./docker/compose.yml up --build
+# install global dependencies
+# likely will require sudoing
+apt-get update
+apt-get install \
+    git \
+    cmake \
+    gcc \
+    clang \
+    build-essential \
+    libxmu-dev \
+    libxi-dev
+apt update
+apt install wget
+wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | tee /etc/apt/trusted.gpg.d/lunarg.asc
+wget -qO /etc/apt/sources.list.d/lunarg-vulkan-jammy.list https://packages.lunarg.com/vulkan/lunarg-vulkan-jammy.list
+apt install vulkan-sdk
 
 # install local dependencies
 git submodule update --init --recursive --progress
 
 # if any is missing
 git submodule update --force
-```
-
-## running the container
-
-```bash
-./start-container.sh
 ```
 
 ## build proyect
@@ -36,11 +44,4 @@ cd build
 
 # to run, add -r flag. for example:
 ./build.sh -t -r
-
-# if running -b or -d versions, this must be done 
-# outside the container (after compiling)
-
-# to build a different scene, add -s flag and specify 
-# path in scene/collection folder. for example:
-./build.sh -b -s "two_cubes.scene.cpp"
 ```
