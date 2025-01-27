@@ -1,5 +1,4 @@
-#ifndef CORE_TYPES_
-#define CORE_TYPES_
+#pragma once
 
 #include <glm/glm.hpp>
 #include <string>
@@ -24,5 +23,3 @@ typedef glm::mat3 m3f;
 typedef glm::mat4 m4f;
 
 typedef std::string string;
-
-#endif  // CORE_TYPES_

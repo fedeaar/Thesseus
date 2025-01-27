@@ -1,6 +1,8 @@
 #include "io.h"
 
-std::string io::text::read(const std::string& path) {
+std::string
+io::text::read(const std::string& path)
+{
   std::ifstream stream;
   stream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
   try {

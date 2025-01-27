@@ -85,7 +85,7 @@
         "shared_mutex": "cpp",
         "span": "cpp"
     },
-    "C_Cpp.files.exclude": {
+    "files.exclude": {
         "build/**": true,
         "lib/**": true,
         "bin/**": true,
@@ -109,4 +109,7 @@
         "bin/**": true,
         "CMakeFiles/**": true,
     },
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/src/**"
+    ]
 }

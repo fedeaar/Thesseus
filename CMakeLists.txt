@@ -33,6 +33,7 @@ include(CompileShaders)
 #
 
 # clear
+# TODO@cmake: this does not seem to be working
 file(REMOVE_RECURSE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 file(COPY res DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 

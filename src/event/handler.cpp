@@ -4,18 +4,22 @@
 // private
 //
 
-i32 InputHandler::init() {
-  if (mouse_lock_) {
-    SDL_HideCursor();
-    SDL_SetRelativeMouseMode(SDL_TRUE);
-  } else {
-    SDL_ShowCursor();
-    SDL_SetRelativeMouseMode(SDL_FALSE);
-  }
+i32
+InputHandler::init()
+{
+  // if (mouse_lock_) {
+  //   SDL_HideCursor();
+  //   SDL_SetWindowRelativeMouseMode(engine_->window_, true);
+  // } else {
+  //   SDL_ShowCursor();
+  //   SDL_SetWindowRelativeMouseMode(engine_->window_, false);
+  // }
   return 1;
 }
 
-inline void InputHandler::handle_mouse_motion() {
+inline void
+InputHandler::handle_mouse_motion()
+{
   // TODO: this should be handled by the camera (?)
   if (first_mouse_) {
     first_mouse_ = false;
@@ -25,7 +29,9 @@ inline void InputHandler::handle_mouse_motion() {
   camera_->rotate(Camera::PITCH, event_.motion.yrel);
 }
 
-inline void InputHandler::poll_events() {
+inline void
+InputHandler::poll_events()
+{
   while (SDL_PollEvent(&event_) != 0) {
     switch (event_.type) {
       case SDL_EVENT_QUIT:
@@ -35,10 +41,13 @@ inline void InputHandler::poll_events() {
         handle_mouse_motion();
         break;
     }
+    ImGui_ImplSDL3_ProcessEvent(&event_);
   };
 }
 
-inline void InputHandler::poll_keyboard() {
+inline void
+InputHandler::poll_keyboard()
+{
   // TODO: this should be handled by the camera (?)
   if (keyboard_state_[SDL_SCANCODE_W]) {
     camera_->move(Camera::TOWARDS);
@@ -67,11 +76,14 @@ inline void InputHandler::poll_keyboard() {
 // public
 //
 
-InputHandler::InputHandler(EventLoop* loop, VulkanRenderEngine* engine,
-                           Camera* camera)
-    : loop_(loop), engine_(engine), camera_(camera) {};
+InputHandler::InputHandler(EventLoop* loop, Engine* engine, Camera* camera)
+  : loop_(loop)
+  , engine_(engine)
+  , camera_(camera) {};
 
-void InputHandler::poll() {
+void
+InputHandler::poll()
+{
   poll_events();
   poll_keyboard();
 }

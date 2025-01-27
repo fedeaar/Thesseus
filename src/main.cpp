@@ -6,20 +6,22 @@
 // global
 //
 
-RenderParams global{
-    640,        // screen_width
-    480,        // screen_height
-    "Thesseus"  // name
+EngineParams global{
+  1280,      // screen_width
+  720,       // screen_height
+  "Thesseus" // name
 };
 
 //
 // main
 //
 
-int main(int argc, char* args[]) {
-  VulkanRenderEngine engine{global};
+int
+main(int argc, char* args[])
+{
+  Engine engine{ global };
   Camera camera(
-      engine.get_aspect_ratio());  // FIXME: do not set aspect ratio this way
-  EventLoop main{&engine, &camera};
+    engine.get_aspect_ratio()); // FIXME: do not set aspect ratio this way
+  EventLoop main{ &engine, &camera };
   return main.run();
 }

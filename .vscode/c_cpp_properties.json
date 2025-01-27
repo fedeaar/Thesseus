@@ -3,7 +3,7 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**",
+                "${workspaceFolder}/src/**",
                 "${workspaceFolder}/lib/glm",
                 "${workspaceFolder}/lib/stb",
                 "${workspaceFolder}/lib/googletest/googletest/include",
@@ -12,11 +12,12 @@
                 "${workspaceFolder}/lib/vulkan-malloc/include",
                 "${workspaceFolder}/lib/imgui",
                 "${workspaceFolder}/lib/imgui/backends",
+                "${workspaceFolder}/lib/fmt/include"
             ],
             "intelliSenseMode": "linux-gcc-x64",
-            "compilerPath": "/usr/bin/clang",
+            "compilerPath": "/usr/bin/gcc",
             "cStandard": "c17",
-            "cppStandard": "c++20"
+            "cppStandard": "c++20",
         }
     ],
     "version": 4

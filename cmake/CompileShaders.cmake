@@ -1,4 +1,4 @@
-# todo@cmake: don't depend o custom target?
+# TODO@cmake: don't depend o custom target?
 function(compile_shaders)
   find_program(GLSL_VALIDATOR glslangValidator HINTS /usr/bin /usr/local/bin $ENV{VULKAN_SDK}/Bin/ $ENV{VULKAN_SDK}/Bin32/)
   file(GLOB_RECURSE GLSL_SOURCE_FILES
