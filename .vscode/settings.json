@@ -83,13 +83,13 @@
         "queue": "cpp",
         "version": "cpp",
         "shared_mutex": "cpp",
-        "span": "cpp"
-    },
-    "files.exclude": {
-        "build/**": true,
-        "lib/**": true,
-        "bin/**": true,
-        "CMakeFiles/**": true,
+        "span": "cpp",
+        "any": "cpp",
+        "codecvt": "cpp",
+        "forward_list": "cpp",
+        "unordered_set": "cpp",
+        "source_location": "cpp",
+        "ranges": "cpp"
     },
     "files.watcherExclude": {
         "build/**": true,

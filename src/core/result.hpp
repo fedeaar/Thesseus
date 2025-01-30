@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cassert>
+
 namespace core {
 
 template<typename TOkResult, typename TErrorResult>
@@ -32,9 +34,9 @@ public:
     : is_value_{ other.is_value_ }
   {
     if (is_value_) {
-      value_ = other.value_
+      value_ = other.value_;
     } else {
-      error_ = other.error_
+      error_ = other.error_;
     }
   }
 

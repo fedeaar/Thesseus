@@ -57,19 +57,19 @@ set(LINK
 compile_shaders()
 
 # build 
-if (${BUILD} STREQUAL Build)
+if (${CMAKE_BUILD_TYPE} STREQUAL Release)
   list(FILTER SOURCES_MAIN EXCLUDE REGEX ".*\\.test\\.cpp")
   add_executable(build ${SOURCES_MAIN})
   target_compile_options(build PUBLIC ${FLAGS})
   target_link_libraries(build PUBLIC ${LINK})
 
-elseif (${BUILD} STREQUAL Debug)
+elseif (${CMAKE_BUILD_TYPE} STREQUAL Debug)
   list(FILTER SOURCES_MAIN EXCLUDE REGEX ".*\\.test\\.cpp")
   add_executable(debug ${SOURCES_MAIN})
   target_compile_options(debug PUBLIC ${FLAGS})
   target_link_libraries(debug PUBLIC -lm ${LINK})
 
-elseif (${BUILD} STREQUAL Test)
+elseif (${CMAKE_BUILD_TYPE} STREQUAL Test)
   list(FILTER SOURCES_MAIN EXCLUDE REGEX "main\\.cpp")
   add_executable(tests ${SOURCES_MAIN})
   target_compile_options(tests PUBLIC ${FLAGS})

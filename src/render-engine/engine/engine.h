@@ -1,35 +1,43 @@
 #pragma once
 
 #include "../render-engine.h"
+#include "../renderer/imgui-renderer/imgui-renderer.h"
+#include "../renderer/swap-renderer/swap-renderer.h"
 
 namespace RenderEngine {
 class Engine
 {
 public:
-  std::string const& name;
   struct Params
   {
     u32 screen_width, screen_height;
     string name;
-  } params_;
-  bool initialized_ = false;
+  };
 
-  // WindowManager window_mgr_;
-  // VulkanManager vk_mgr_;
-  // Swapchain swapchain_;
-  // std::vector<Renderer> renderers_;
-  // DestructorQueue del_queue_;
-  //
-  Status init();
+  bool initialized = false;
+  u32 frame = 0;
+
+private:
+  std::string const& namespace_ = RenderEngine::namespace_() + "::Engine";
+  core::Logger logger_{ namespace_ };
+
+  Params params_;
+  ResourceManagement::WindowManager window_mgr_;
+  ResourceManagement::VulkanManager::Manager vk_mgr_;
+  ResourceManagement::VulkanManager::Swapchain::Swapchain swapchain_;
+
+public:
+  SwapRenderer swap_renderer_;
+  ImguiRenderer imgui_renderer_;
+
+  RenderEngine::Status init();
   Engine(Params& params);
 
-  Status destroy();
+  RenderEngine::Status destroy();
   ~Engine();
-  //
-  core::Result<WindowManager&, Status> get_window_mgr();
-  // core::Result<VulkanManager&, Status> get_vk_mgr();
-  // core::Result<Swapchain&, Status> get_swapchain();
-  //
-  // Status render();
+
+  RenderEngine::Status render();
+
+  f32 get_aspect_ratio() { return window_mgr_.aspect_ratio; };
 };
-};
+} // namespace RenderEngine

@@ -1,52 +1,42 @@
-#define VMA_IMPLEMENTATION
+#include "../renderer/imgui-renderer/imgui-renderer.h"
+#include "../renderer/swap-renderer/swap-renderer.h"
 #include "engine.h"
 
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_vulkan.h>
-#include <VkBootstrap.h>
-#include <vk_mem_alloc.h>
+RenderEngine::Status
+RenderEngine::Engine::init()
+{
+  if (initialized) {
+    return RenderEngine::Status::SUCCESS;
+  }
+  if (window_mgr_.init() != ResourceManagement::Status::SUCCESS) {
+    return RenderEngine::Status::ERROR;
+  }
+  if (vk_mgr_.init() != ResourceManagement::Status::SUCCESS) {
+    return RenderEngine::Status::ERROR;
+  }
+  auto swapchain_result = vk_mgr_.create_swapchain();
+  if (!swapchain_result.has_value()) {
+    return RenderEngine::Status::ERROR;
+  }
+  swapchain_ = swapchain_result.value();
+  auto status = swap_renderer_.init(swapchain_);
+  if (status != ResourceManagement::Status::SUCCESS) {
+    return RenderEngine::Status::ERROR; // todo@engine: log error
+  }
+  status = imgui_renderer_.init(swapchain_);
+  if (status != ResourceManagement::Status::SUCCESS) {
+    return RenderEngine::Status::ERROR; // todo@engine: log error
+  }
+  initialized = true;
+  return RenderEngine::Status::SUCCESS;
+}
 
-using namespace RenderEngine;
-
-// Engine::Engine(EngineParams& params)
-// {
-//   params_ = params;
-//   window_mgr_ = WindowManager(this);
-//   vk_mgr_ = VulkanManager(this);
-//   auto swapchain_result = vk_mgr_.create_swapchain();
-//   if (!swapchain_result.has_value()) {
-//     throw swapchain_result.error(); // todo@engine
-//   }
-//   swapchain_ = swapchain_result.value();
-// }
-
-// i32
-// Engine::init()
-// {
-//   if (initialized) {
-//     return 0;
-//   }
-//   if (!window_mgr_.init()) {
-//     return 0;
-//   }
-//   if (!vulkan_mgr_.init()) {
-//     return 0;
-//   }
-//   if (!init_swapchain()) {
-//     fprintf(stderr, "Failed to initialize swapchain");
-//     return 0;
-//   }
-//   if (!init_commands()) {
-//     fprintf(stderr, "Failed to initialize commands");
-//     return 0;
-//   }
-//   if (!init_sync_structures()) {
-//     fprintf(stderr, "Failed to initialize sync structures");
-//     return 0;
-//   }
-//   init_descriptors();
-//   init_pipelines();
-//   init_imgui();
-//   initialized_ = true;
-//   return 1;
-// }
+RenderEngine::Engine::Engine(RenderEngine::Engine::Params& params)
+  : params_{ params }
+  , window_mgr_{ params.screen_width, params.screen_height, params.name }
+  , vk_mgr_{ &window_mgr_ }
+  , swap_renderer_{ &vk_mgr_ }
+  , imgui_renderer_{ &vk_mgr_, &window_mgr_ }
+{
+  init();
+}

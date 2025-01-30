@@ -1,16 +1,33 @@
+#include "engine.h"
 
-// i32
-// Engine::destroy()
-// {
-//   if (!initialized_) {
-//     return 0;
-//   }
-//   vkDeviceWaitIdle(device_);
+RenderEngine::Status
+RenderEngine::Engine::destroy()
+{
+  if (!initialized) {
+    return RenderEngine::Status::SUCCESS;
+  }
+  auto status = vk_mgr_.destroy();
+  if (status != ResourceManagement::Status::SUCCESS) {
+    logger_.error("failed to destroy vulkan manager");
+    return RenderEngine::Status::ERROR;
+  }
+  status = window_mgr_.destroy();
+  if (status != ResourceManagement::Status::SUCCESS) {
+    logger_.error("failed to destroy window manager");
+    return RenderEngine::Status::ERROR;
+  }
+  swap_renderer_.destroy();
+  imgui_renderer_.destroy();
+  return RenderEngine::Status::SUCCESS;
+}
 
-//   main_del_queue_.flush();
-//   destroy_swapchain();
-//
-//   SDL_DestroyWindow(window_);
-//   window_ = nullptr;
-//   return 1;
-// };
+RenderEngine::Engine::~Engine()
+{
+  if (initialized) {
+    auto status = destroy();
+    if (status != RenderEngine::Status::SUCCESS) {
+      logger_.error("failed to destroy engine, aborting");
+      abort();
+    }
+  }
+}

@@ -58,13 +58,13 @@ EventLoop::tick()
   ImGui_ImplSDL3_NewFrame();
   ImGui::NewFrame();
   if (ImGui::Begin("background")) {
-    ComputeEffect& selected =
-      engine_->backgroundEffects[engine_->currentBackgroundEffect];
+    auto& selected =
+      engine_->swap_renderer_.effects_[engine_->swap_renderer_.current_effect_];
     ImGui::Text("Selected effect: ", selected.name);
     ImGui::SliderInt("Effect Index",
-                     &engine_->currentBackgroundEffect,
+                     (i32*)&engine_->swap_renderer_.current_effect_,
                      0,
-                     engine_->backgroundEffects.size() - 1);
+                     engine_->swap_renderer_.effects_.size() - 1);
     ImGui::InputFloat4("data1", (float*)&selected.data.data1);
     ImGui::InputFloat4("data2", (float*)&selected.data.data2);
     ImGui::InputFloat4("data3", (float*)&selected.data.data3);
@@ -72,14 +72,15 @@ EventLoop::tick()
   }
   ImGui::End();
   ImGui::Render();
-  engine_->render(*camera_ /*, *scene_*/);
+  engine_->render(/*camera_*, *scene_*/);
 }
 
 //
 // public
 //
 
-EventLoop::EventLoop(Engine* engine, Camera* camera /*,  Scene* scene */)
+EventLoop::EventLoop(RenderEngine::Engine* engine,
+                     Camera* camera /*,  Scene* scene */)
   : engine_(engine)
   , camera_(camera)
   , input_handler_(this, engine, camera)

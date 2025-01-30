@@ -4,12 +4,12 @@
 #include "../core/logger.h"
 #include "../core/result.hpp"
 #include "../core/types.h"
-#include "./swapchain/swapchain.h"
-#include "./vk-mgr/vulkan-manager.h"
-#include "./window-mgr/window-manager.h"
-// #include "./imm-submit/immediate-submit.h"
-// #include "./renderer/renderer.h"
-#include "./engine/engine.h"
+#include "../mgmt/vulkan-mgr/image/image.h"
+#include "../mgmt/vulkan-mgr/info/info.h"
+#include "../mgmt/vulkan-mgr/manager/manager.h"
+#include "../mgmt/vulkan-mgr/pipeline/pipeline.h"
+#include "../mgmt/vulkan-mgr/swapchain/swapchain.h"
+#include "../mgmt/window-mgr/window-manager.h"
 
 #include <vulkan/vulkan.h>
 
@@ -23,11 +23,8 @@
 
 namespace RenderEngine {
 
-static inline std::string const&
-namespace_()
-{
-  return "RenderEngine";
-}
+std::string const&
+namespace_();
 
 enum Status
 {
@@ -35,9 +32,5 @@ enum Status
   ERROR = -1,
   SUCCESS = 1
 };
-
-class WindowManager;
-class VulkanManager;
-class Renderer;
 
 } // namespace RenderEngine

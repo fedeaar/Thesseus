@@ -2,11 +2,12 @@
 
 #include "../camera/camera.h"
 #include "../core/types.h"
-#include "../engine/engine.h"
+#include "../render-engine/engine/engine.h"
+
 #include <SDL3/SDL.h>
+#include <backends/imgui_impl_sdl3.h>
+#include <backends/imgui_impl_vulkan.h>
 #include <imgui.h>
-#include <imgui_impl_sdl3.h>
-#include <imgui_impl_vulkan.h>
 
 class EventLoop;
 
@@ -14,7 +15,7 @@ class InputHandler
 {
 private:
   EventLoop* loop_;
-  Engine* engine_;
+  RenderEngine::Engine* engine_;
   Camera* camera_;
   SDL_Event event_;
   const bool* keyboard_state_ = SDL_GetKeyboardState(NULL);
@@ -26,9 +27,8 @@ private:
   inline void poll_keyboard();
 
 public:
-  InputHandler(EventLoop* loop, Engine* engine, Camera* camera);
-
   int init();
+  InputHandler(EventLoop* loop, RenderEngine::Engine* engine, Camera* camera);
 
   void poll();
 };
@@ -38,7 +38,7 @@ class EventLoop
   friend InputHandler;
 
 private:
-  Engine* engine_;
+  RenderEngine::Engine* engine_;
   Camera* camera_;
   InputHandler input_handler_;
   bool quit_ = false;
@@ -53,6 +53,6 @@ private:
   inline void tick();
 
 public:
-  EventLoop(Engine* engine, Camera* camera /*, Scene* scene*/);
+  EventLoop(RenderEngine::Engine* engine, Camera* camera /*, Scene* scene*/);
   int run();
 };
