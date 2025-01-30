@@ -10,7 +10,7 @@ public:
   bool initialized = false;
 
 protected:
-  std::string const& namespace_ = RenderEngine::namespace_() + "::Renderer";
+  std::string const namespace_ = RenderEngine::namespace_ + "::Renderer";
   core::Logger logger_{ namespace_ };
 
   ResourceManagement::VulkanManager::Manager* vk_mgr_;

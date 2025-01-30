@@ -1,6 +1,6 @@
 #include "vulkan-manager.h"
 
-std::string const& ResourceManagement::VulkanManager::namespace_ =
+std::string const ResourceManagement::VulkanManager::namespace_ =
   ResourceManagement::namespace_ + "::VulkanManager";
 
 core::Logger ResourceManagement::VulkanManager::logger{ namespace_ };

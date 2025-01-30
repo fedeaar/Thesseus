@@ -11,7 +11,7 @@
 namespace ResourceManagement {
 namespace VulkanManager {
 
-extern std::string const& namespace_;
+extern std::string const namespace_;
 
 extern core::Logger logger;
 

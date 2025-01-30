@@ -18,7 +18,7 @@ public:
   u32 frame = 0;
 
 private:
-  std::string const& namespace_ = RenderEngine::namespace_() + "::Engine";
+  std::string const namespace_ = RenderEngine::namespace_ + "::Engine";
   core::Logger logger_{ namespace_ };
 
   Params params_;

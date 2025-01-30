@@ -7,7 +7,7 @@
 
 namespace ResourceManagement {
 
-extern std::string const& namespace_;
+extern std::string const namespace_;
 
 enum Status
 {

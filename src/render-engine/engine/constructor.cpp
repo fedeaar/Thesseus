@@ -7,28 +7,34 @@ RenderEngine::Engine::init()
 {
   if (initialized) {
     return RenderEngine::Status::SUCCESS;
+
+    if (window_mgr_.init() != ResourceManagement::Status::SUCCESS) {
+      logger_.error("init failed, window mgr could not be created");
+      return RenderEngine::Status::ERROR;
+    }
+    if (vk_mgr_.init() != ResourceManagement::Status::SUCCESS) {
+      logger_.error("init failed, vk mgr could not be created");
+      return RenderEngine::Status::ERROR;
+    }
+    auto swapchain_result = vk_mgr_.create_swapchain();
+    if (!swapchain_result.has_value()) {
+      logger_.error("init failed, swapchain could not be created");
+      return RenderEngine::Status::ERROR;
+    }
+    swapchain_ = swapchain_result.value();
+    auto status = swap_renderer_.init(swapchain_);
+    if (status != ResourceManagement::Status::SUCCESS) {
+      logger_.error("init failed, swap renderer could not be created");
+      return RenderEngine::Status::ERROR; // todo@engine: log error
+    }
+    status = imgui_renderer_.init(swapchain_);
+    if (status != ResourceManagement::Status::SUCCESS) {
+      logger_.error("init failed, imgui renderer could not be created");
+      return RenderEngine::Status::ERROR; // todo@engine: log error
+    }
+    initialized = true;
+    return RenderEngine::Status::SUCCESS;
   }
-  if (window_mgr_.init() != ResourceManagement::Status::SUCCESS) {
-    return RenderEngine::Status::ERROR;
-  }
-  if (vk_mgr_.init() != ResourceManagement::Status::SUCCESS) {
-    return RenderEngine::Status::ERROR;
-  }
-  auto swapchain_result = vk_mgr_.create_swapchain();
-  if (!swapchain_result.has_value()) {
-    return RenderEngine::Status::ERROR;
-  }
-  swapchain_ = swapchain_result.value();
-  auto status = swap_renderer_.init(swapchain_);
-  if (status != ResourceManagement::Status::SUCCESS) {
-    return RenderEngine::Status::ERROR; // todo@engine: log error
-  }
-  status = imgui_renderer_.init(swapchain_);
-  if (status != ResourceManagement::Status::SUCCESS) {
-    return RenderEngine::Status::ERROR; // todo@engine: log error
-  }
-  initialized = true;
-  return RenderEngine::Status::SUCCESS;
 }
 
 RenderEngine::Engine::Engine(RenderEngine::Engine::Params& params)
@@ -38,5 +44,4 @@ RenderEngine::Engine::Engine(RenderEngine::Engine::Params& params)
   , swap_renderer_{ &vk_mgr_ }
   , imgui_renderer_{ &vk_mgr_, &window_mgr_ }
 {
-  init();
 }

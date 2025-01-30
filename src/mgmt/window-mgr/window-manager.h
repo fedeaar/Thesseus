@@ -18,7 +18,7 @@ public:
   std::string const& window_name;
 
 private:
-  std::string const& namespace_ =
+  std::string const namespace_ =
     ResourceManagement::namespace_ + "::WindowManager";
   core::Logger logger_{ namespace_ };
 
