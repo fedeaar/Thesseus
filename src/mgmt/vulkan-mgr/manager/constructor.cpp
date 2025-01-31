@@ -2,6 +2,11 @@
 
 #include "manager.h"
 
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_vulkan.h>
+#include <VkBootstrap.h>
+#include <vk_mem_alloc.h>
+
 ResourceManagement::Status
 ResourceManagement::VulkanManager::Manager::init()
 {
@@ -14,66 +19,63 @@ ResourceManagement::VulkanManager::Manager::init()
     return ResourceManagement::Status::ERROR;
   }
   // load system info
-  // auto system_info_result = vkb::SystemInfo::get_system_info();
-  // if (!system_info_result.has_value()) {
-  //   logger.error(fmt::format("init failed, get_system_info error: {}",
-  //                            system_info_result.error().message()));
-  //   return ResourceManagement::Status::ERROR;
-  // }
-  // auto system_info = system_info_result.value();
-  // // get required extensions
-  // std::vector<const char*> extensions;
-  // u32 extensions_count;
-  // auto required_extensions_result =
-  //   window_mgr.get_required_extensions(extensions_count);
-  // if (!required_extensions_result.has_value()) {
-  //   logger.error(fmt::format("init failed, get_required_extensions error"));
-  //   return ResourceManagement::Status::ERROR;
-  // }
-  // auto required_extensions = required_extensions_result.value();
-  // if
-  // (!system_info.is_extension_available(VK_EXT_DEBUG_REPORT_EXTENSION_NAME)) {
-  //   logger.error(
-  //     fmt::format("init failed, required extension not available: {}",
-  //                 VK_EXT_DEBUG_REPORT_EXTENSION_NAME));
-  //   return ResourceManagement::Status::ERROR;
-  // }
-  // extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-  // for (int i = 0; i < extensions_count; ++i) {
-  //   if (!system_info.is_extension_available(required_extensions[i])) {
-  //     logger.error(
-  //       fmt::format("init failed, required extension not available: {}",
-  //                   required_extensions[i]));
-  //     return ResourceManagement::Status::ERROR;
-  //   }
-  //   extensions.push_back(required_extensions[i]);
-  // }
-  // // build instance
+  auto system_info_result = vkb::SystemInfo::get_system_info();
+  if (!system_info_result.has_value()) {
+    logger.error(fmt::format("init failed, get_system_info error: {}",
+                             system_info_result.error().message()));
+    return ResourceManagement::Status::ERROR;
+  }
+  auto system_info = system_info_result.value();
+  // get required extensions
+  std::vector<const char*> extensions;
+  u32 extensions_count;
+  auto required_extensions_result =
+    window_mgr.get_required_extensions(extensions_count);
+  if (!required_extensions_result.has_value()) {
+    logger.error(fmt::format("init failed, get_required_extensions error"));
+    return ResourceManagement::Status::ERROR;
+  }
+  auto required_extensions = required_extensions_result.value();
+  if (!system_info.is_extension_available(VK_EXT_DEBUG_REPORT_EXTENSION_NAME)) {
+    logger.error(
+      fmt::format("init failed, required extension not available: {}",
+                  VK_EXT_DEBUG_REPORT_EXTENSION_NAME));
+    return ResourceManagement::Status::ERROR;
+  }
+  extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+  for (int i = 0; i < extensions_count; ++i) {
+    if (!system_info.is_extension_available(required_extensions[i])) {
+      logger.error(
+        fmt::format("init failed, required extension not available: {}",
+                    required_extensions[i]));
+      return ResourceManagement::Status::ERROR;
+    }
+    extensions.push_back(required_extensions[i]);
+  }
+  // build instance
   vkb::InstanceBuilder builder;
   auto instance_result =
     builder.set_app_name(window_mgr.window_name.c_str())
       .request_validation_layers(true) // todo@engine: debug only
       .use_default_debug_messenger()   // todo@engine: debug only
       .require_api_version(1, 3, 0)
-      //.enable_extensions(extensions)
+      .enable_extensions(extensions)
       .build();
   if (!instance_result.has_value()) {
     logger.error(fmt::format("init failed, could not build instance: {}",
                              instance_result.error().message()));
     return ResourceManagement::Status::ERROR;
   }
-  vkb::Instance instance = instance_result.value();
-  instance_ = instance.instance;
-  debug_messenger_ = instance.debug_messenger;
+  vkb::Instance vkb_instance = instance_result.value();
+  instance_ = vkb_instance.instance;
+  debug_messenger_ = vkb_instance.debug_messenger;
   // create surface
-  SDL_Vulkan_CreateSurface(
-    window_mgr.get_window(), instance, nullptr, &surface_);
-  // auto surface_status = window_mgr.build_surface(instance_, surface_);
-  //  if (surface_status != ResourceManagement::Status::SUCCESS) {
-  //    logger.error("init failed, could not build surface");
-  //    return surface_status;
-  //  }
-  //  select physical device
+  auto surface_status = window_mgr.build_surface(instance_, surface_);
+  if (surface_status != ResourceManagement::Status::SUCCESS) {
+    logger.error("init failed, could not build surface");
+    return surface_status;
+  }
+  // select physical device
   VkPhysicalDeviceVulkan12Features features_1d2 = {
     .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES
   };
@@ -84,7 +86,7 @@ ResourceManagement::VulkanManager::Manager::init()
   };
   features_1d3.dynamicRendering = true;
   features_1d3.synchronization2 = true;
-  vkb::PhysicalDeviceSelector selector{ instance };
+  vkb::PhysicalDeviceSelector selector{ vkb_instance };
   auto selector_result = selector.set_minimum_version(1, 3)
                            .set_required_features_13(features_1d3)
                            .set_required_features_12(features_1d2)
