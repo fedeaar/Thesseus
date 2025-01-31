@@ -14,11 +14,14 @@ public:
   Logger(std::string const& name)
     : name_(name) {};
 
-  inline void log(std::string const& fmt) { fmt::print("{}: {}", name_, fmt); }
+  inline void log(std::string const& fmt)
+  {
+    fmt::print("[LOG: {}]\n{}\n", name_, fmt);
+  }
 
   inline void error(std::string const& fmt)
   {
-    fmt::print("{}: {}", name_, fmt);
+    fmt::print("[ERROR: {}]\n{}\n", name_, fmt);
     std::fflush(stdout);
   }
 };

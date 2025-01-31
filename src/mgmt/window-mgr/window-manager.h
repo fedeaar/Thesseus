@@ -35,6 +35,6 @@ public:
   SDL_Window* get_window();
 
   core::Result<char const* const*, Status> get_required_extensions(u32& count);
-  core::Result<VkSurfaceKHR, Status> build_surface(VkInstance& instance);
+  Status build_surface(VkInstance& instance, VkSurfaceKHR& surface);
 };
 } // namespace ResourceManagement

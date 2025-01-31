@@ -17,7 +17,7 @@ i32
 EventLoop::init()
 {
   // TODO: proper error handling
-  if (!engine_->init()) {
+  if (engine_->init() != ResourceManagement::Status::SUCCESS) {
     return 0;
   }
   if (!input_handler_.init()) {

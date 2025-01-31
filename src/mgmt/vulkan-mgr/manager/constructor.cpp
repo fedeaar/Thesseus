@@ -54,7 +54,7 @@ ResourceManagement::VulkanManager::Manager::init()
       .request_validation_layers(true) // todo@engine: debug only
       .use_default_debug_messenger()   // todo@engine: debug only
       .require_api_version(1, 3, 0)
-      .enable_extensions(extensions)
+      //.enable_extensions(extensions)
       .build();
   if (!instance_result.has_value()) {
     logger.error(fmt::format("init failed, could not build instance: {}",
@@ -65,7 +65,11 @@ ResourceManagement::VulkanManager::Manager::init()
   instance_ = instance.instance;
   debug_messenger_ = instance.debug_messenger;
   // create surface
-  surface_ = window_mgr.build_surface(instance_).value();
+  auto surface_status = window_mgr.build_surface(instance_, surface_);
+  if (surface_status != ResourceManagement::Status::SUCCESS) {
+    logger.error("init failed, could not build surface");
+    return surface_status;
+  }
   // select physical device
   VkPhysicalDeviceVulkan12Features features_1d2 = {};
   features_1d2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
@@ -75,10 +79,11 @@ ResourceManagement::VulkanManager::Manager::init()
   features_1d3.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
   features_1d3.dynamicRendering = true;
   features_1d3.synchronization2 = true;
-  vkb::PhysicalDeviceSelector selector(instance);
+  vkb::PhysicalDeviceSelector selector{ instance };
   auto selector_result = selector.set_minimum_version(1, 3)
                            .set_required_features_13(features_1d3)
                            .set_required_features_12(features_1d2)
+                           //.add_required_extensions(extensions)
                            .set_surface(surface_)
                            .select();
   if (!selector_result.has_value()) {
@@ -90,7 +95,7 @@ ResourceManagement::VulkanManager::Manager::init()
   auto vkb_phys_device = selector_result.value();
   gpu_ = vkb_phys_device.physical_device;
   // build device
-  vkb::DeviceBuilder device_builder(vkb_phys_device);
+  vkb::DeviceBuilder device_builder{ vkb_phys_device };
   auto device_builder_result = device_builder.build();
   if (!device_builder_result.has_value()) {
     logger.error(fmt::format("init failed, could not build device: {}",
@@ -130,10 +135,10 @@ ResourceManagement::VulkanManager::Manager::init()
   // setup destroyers
   del_queue_.push([&]() {
     descriptor_allocator_.destroy_pool(device_);
+    vmaDestroyAllocator(allocator_);
     vkDestroyDevice(device_, nullptr);
     vkb::destroy_debug_utils_messenger(instance_, debug_messenger_);
     vkDestroyInstance(instance_, nullptr);
-    vmaDestroyAllocator(allocator_);
   });
   // success
   initialized = true;

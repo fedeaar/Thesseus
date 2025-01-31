@@ -13,6 +13,16 @@ ResourceManagement::VulkanManager::Manager::create_swapchain()
   auto window_mgr = *window_mgr_;
   u32 width = window_mgr.width;
   u32 height = window_mgr.height;
+  u32 supported = -1;
+  auto supported_result = check(vkGetPhysicalDeviceSurfaceSupportKHR(
+    gpu_, graphics_queue_family_, surface_, &supported));
+  if (supported_result != ResourceManagement::Status::SUCCESS || !supported) {
+    logger.error(fmt::format("create_swapchain failed, "
+                             "vkGetPhysicalDeviceSurfaceSupportKHR "
+                             "failed.\nsupported = {}",
+                             supported));
+    return ResourceManagement::Status::ERROR;
+  }
   vkb::SwapchainBuilder swapchain_builder{ gpu_, device_, surface_ };
   // create swapchain
   auto vkb_swapchain_result =
@@ -21,8 +31,8 @@ ResourceManagement::VulkanManager::Manager::create_swapchain()
         VkSurfaceFormatKHR{ .format = swapchain.image_fmt,
                             .colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR })
       .set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
-      .add_image_usage_flags(VK_IMAGE_USAGE_TRANSFER_DST_BIT)
       .set_desired_extent(width, height)
+      .add_image_usage_flags(VK_IMAGE_USAGE_TRANSFER_DST_BIT)
       .build();
   if (!vkb_swapchain_result.has_value()) {
     logger.error(
