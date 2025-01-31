@@ -16,7 +16,7 @@ ResourceManagement::WindowManager::init()
   u32 flags = (u32)(SDL_WINDOW_VULKAN | SDL_WINDOW_MAXIMIZED);
   window_ =
     SDL_CreateWindow(window_name.c_str(), extent_.width, extent_.height, flags);
-  if (window_ == nullptr) {
+  if (window_ == NULL) {
     logger_.error(
       fmt::format("init failed to create window, {}", SDL_GetError()));
     return ResourceManagement::Status::ERROR;
