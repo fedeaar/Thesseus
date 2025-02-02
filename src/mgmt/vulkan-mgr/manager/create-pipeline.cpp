@@ -43,7 +43,10 @@ ResourceManagement::VulkanManager::Manager::create_pipeline(
   }
   // set destroyer
   vkDestroyShaderModule(device_, shader, nullptr);
-  del_queue_.push(
-    [=]() { vkDestroyPipelineLayout(device_, pipeline.layout, nullptr); });
+  del_queue_.push([=]() {
+    logger.error("called pipeline destroy");
+    vkDeviceWaitIdle(device_);
+    vkDestroyPipelineLayout(device_, pipeline.layout, nullptr);
+  });
   return pipeline;
 }

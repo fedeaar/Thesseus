@@ -13,10 +13,21 @@ ResourceManagement::VulkanManager::Manager::init()
   if (initialized) {
     return ResourceManagement::Status::SUCCESS;
   }
-  auto window_mgr = *window_mgr_;
-  if (!window_mgr.initialized) {
-    logger.error(fmt::format("init failed, window_mgr is not initialized"));
-    return ResourceManagement::Status::ERROR;
+  // auto window_mgr = *window_mgr_;
+  // if (!window_mgr->initialized) {
+  //   logger.error(fmt::format("init failed, window_mgr is not initialized"));
+  //   return ResourceManagement::Status::ERROR;
+  // }
+  if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    logger.error(fmt::format("Failed to initialize: %s\n", SDL_GetError()));
+    return Status::ERROR;
+  }
+  // Create window
+  u32 flags = (u32)(SDL_WINDOW_VULKAN | SDL_WINDOW_MAXIMIZED);
+  window_ = SDL_CreateWindow("abc", 1024, 720, flags);
+  if (window_ == NULL) {
+    logger.error(fmt::format("Failed to create window: %s\n", SDL_GetError()));
+    return Status::ERROR;
   }
   // load system info
   auto system_info_result = vkb::SystemInfo::get_system_info();
@@ -29,13 +40,12 @@ ResourceManagement::VulkanManager::Manager::init()
   // get required extensions
   std::vector<const char*> extensions;
   u32 extensions_count;
-  auto required_extensions_result =
-    window_mgr.get_required_extensions(extensions_count);
-  if (!required_extensions_result.has_value()) {
-    logger.error(fmt::format("init failed, get_required_extensions error"));
-    return ResourceManagement::Status::ERROR;
+  auto extension_ptr = SDL_Vulkan_GetInstanceExtensions(&extensions_count);
+  if (extension_ptr == NULL) {
+    logger.error(
+      fmt::format("get_required_extensions failed, error: {}", SDL_GetError()));
+    return Status::ERROR;
   }
-  auto required_extensions = required_extensions_result.value();
   if (!system_info.is_extension_available(VK_EXT_DEBUG_REPORT_EXTENSION_NAME)) {
     logger.error(
       fmt::format("init failed, required extension not available: {}",
@@ -44,18 +54,17 @@ ResourceManagement::VulkanManager::Manager::init()
   }
   extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
   for (int i = 0; i < extensions_count; ++i) {
-    if (!system_info.is_extension_available(required_extensions[i])) {
-      logger.error(
-        fmt::format("init failed, required extension not available: {}",
-                    required_extensions[i]));
+    if (!system_info.is_extension_available(extension_ptr[i])) {
+      logger.error(fmt::format(
+        "init failed, required extension not available: {}", extension_ptr[i]));
       return ResourceManagement::Status::ERROR;
     }
-    extensions.push_back(required_extensions[i]);
+    extensions.push_back(extension_ptr[i]);
   }
   // build instance
   vkb::InstanceBuilder builder;
   auto instance_result =
-    builder.set_app_name(window_mgr.window_name.c_str())
+    builder.set_app_name("abc")
       .request_validation_layers(true) // todo@engine: debug only
       .use_default_debug_messenger()   // todo@engine: debug only
       .require_api_version(1, 3, 0)
@@ -70,10 +79,10 @@ ResourceManagement::VulkanManager::Manager::init()
   instance_ = vkb_instance.instance;
   debug_messenger_ = vkb_instance.debug_messenger;
   // create surface
-  auto surface_status = window_mgr.build_surface(instance_, surface_);
-  if (surface_status != ResourceManagement::Status::SUCCESS) {
-    logger.error("init failed, could not build surface");
-    return surface_status;
+  if (!SDL_Vulkan_CreateSurface(window_, instance_, nullptr, &surface_)) {
+    logger.error(fmt::format("build_surface failed to create surface, {}",
+                             SDL_GetError()));
+    return ResourceManagement::Status::ERROR;
   }
   // select physical device
   VkPhysicalDeviceVulkan12Features features_1d2 = {
@@ -140,8 +149,8 @@ ResourceManagement::VulkanManager::Manager::init()
   };
   descriptor_allocator_.init_pool(device_, 10, sizes);
   // setup destroyers
-  del_queue_.push([&]() {
-    logger.error("!!!");
+  del_queue_.push([=]() {
+    logger.error("called manager destroy");
     descriptor_allocator_.destroy_pool(device_);
     vmaDestroyAllocator(allocator_);
     vkDestroyDevice(device_, nullptr);
@@ -166,9 +175,8 @@ ResourceManagement::VulkanManager::Manager::create_swapchain()
   }
   Swapchain::Swapchain swapchain = { .image_fmt = VK_FORMAT_B8G8R8A8_UNORM };
   // we assume window_mgr is initialized
-  auto window_mgr = *window_mgr_;
-  u32 width = window_mgr.get_extent().width;
-  u32 height = window_mgr.get_extent().height;
+  u32 width = window_mgr_->get_extent().width;
+  u32 height = window_mgr_->get_extent().height;
   u32 supported = -1;
   // auto supported_result = check(vkGetPhysicalDeviceSurfaceSupportKHR(
   //   gpu_, graphics_queue_family_, surface_, &supported));
@@ -331,6 +339,7 @@ ResourceManagement::VulkanManager::Manager::create_swapchain()
   vkUpdateDescriptorSets(device_, 1, &draw_img_write_, 0, nullptr);
   // set destroyer
   del_queue_.push([=]() {
+    logger.error("called swapchain destroy");
     vkDeviceWaitIdle(device_);
     vkDestroyDescriptorSetLayout(
       device_, swapchain.draw_img_descriptor_layout, nullptr);

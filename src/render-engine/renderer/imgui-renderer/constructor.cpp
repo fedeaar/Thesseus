@@ -4,8 +4,6 @@ RenderEngine::Status
 RenderEngine::ImguiRenderer::init(
   ResourceManagement::VulkanManager::Swapchain::Swapchain& swapchain)
 {
-  auto vk_mgr = *vk_mgr_;
-  auto window_mgr = *window_mgr_;
   swapchain_ = swapchain;
   // create pool
   VkDescriptorPoolSize pool_sizes[] = {
@@ -21,15 +19,15 @@ RenderEngine::ImguiRenderer::init(
   }
   pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
   pool_info.pPoolSizes = pool_sizes;
-  VkDescriptorPool pool = vk_mgr.create_descriptor_pool(pool_info).value();
+  VkDescriptorPool pool = vk_mgr_->create_descriptor_pool(pool_info).value();
   // init imgui and sdl
   ImGui::CreateContext();
-  ImGui_ImplSDL3_InitForVulkan(window_mgr.get_window());
+  ImGui_ImplSDL3_InitForVulkan(vk_mgr_->get_window());
   ImGui_ImplVulkan_InitInfo init_info = {};
-  init_info.Instance = vk_mgr.get_instance();
-  init_info.PhysicalDevice = vk_mgr.get_physical_dev();
-  init_info.Device = vk_mgr.get_dev();
-  init_info.Queue = vk_mgr.get_graphics_queue();
+  init_info.Instance = vk_mgr_->get_instance();
+  init_info.PhysicalDevice = vk_mgr_->get_physical_dev();
+  init_info.Device = vk_mgr_->get_dev();
+  init_info.Queue = vk_mgr_->get_graphics_queue();
   init_info.DescriptorPool = pool;
   init_info.MinImageCount = 3;
   init_info.ImageCount = 3;

@@ -15,6 +15,10 @@ ResourceManagement::VulkanManager::Manager::create_descriptor_pool(
     logger.error("create_descriptor_pool failed, vkCreateDescriptorPool error");
     return status;
   }
-  del_queue_.push([=]() { vkDestroyDescriptorPool(device_, pool, nullptr); });
+  del_queue_.push([=]() {
+    logger.error("called descriptor pool destroy");
+    vkDeviceWaitIdle(device_);
+    vkDestroyDescriptorPool(device_, pool, nullptr);
+  });
   return pool;
 }

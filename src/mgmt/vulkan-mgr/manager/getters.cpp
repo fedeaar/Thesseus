@@ -6,6 +6,12 @@ ResourceManagement::VulkanManager::Manager::get_instance()
   return instance_;
 }
 
+SDL_Window*
+ResourceManagement::VulkanManager::Manager::get_window()
+{
+  return window_;
+}
+
 VkPhysicalDevice const&
 ResourceManagement::VulkanManager::Manager::get_physical_dev()
 {

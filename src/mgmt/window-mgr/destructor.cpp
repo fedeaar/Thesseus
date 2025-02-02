@@ -4,7 +4,7 @@ ResourceManagement::Status
 ResourceManagement::WindowManager::destroy()
 {
   if (!initialized) {
-    logger_.log("destroy called before initialization");
+    logger_.error("destroy called before initialization");
     return ResourceManagement::Status::SUCCESS;
   }
   // destroy window
