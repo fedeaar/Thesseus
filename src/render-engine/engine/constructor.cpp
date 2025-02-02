@@ -8,10 +8,10 @@ RenderEngine::Engine::init()
   if (initialized) {
     return RenderEngine::Status::SUCCESS;
   }
-  // if (window_mgr_.init() != ResourceManagement::Status::SUCCESS) {
-  //   logger_.error("init failed, window mgr could not be created");
-  //   return RenderEngine::Status::ERROR;
-  // }
+  if (window_mgr_.init() != ResourceManagement::Status::SUCCESS) {
+    logger_.error("init failed, window mgr could not be created");
+    return RenderEngine::Status::ERROR;
+  }
   if (vk_mgr_.init() != ResourceManagement::Status::SUCCESS) {
     logger_.error("init failed, vk mgr could not be created");
     return RenderEngine::Status::ERROR;

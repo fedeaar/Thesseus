@@ -22,7 +22,7 @@ RenderEngine::ImguiRenderer::init(
   VkDescriptorPool pool = vk_mgr_->create_descriptor_pool(pool_info).value();
   // init imgui and sdl
   ImGui::CreateContext();
-  ImGui_ImplSDL3_InitForVulkan(vk_mgr_->get_window());
+  ImGui_ImplSDL3_InitForVulkan(window_mgr_->get_window());
   ImGui_ImplVulkan_InitInfo init_info = {};
   init_info.Instance = vk_mgr_->get_instance();
   init_info.PhysicalDevice = vk_mgr_->get_physical_dev();

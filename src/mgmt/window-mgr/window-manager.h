@@ -36,6 +36,6 @@ public:
   VkExtent2D& get_extent();
 
   core::Result<char const* const*, Status> get_required_extensions(u32& count);
-  Status build_surface(VkInstance& instance, VkSurfaceKHR& surface);
+  Status build_surface(VkInstance& instance, VkSurfaceKHR* surface);
 };
 } // namespace ResourceManagement

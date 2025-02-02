@@ -35,7 +35,6 @@ private:
   u32 graphics_queue_family_;
   // surface
   VkSurfaceKHR surface_;
-  SDL_Window* window_;
 
 public:
   Status init();
@@ -48,7 +47,6 @@ public:
   VkPhysicalDevice const& get_physical_dev();
   VkDevice const& get_dev();
   VkQueue const& get_graphics_queue();
-  SDL_Window* get_window();
 
   core::Result<Swapchain::Swapchain, Status> create_swapchain();
   // core::Result<ImmediateSubmit, Status> create_immediate_submit();

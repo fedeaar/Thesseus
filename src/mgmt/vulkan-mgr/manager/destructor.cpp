@@ -10,7 +10,6 @@ ResourceManagement::VulkanManager::Manager::destroy()
   }
   vkDeviceWaitIdle(device_);
   del_queue_.flush();
-  SDL_DestroyWindow(window_);
   initialized = false;
   return Status::SUCCESS;
 };
