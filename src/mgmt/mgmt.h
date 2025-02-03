@@ -1,19 +1,15 @@
 #pragma once
 
 #include "../core/destructor-queue.h"
-#include "../core/logger.h"
+#include "../core/logger.hpp"
 #include "../core/result.hpp"
+#include "../core/status.h"
 #include "../core/types.h"
 
-namespace ResourceManagement {
+#include <string>
+
+namespace mgmt {
 
 extern std::string const namespace_;
-
-enum Status
-{
-  NOT_INIT = -2,
-  ERROR = -1,
-  SUCCESS = 1
-};
 
 };

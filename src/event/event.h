@@ -1,8 +1,7 @@
 #pragma once
 
-#include "../camera/camera.h"
 #include "../core/types.h"
-#include "../render-engine/engine/engine.h"
+#include "../render/engine/engine.h"
 
 #include <SDL3/SDL.h>
 #include <backends/imgui_impl_sdl3.h>
@@ -15,8 +14,7 @@ class InputHandler
 {
 private:
   EventLoop* loop_;
-  RenderEngine::Engine* engine_;
-  Camera* camera_;
+  render::Engine* engine_;
   SDL_Event event_;
   const bool* keyboard_state_ = SDL_GetKeyboardState(NULL);
   bool first_mouse_ = true, mouse_lock_ = true;
@@ -27,8 +25,8 @@ private:
   inline void poll_keyboard();
 
 public:
-  int init();
-  InputHandler(EventLoop* loop, RenderEngine::Engine* engine, Camera* camera);
+  core::Status init();
+  InputHandler(EventLoop* loop, render::Engine* engine);
 
   void poll();
 };
@@ -38,14 +36,13 @@ class EventLoop
   friend InputHandler;
 
 private:
-  RenderEngine::Engine* engine_;
-  Camera* camera_;
+  render::Engine* engine_;
   InputHandler input_handler_;
   bool quit_ = false;
   f32 last_tick_ = 0.0f;
 
-  int init();
-  int destroy();
+  core::Status init();
+  core::Status destroy();
 
   void quit();
 
@@ -53,6 +50,6 @@ private:
   inline void tick();
 
 public:
-  EventLoop(RenderEngine::Engine* engine, Camera* camera /*, Scene* scene*/);
-  int run();
+  EventLoop(render::Engine* engine);
+  core::Status run();
 };

@@ -1,8 +1,50 @@
 #include "event.h"
 
 //
-// private
+// constructor
 //
+
+core::Status
+EventLoop::init()
+{
+  // TODO: proper error handling
+  if (engine_->init() != core::Status::SUCCESS) {
+    return core::Status::ERROR;
+  }
+  if (!input_handler_.init()) {
+    return core::Status::ERROR;
+  }
+  return core::Status::SUCCESS;
+}
+
+EventLoop::EventLoop(render::Engine* engine)
+  : engine_(engine)
+  , input_handler_(this, engine) {};
+
+//
+// destructor
+//
+
+core::Status
+EventLoop::destroy()
+{
+  // TODO: proper error handling
+  if (!engine_->destroy()) {
+    return core::Status::ERROR;
+  }
+  SDL_Quit(); // TODO: this should not be here
+  return core::Status::SUCCESS;
+}
+
+//
+// run
+//
+
+void
+EventLoop::quit()
+{
+  quit_ = true;
+};
 
 inline f32
 EventLoop::tick_delta()
@@ -13,47 +55,12 @@ EventLoop::tick_delta()
   return delta;
 }
 
-i32
-EventLoop::init()
-{
-  // TODO: proper error handling
-  if (engine_->init() != ResourceManagement::Status::SUCCESS) {
-    return 0;
-  }
-  if (!input_handler_.init()) {
-    return 0;
-  }
-  // if (!scene_->init()) {
-  //   return 0;
-  // }
-  return 1;
-}
-
-i32
-EventLoop::destroy()
-{
-  // TODO: proper error handling
-  if (!engine_->destroy()) {
-    return 0;
-  }
-  // if (!scene_->destroy()) {
-  //   return 0;
-  // }
-  SDL_Quit();
-  return 1;
-}
-
-void
-EventLoop::quit()
-{
-  quit_ = true;
-};
-
 inline void
 EventLoop::tick()
 {
   input_handler_.poll();
-  camera_->set_frame_delta(tick_delta()); // TODO: camera should handle this (?)
+  // camera_->set_frame_delta(tick_delta()); // TODO: camera should handle this
+  // (?) todo: move
   ImGui_ImplVulkan_NewFrame();
   ImGui_ImplSDL3_NewFrame();
   ImGui::NewFrame();
@@ -71,22 +78,10 @@ EventLoop::tick()
     ImGui::InputFloat4("data4", (float*)&selected.data.data4);
   }
   ImGui::End();
-  ImGui::Render();
-  engine_->render(/*camera_*, *scene_*/);
+  engine_->render();
 }
 
-//
-// public
-//
-
-EventLoop::EventLoop(RenderEngine::Engine* engine,
-                     Camera* camera /*,  Scene* scene */)
-  : engine_(engine)
-  , camera_(camera)
-  , input_handler_(this, engine, camera)
-/*, scene_(scene) */ {};
-
-i32
+core::Status
 EventLoop::run()
 {
   // TODO: proper error handling
