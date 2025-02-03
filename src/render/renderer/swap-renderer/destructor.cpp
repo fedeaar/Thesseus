@@ -4,10 +4,13 @@ core::Status
 render::SwapRenderer::destroy()
 {
   // todo@engine: handle pipes?
+  initialized = false;
   return core::Status::SUCCESS;
 }
 
 render::SwapRenderer::~SwapRenderer()
 {
-  destroy();
+  if (initialized) {
+    destroy();
+  }
 }
