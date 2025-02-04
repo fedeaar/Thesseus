@@ -1,11 +1,41 @@
 #pragma once
 
+#include "../info/info.h"
 #include "../manager.h"
 
 namespace mgmt {
 namespace vulkan {
 
-namespace Pipeline {
+namespace pipeline {
+
+class Builder
+{
+private:
+  std::vector<VkPipelineShaderStageCreateInfo> shader_stages_;
+  VkPipelineInputAssemblyStateCreateInfo input_assembly_;
+  VkPipelineRasterizationStateCreateInfo rasterizer_;
+  VkPipelineColorBlendAttachmentState color_blend_att_;
+  VkPipelineMultisampleStateCreateInfo multisampling_;
+  VkPipelineLayout layout_;
+  VkPipelineDepthStencilStateCreateInfo depth_stencil_;
+  VkPipelineRenderingCreateInfo rendering_;
+  VkFormat color_att_format_;
+
+public:
+  Builder();
+
+  void clear();
+  void set_shaders(VkShaderModule vs, VkShaderModule fs);
+  void set_input_topology(VkPrimitiveTopology topology);
+  void set_polygon_mode(VkPolygonMode mode);
+  void set_cull_mode(VkCullModeFlags flags, VkFrontFace front);
+  void set_multisampling_none();
+  void set_color_attachment_format(VkFormat format);
+  void set_depth_format(VkFormat format);
+  void disable_blending();
+  void disable_depthtest();
+  core::Result<VkPipeline, core::Status> build_pipeline(VkDevice device);
+};
 
 struct Pipeline
 {
@@ -15,7 +45,7 @@ struct Pipeline
 
 core::Result<VkShaderModule, core::Status>
 load_shader_module(const char* file_path, VkDevice device);
-}
+} // namespace pipeline
 
 } // namespace vulkan
 } // namespace mgmt
