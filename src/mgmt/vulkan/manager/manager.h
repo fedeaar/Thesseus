@@ -49,10 +49,17 @@ public:
   VkQueue const& get_graphics_queue();
 
   core::Result<Swapchain::Swapchain, core::Status> create_swapchain();
-  core::Result<pipeline::Pipeline, core::Status> create_pipeline(
+
+  core::Result<pipeline::Pipeline, core::Status> create_compute_pipeline(
     Swapchain::Swapchain& swapchain,
     VkPipelineLayoutCreateInfo& layout_info,
     char* shader_path);
+  core::Result<pipeline::Pipeline, core::Status> create_gfx_pipeline(
+    VkPipelineLayoutCreateInfo& layout_info,
+    pipeline::Builder builder,
+    char* vs_path,
+    char* fs_path);
+
   core::Result<VkDescriptorPool, core::Status> create_descriptor_pool(
     VkDescriptorPoolCreateInfo pool_info);
 

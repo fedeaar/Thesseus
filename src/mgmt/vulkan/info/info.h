@@ -62,10 +62,13 @@ rendering_info(VkExtent2D render_extent,
                VkRenderingAttachmentInfo* depth_attachment_info);
 
 // pipeline
+VkPipelineLayoutCreateInfo
+pipeline_layout_create_info();
+
 VkPipelineShaderStageCreateInfo
 pipeline_shader_stage_create_info(VkShaderStageFlagBits stage,
                                   VkShaderModule module,
-                                  const char* entry = nullptr);
+                                  const char* entry = "main");
 } // namespace info
 
 } // namespace vulkan

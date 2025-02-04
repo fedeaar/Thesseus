@@ -40,6 +40,12 @@ mgmt::vulkan::pipeline::Builder::clear()
 //
 
 void
+mgmt::vulkan::pipeline::Builder::set_layout(VkPipelineLayout layout)
+{
+  layout_ = layout;
+}
+
+void
 mgmt::vulkan::pipeline::Builder::set_shaders(VkShaderModule vs,
                                              VkShaderModule fs)
 {

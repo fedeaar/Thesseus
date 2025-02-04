@@ -205,6 +205,20 @@ mgmt::vulkan::info::rendering_info(
 // pipeline
 //
 
+VkPipelineLayoutCreateInfo
+mgmt::vulkan::info::pipeline_layout_create_info()
+{
+  VkPipelineLayoutCreateInfo info{};
+  info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+  info.pNext = nullptr;
+  info.flags = 0;
+  info.setLayoutCount = 0;
+  info.pSetLayouts = nullptr;
+  info.pushConstantRangeCount = 0;
+  info.pPushConstantRanges = nullptr;
+  return info;
+}
+
 VkPipelineShaderStageCreateInfo
 mgmt::vulkan::info::pipeline_shader_stage_create_info(
   VkShaderStageFlagBits stage,

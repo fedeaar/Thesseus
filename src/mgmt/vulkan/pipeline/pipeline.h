@@ -8,6 +8,11 @@ namespace vulkan {
 
 namespace pipeline {
 
+struct Pipeline
+{
+  VkPipeline pipeline;
+  VkPipelineLayout layout;
+};
 class Builder
 {
 private:
@@ -25,6 +30,7 @@ public:
   Builder();
 
   void clear();
+  void set_layout(VkPipelineLayout layout);
   void set_shaders(VkShaderModule vs, VkShaderModule fs);
   void set_input_topology(VkPrimitiveTopology topology);
   void set_polygon_mode(VkPolygonMode mode);
@@ -35,12 +41,6 @@ public:
   void disable_blending();
   void disable_depthtest();
   core::Result<VkPipeline, core::Status> build_pipeline(VkDevice device);
-};
-
-struct Pipeline
-{
-  VkPipeline pipeline;
-  VkPipelineLayout layout;
 };
 
 core::Result<VkShaderModule, core::Status>

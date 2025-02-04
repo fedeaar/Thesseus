@@ -5,11 +5,6 @@ render::SwapRenderer::draw(VkCommandBuffer cmd,
                            u32 img_idx,
                            mgmt::vulkan::Swapchain::Swapchain& swapchain)
 {
-  // todo@engine: this transition are likely better done outside
-  mgmt::vulkan::image::transition_image(cmd,
-                                        swapchain.draw_img.image,
-                                        VK_IMAGE_LAYOUT_UNDEFINED,
-                                        VK_IMAGE_LAYOUT_GENERAL);
   render::SwapRenderer::ComputeEffect& effect = effects_[current_effect_];
   vkCmdBindPipeline(
     cmd, VK_PIPELINE_BIND_POINT_COMPUTE, effect.pipeline.pipeline);
@@ -32,19 +27,5 @@ render::SwapRenderer::draw(VkCommandBuffer cmd,
                 std::ceil(swapchain.draw_extent.width / 16.0),
                 std::ceil(swapchain.draw_extent.height / 16.0),
                 1);
-  // todo@engine: these transitions and copy are likely better done outside
-  mgmt::vulkan::image::transition_image(cmd,
-                                        swapchain.draw_img.image,
-                                        VK_IMAGE_LAYOUT_GENERAL,
-                                        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-  mgmt::vulkan::image::transition_image(cmd,
-                                        swapchain.imgs[img_idx],
-                                        VK_IMAGE_LAYOUT_UNDEFINED,
-                                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-  mgmt::vulkan::image::copy_image(cmd,
-                                  swapchain.draw_img.image,
-                                  swapchain.imgs[img_idx],
-                                  swapchain.draw_extent,
-                                  swapchain.extent);
   return core::Status::SUCCESS;
 };

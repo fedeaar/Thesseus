@@ -20,10 +20,10 @@ render::SwapRenderer::init(mgmt::vulkan::Swapchain::Swapchain& swapchain)
   layout_info.pPushConstantRanges = &push_consts;
   layout_info.pushConstantRangeCount = 1;
   // gradient init
-  auto gradient_pipe_result = vk_mgr_->create_pipeline(
+  auto gradient_pipe_result = vk_mgr_->create_compute_pipeline(
     swapchain, layout_info, "./shaders/gradient-color.comp.spv");
   if (!gradient_pipe_result.has_value()) {
-    logger_.err("create_pipeline failed to create gradient pipeline");
+    logger_.err("create_compute_pipeline failed to create gradient pipeline");
     return core::Status::ERROR;
   }
   render::SwapRenderer::ComputeEffect gradient = {
@@ -34,9 +34,9 @@ render::SwapRenderer::init(mgmt::vulkan::Swapchain::Swapchain& swapchain)
   effects_.push_back(gradient);
   // sky renderer init
   auto sky_pipeline_result =
-    vk_mgr_->create_pipeline(swapchain, layout_info, "./shaders/sky.comp.spv");
+    vk_mgr_->create_compute_pipeline(swapchain, layout_info, "./shaders/sky.comp.spv");
   if (!sky_pipeline_result.has_value()) {
-    logger_.err("create_pipeline failed to create sky pipeline");
+    logger_.err("create_compute_pipeline failed to create sky pipeline");
     return core::Status::ERROR;
   }
   render::SwapRenderer::ComputeEffect sky = {

@@ -3,6 +3,7 @@
 #include "../render.h"
 #include "../renderer/imgui-renderer/imgui-renderer.h"
 #include "../renderer/swap-renderer/swap-renderer.h"
+#include "../renderer/triangle-renderer/renderer.h"
 
 namespace render {
 class Engine
@@ -29,6 +30,7 @@ private:
 public:
   SwapRenderer swap_renderer_;
   ImguiRenderer imgui_renderer_;
+  TriangleRenderer triangle_renderer_;
 
   core::Status init();
   Engine(Params& params);

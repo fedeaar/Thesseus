@@ -21,10 +21,5 @@ render::ImguiRenderer::draw(VkCommandBuffer cmd,
   vkCmdBeginRendering(cmd, &renderInfo);
   ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
   vkCmdEndRendering(cmd);
-  mgmt::vulkan::image::transition_image(
-    cmd,
-    img,
-    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-    VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
   return core::Status::SUCCESS;
 }

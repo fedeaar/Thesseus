@@ -15,7 +15,7 @@ mgmt::vulkan::Manager::create_descriptor_pool(
     logger.err("create_descriptor_pool failed, vkCreateDescriptorPool error");
     return status;
   }
-  del_queue_.push([=]() {
+  del_queue_.push([=]() { // TODO@engine: no need to keep pool existing here ?
     vkDeviceWaitIdle(device_);
     vkDestroyDescriptorPool(device_, pool, nullptr);
   });

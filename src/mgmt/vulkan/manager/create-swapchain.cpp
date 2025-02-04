@@ -55,6 +55,7 @@ mgmt::vulkan::Manager::create_swapchain()
   VkExtent3D draw_img_extent = { width, height, 1 };
   swapchain.draw_img.format = VK_FORMAT_R16G16B16A16_SFLOAT;
   swapchain.draw_img.extent = draw_img_extent;
+  swapchain.draw_extent = { width, height };
   VkImageUsageFlags draw_img_usage{};
   draw_img_usage |=
     VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
@@ -160,27 +161,29 @@ mgmt::vulkan::Manager::create_swapchain()
   draw_img_write_.pImageInfo = &img_info_;
   vkUpdateDescriptorSets(device_, 1, &draw_img_write_, 0, nullptr);
   // set destroyer
-  del_queue_.push([=]() {
-    vkDeviceWaitIdle(device_);
-    vkDestroyDescriptorSetLayout(
-      device_, swapchain.draw_img_descriptor_layout, nullptr);
-    for (int i = 0; i < Swapchain::FRAME_OVERLAP; i++) {
-      vkDestroyCommandPool(device_, swapchain.frames[i].command_pool, nullptr);
-      vkDestroyFence(device_, swapchain.frames[i].render_fence, nullptr);
-      vkDestroySemaphore(
-        device_, swapchain.frames[i].render_semaphore, nullptr);
-      vkDestroySemaphore(
-        device_, swapchain.frames[i].swapchain_semaphore, nullptr);
-      // swapchain.frames_[i].del_queue.flush();
-    }
-    vkDestroyImageView(device_, swapchain.draw_img.view, nullptr);
-    vmaDestroyImage(
-      allocator_, swapchain.draw_img.image, swapchain.draw_img.allocation);
-    vkDestroySwapchainKHR(device_, swapchain.swapchain, nullptr);
-    for (int i = 0; i < swapchain.img_views.size(); i++) {
-      vkDestroyImageView(device_, swapchain.img_views[i], nullptr);
-    }
-  });
+  del_queue_.push(
+    [=]() { // TODO@engine: no need to keep swapchain existing here ?
+      vkDeviceWaitIdle(device_);
+      vkDestroyDescriptorSetLayout(
+        device_, swapchain.draw_img_descriptor_layout, nullptr);
+      for (int i = 0; i < Swapchain::FRAME_OVERLAP; i++) {
+        vkDestroyCommandPool(
+          device_, swapchain.frames[i].command_pool, nullptr);
+        vkDestroyFence(device_, swapchain.frames[i].render_fence, nullptr);
+        vkDestroySemaphore(
+          device_, swapchain.frames[i].render_semaphore, nullptr);
+        vkDestroySemaphore(
+          device_, swapchain.frames[i].swapchain_semaphore, nullptr);
+        // swapchain.frames_[i].del_queue.flush();
+      }
+      vkDestroyImageView(device_, swapchain.draw_img.view, nullptr);
+      vmaDestroyImage(
+        allocator_, swapchain.draw_img.image, swapchain.draw_img.allocation);
+      vkDestroySwapchainKHR(device_, swapchain.swapchain, nullptr);
+      for (int i = 0; i < swapchain.img_views.size(); i++) {
+        vkDestroyImageView(device_, swapchain.img_views[i], nullptr);
+      }
+    });
   // success
   return swapchain;
 }

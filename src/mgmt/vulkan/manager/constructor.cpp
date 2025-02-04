@@ -18,7 +18,7 @@ mgmt::vulkan::Manager::init()
     return core::Status::ERROR;
   }
   // load system info
-  auto system_info_result = vkb::Systeminfo::get_system_info();
+  auto system_info_result = vkb::SystemInfo::get_system_info();
   if (!system_info_result.has_value()) {
     logger.err("init failed, get_system_info error: {}",
                system_info_result.error().message());

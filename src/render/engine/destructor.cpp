@@ -7,6 +7,7 @@ render::Engine::destroy()
     return core::Status::SUCCESS;
   }
   imgui_renderer_.destroy();
+  triangle_renderer_.destroy();
   swap_renderer_.destroy();
   auto status = vk_mgr_.destroy();
   if (status != core::Status::SUCCESS) {
