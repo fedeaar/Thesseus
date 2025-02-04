@@ -49,7 +49,7 @@ public:
   VkQueue const& get_graphics_queue();
 
   core::Result<Swapchain::Swapchain, core::Status> create_swapchain();
-  core::Result<Pipeline::Pipeline, core::Status> create_pipeline(
+  core::Result<pipeline::Pipeline, core::Status> create_pipeline(
     Swapchain::Swapchain& swapchain,
     VkPipelineLayoutCreateInfo& layout_info,
     char* shader_path);

@@ -9,11 +9,11 @@ mgmt::vulkan::Manager::create_pipeline(Swapchain::Swapchain& swapchain,
     logger.err("create_pipeline failed, Manager not initialized");
     return core::Status::NOT_INIT;
   }
-  Pipeline::Pipeline pipeline;
+  pipeline::Pipeline pipeline;
   // create layout
   auto status = check(
     vkCreatePipelineLayout(device_, &layout_info, nullptr, &pipeline.layout));
-  auto load_shader_result = Pipeline::load_shader_module(shader_path, device_);
+  auto load_shader_result = pipeline::load_shader_module(shader_path, device_);
   if (!load_shader_result.has_value()) {
     logger.err(
       "create_pipeline failed, error when building the compute shader");
