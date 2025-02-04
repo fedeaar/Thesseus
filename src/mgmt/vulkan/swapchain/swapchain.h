@@ -5,7 +5,7 @@
 namespace mgmt {
 namespace vulkan {
 
-namespace Swapchain {
+namespace swapchain {
 
 static const u32 FRAME_OVERLAP = 2;
 
@@ -43,7 +43,7 @@ struct Swapchain
   Frame const& get_frame(u32 frame_number);
 };
 
-} // namespace Swapchain
+} // namespace swapchain
 
 } // namespace vulkan
 } // namespace mgmt

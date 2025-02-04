@@ -27,7 +27,7 @@ public:
   std::vector<ComputeEffect> effects_;
   u32 current_effect_;
 
-  core::Status init(mgmt::vulkan::Swapchain::Swapchain& swapchain);
+  core::Status init(mgmt::vulkan::swapchain::Swapchain& swapchain);
   SwapRenderer(mgmt::vulkan::Manager* vk_mgr);
 
   core::Status destroy();
@@ -35,6 +35,6 @@ public:
 
   core::Status draw(VkCommandBuffer cmd,
                     u32 img_idx,
-                    mgmt::vulkan::Swapchain::Swapchain& swapchain);
+                    mgmt::vulkan::swapchain::Swapchain& swapchain);
 };
 } // namespace render

@@ -2,7 +2,7 @@
 
 core::Result<VkCommandBuffer, core::Status>
 mgmt::vulkan::Manager::swapchain_begin_commands(u32 frame_number,
-                                                Swapchain::Swapchain& swapchain,
+                                                swapchain::Swapchain& swapchain,
                                                 u32& img_idx)
 {
   // we assume we are init

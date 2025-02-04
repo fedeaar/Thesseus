@@ -5,14 +5,14 @@
 #include <VkBootstrap.h>
 #include <vk_mem_alloc.h>
 
-core::Result<mgmt::vulkan::Swapchain::Swapchain, core::Status>
+core::Result<mgmt::vulkan::swapchain::Swapchain, core::Status>
 mgmt::vulkan::Manager::create_swapchain()
 {
   if (!initialized) {
     logger.err("create_swapchain failed, called before initialization");
     return core::Status::NOT_INIT;
   }
-  Swapchain::Swapchain swapchain = { .image_fmt = VK_FORMAT_B8G8R8A8_UNORM };
+  swapchain::Swapchain swapchain = { .image_fmt = VK_FORMAT_B8G8R8A8_UNORM };
   // we assume window_mgr is initialized
   u32 width = window_mgr_->get_extent().width;
   u32 height = window_mgr_->get_extent().height;
@@ -88,7 +88,7 @@ mgmt::vulkan::Manager::create_swapchain()
   auto semaphore_info = mgmt::vulkan::info::semaphore_create_info(0);
   auto command_pool_info = mgmt::vulkan::info::command_pool_create_info(
     graphics_queue_family_, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
-  for (int i = 0; i < Swapchain::FRAME_OVERLAP; i++) {
+  for (int i = 0; i < swapchain::FRAME_OVERLAP; i++) {
     status = check(vkCreateCommandPool(
       device_, &command_pool_info, nullptr, &swapchain.frames[i].command_pool));
     if (status != core::Status::SUCCESS) {
@@ -166,7 +166,7 @@ mgmt::vulkan::Manager::create_swapchain()
       vkDeviceWaitIdle(device_);
       vkDestroyDescriptorSetLayout(
         device_, swapchain.draw_img_descriptor_layout, nullptr);
-      for (int i = 0; i < Swapchain::FRAME_OVERLAP; i++) {
+      for (int i = 0; i < swapchain::FRAME_OVERLAP; i++) {
         vkDestroyCommandPool(
           device_, swapchain.frames[i].command_pool, nullptr);
         vkDestroyFence(device_, swapchain.frames[i].render_fence, nullptr);

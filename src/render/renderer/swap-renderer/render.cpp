@@ -1,7 +1,11 @@
-#include "swap-renderer.h"
+#include "renderer.h"
+
+//
+// constructor
+//
 
 core::Status
-render::SwapRenderer::init(mgmt::vulkan::Swapchain::Swapchain& swapchain)
+render::SwapRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
 {
   if (initialized) {
     return core::Status::SUCCESS;
@@ -33,8 +37,8 @@ render::SwapRenderer::init(mgmt::vulkan::Swapchain::Swapchain& swapchain)
   };
   effects_.push_back(gradient);
   // sky renderer init
-  auto sky_pipeline_result =
-    vk_mgr_->create_compute_pipeline(swapchain, layout_info, "./shaders/sky.comp.spv");
+  auto sky_pipeline_result = vk_mgr_->create_compute_pipeline(
+    swapchain, layout_info, "./shaders/sky.comp.spv");
   if (!sky_pipeline_result.has_value()) {
     logger_.err("create_compute_pipeline failed to create sky pipeline");
     return core::Status::ERROR;
@@ -53,3 +57,56 @@ render::SwapRenderer::init(mgmt::vulkan::Swapchain::Swapchain& swapchain)
 
 render::SwapRenderer::SwapRenderer(mgmt::vulkan::Manager* vk_mgr)
   : render::Renderer{ vk_mgr } {};
+
+//
+// destructor
+//
+
+core::Status
+render::SwapRenderer::destroy()
+{
+  // todo@engine: handle pipes?
+  initialized = false;
+  return core::Status::SUCCESS;
+}
+
+render::SwapRenderer::~SwapRenderer()
+{
+  if (initialized) {
+    destroy();
+  }
+}
+
+//
+// draw
+//
+
+core::Status
+render::SwapRenderer::draw(VkCommandBuffer cmd,
+                           u32 img_idx,
+                           mgmt::vulkan::swapchain::Swapchain& swapchain)
+{
+  render::SwapRenderer::ComputeEffect& effect = effects_[current_effect_];
+  vkCmdBindPipeline(
+    cmd, VK_PIPELINE_BIND_POINT_COMPUTE, effect.pipeline.pipeline);
+  // bind the descriptor set containing the draw image for the compute
+  vkCmdBindDescriptorSets(cmd,
+                          VK_PIPELINE_BIND_POINT_COMPUTE,
+                          effect.pipeline.layout,
+                          0,
+                          1,
+                          &swapchain.draw_img_descriptors,
+                          0,
+                          nullptr);
+  vkCmdPushConstants(cmd,
+                     effect.pipeline.layout,
+                     VK_SHADER_STAGE_COMPUTE_BIT,
+                     0,
+                     sizeof(ComputePushConstants),
+                     &effect.data);
+  vkCmdDispatch(cmd,
+                std::ceil(swapchain.draw_extent.width / 16.0),
+                std::ceil(swapchain.draw_extent.height / 16.0),
+                1);
+  return core::Status::SUCCESS;
+};

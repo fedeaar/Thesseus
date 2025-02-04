@@ -48,10 +48,10 @@ public:
   VkDevice const& get_dev();
   VkQueue const& get_graphics_queue();
 
-  core::Result<Swapchain::Swapchain, core::Status> create_swapchain();
+  core::Result<swapchain::Swapchain, core::Status> create_swapchain();
 
   core::Result<pipeline::Pipeline, core::Status> create_compute_pipeline(
-    Swapchain::Swapchain& swapchain,
+    swapchain::Swapchain& swapchain,
     VkPipelineLayoutCreateInfo& layout_info,
     char* shader_path);
   core::Result<pipeline::Pipeline, core::Status> create_gfx_pipeline(
@@ -65,12 +65,12 @@ public:
 
   core::Result<VkCommandBuffer, core::Status> swapchain_begin_commands(
     u32 frame_number,
-    Swapchain::Swapchain& swapchain,
+    swapchain::Swapchain& swapchain,
     u32& img_idx);
   core::Status swapchain_end_commands(VkCommandBuffer cmd,
                                       u32 frame_number,
                                       u32 img_idx,
-                                      Swapchain::Swapchain& swapchain);
+                                      swapchain::Swapchain& swapchain);
 };
 
 } // namespace vulkan

@@ -4,7 +4,7 @@ core::Status
 mgmt::vulkan::Manager::swapchain_end_commands(VkCommandBuffer cmd,
                                               u32 frame_number,
                                               u32 img_idx,
-                                              Swapchain::Swapchain& swapchain)
+                                              swapchain::Swapchain& swapchain)
 {
   auto status = check(vkEndCommandBuffer(cmd));
   if (status != core::Status::SUCCESS) {

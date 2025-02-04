@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../render.h"
-#include "../renderer/imgui-renderer/imgui-renderer.h"
-#include "../renderer/swap-renderer/swap-renderer.h"
+#include "../renderer/imgui-renderer/renderer.h"
+#include "../renderer/swap-renderer/renderer.h"
 #include "../renderer/triangle-renderer/renderer.h"
 
 namespace render {
@@ -25,7 +25,7 @@ private:
   Params params_;
   mgmt::WindowManager window_mgr_;
   mgmt::vulkan::Manager vk_mgr_;
-  mgmt::vulkan::Swapchain::Swapchain swapchain_;
+  mgmt::vulkan::swapchain::Swapchain swapchain_;
 
 public:
   SwapRenderer swap_renderer_;

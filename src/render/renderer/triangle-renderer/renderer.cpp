@@ -5,7 +5,7 @@
 //
 
 core::Status
-render::TriangleRenderer::init(mgmt::vulkan::Swapchain::Swapchain& swapchain)
+render::TriangleRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
 {
   if (initialized) {
     return core::Status::SUCCESS;
@@ -69,7 +69,7 @@ render::TriangleRenderer::~TriangleRenderer()
 core::Status
 render::TriangleRenderer::draw(VkCommandBuffer cmd,
                                u32 img_idx,
-                               mgmt::vulkan::Swapchain::Swapchain& swapchain)
+                               mgmt::vulkan::swapchain::Swapchain& swapchain)
 {
   VkRenderingAttachmentInfo color_attachment =
     mgmt::vulkan::info::rendering_attachment_info(

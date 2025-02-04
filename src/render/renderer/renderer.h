@@ -14,7 +14,7 @@ protected:
   core::Logger logger_{ namespace_ };
 
   mgmt::vulkan::Manager* vk_mgr_;
-  mgmt::vulkan::Swapchain::Swapchain swapchain_;
+  mgmt::vulkan::swapchain::Swapchain swapchain_;
 
 public:
   core::Status init() {};
@@ -26,7 +26,7 @@ public:
 
   core::Status draw(VkCommandBuffer cmd,
                     u32 img_idx,
-                    mgmt::vulkan::Swapchain::Swapchain& swapchain)
+                    mgmt::vulkan::swapchain::Swapchain& swapchain)
   {
     throw "notImplemented";
   };

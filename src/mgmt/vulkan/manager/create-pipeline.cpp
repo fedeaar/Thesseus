@@ -2,7 +2,7 @@
 
 core::Result<mgmt::vulkan::pipeline::Pipeline, core::Status>
 mgmt::vulkan::Manager::create_compute_pipeline(
-  Swapchain::Swapchain& swapchain,
+  swapchain::Swapchain& swapchain,
   VkPipelineLayoutCreateInfo& layout_info,
   char* shader_path)
 {
