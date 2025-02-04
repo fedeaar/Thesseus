@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../image/image.h"
 #include "../manager.h"
 
 namespace mgmt {
@@ -8,15 +9,6 @@ namespace vulkan {
 namespace swapchain {
 
 static const u32 FRAME_OVERLAP = 2;
-
-struct AllocatedImage
-{
-  VkImage image;
-  VkImageView view;
-  VkFormat format;
-  VkExtent3D extent;
-  VmaAllocation allocation;
-};
 
 struct Frame
 {
@@ -34,7 +26,7 @@ struct Swapchain
   VkSwapchainKHR swapchain;
   std::vector<VkImage> imgs;
   std::vector<VkImageView> img_views;
-  AllocatedImage draw_img;
+  image::AllocatedImage draw_img;
   VkExtent2D draw_extent;
   VkDescriptorSet draw_img_descriptors;
   VkDescriptorSetLayout draw_img_descriptor_layout;

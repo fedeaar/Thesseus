@@ -8,6 +8,15 @@ namespace vulkan {
 
 namespace image {
 
+struct AllocatedImage
+{
+  VkImage image;
+  VkImageView view;
+  VkFormat format;
+  VkExtent3D extent;
+  VmaAllocation allocation;
+};
+
 core::Status
 transition_image(VkCommandBuffer cmd,
                  VkImage image,
