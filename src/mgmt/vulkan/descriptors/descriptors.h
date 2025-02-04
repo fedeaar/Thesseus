@@ -1,12 +1,13 @@
 #pragma once
 
 #include "../manager.h"
+
 #include <span>
 
 namespace mgmt {
 namespace vulkan {
 
-namespace Descriptor {
+namespace descriptor {
 
 struct LayoutBuilder
 {
@@ -39,7 +40,7 @@ struct Allocator
     VkDevice device,
     VkDescriptorSetLayout layout);
 };
-} // namespace Descriptor
+} // namespace descriptor
 
 } // namespace vulkan
 } // namespace mgmt

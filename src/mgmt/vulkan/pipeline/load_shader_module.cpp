@@ -3,7 +3,7 @@
 #include <fstream>
 
 core::Result<VkShaderModule, core::Status>
-mgmt::vulkan::Pipeline::load_shader_module(const char* file_path,
+mgmt::vulkan::pipeline::load_shader_module(const char* file_path,
                                            VkDevice device)
 {
   std::ifstream file(file_path, std::ios::ate | std::ios::binary);

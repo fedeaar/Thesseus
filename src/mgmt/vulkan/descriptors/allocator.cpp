@@ -1,7 +1,7 @@
 #include "descriptors.h"
 
 core::Status
-mgmt::vulkan::Descriptor::Allocator::init_pool(VkDevice device,
+mgmt::vulkan::descriptor::Allocator::init_pool(VkDevice device,
                                                u32 max_sets,
                                                std::span<PoolSizeRatio> ratios)
 {
@@ -21,20 +21,20 @@ mgmt::vulkan::Descriptor::Allocator::init_pool(VkDevice device,
 }
 
 core::Status
-mgmt::vulkan::Descriptor::Allocator::destroy_pool(VkDevice device)
+mgmt::vulkan::descriptor::Allocator::destroy_pool(VkDevice device)
 {
   vkDestroyDescriptorPool(device, pool, nullptr);
   return core::Status::SUCCESS;
 }
 
 core::Status
-mgmt::vulkan::Descriptor::Allocator::clear(VkDevice device)
+mgmt::vulkan::descriptor::Allocator::clear(VkDevice device)
 {
   return check(vkResetDescriptorPool(device, pool, 0));
 }
 
 core::Result<VkDescriptorSet, core::Status>
-mgmt::vulkan::Descriptor::Allocator::allocate(VkDevice device,
+mgmt::vulkan::descriptor::Allocator::allocate(VkDevice device,
                                               VkDescriptorSetLayout layout)
 {
   VkDescriptorSetAllocateInfo info = {

@@ -5,7 +5,7 @@
 namespace mgmt {
 namespace vulkan {
 
-namespace Info {
+namespace info {
 
 // command
 VkCommandPoolCreateInfo
@@ -60,7 +60,13 @@ VkRenderingInfo
 rendering_info(VkExtent2D render_extent,
                VkRenderingAttachmentInfo* color_attachment_info,
                VkRenderingAttachmentInfo* depth_attachment_info);
-} // namespace Info
+
+// pipeline
+VkPipelineShaderStageCreateInfo
+pipeline_shader_stage_create_info(VkShaderStageFlagBits stage,
+                                  VkShaderModule module,
+                                  const char* entry = nullptr);
+} // namespace info
 
 } // namespace vulkan
 } // namespace mgmt

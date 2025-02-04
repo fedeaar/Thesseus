@@ -18,7 +18,7 @@ mgmt::vulkan::Manager::init()
     return core::Status::ERROR;
   }
   // load system info
-  auto system_info_result = vkb::SystemInfo::get_system_info();
+  auto system_info_result = vkb::Systeminfo::get_system_info();
   if (!system_info_result.has_value()) {
     logger.err("init failed, get_system_info error: {}",
                system_info_result.error().message());
@@ -126,7 +126,7 @@ mgmt::vulkan::Manager::init()
   allocator_info.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
   vmaCreateAllocator(&allocator_info, &allocator_);
   // create descriptors
-  Descriptor::Allocator::PoolSizeRatio sizes[1] = {
+  descriptor::Allocator::PoolSizeRatio sizes[1] = {
     { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1 }
   };
   descriptor_allocator_.init_pool(device_, 10, sizes);

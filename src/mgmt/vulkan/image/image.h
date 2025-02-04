@@ -6,7 +6,7 @@
 namespace mgmt {
 namespace vulkan {
 
-namespace Image {
+namespace image {
 
 core::Status
 transition_image(VkCommandBuffer cmd,
@@ -20,7 +20,7 @@ copy_image(VkCommandBuffer cmd,
            VkImage destination,
            VkExtent2D src_size,
            VkExtent2D dst_size);
-} // namespace Image
+} // namespace image
 
 } // namespace vulkan
 } // namespace mgmt

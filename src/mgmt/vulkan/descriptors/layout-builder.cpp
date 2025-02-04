@@ -1,7 +1,7 @@
 #include "descriptors.h"
 
 core::Status
-mgmt::vulkan::Descriptor::LayoutBuilder::add_binding(u32 binding,
+mgmt::vulkan::descriptor::LayoutBuilder::add_binding(u32 binding,
                                                      VkDescriptorType type)
 {
   VkDescriptorSetLayoutBinding bind{};
@@ -13,14 +13,14 @@ mgmt::vulkan::Descriptor::LayoutBuilder::add_binding(u32 binding,
 }
 
 core::Status
-mgmt::vulkan::Descriptor::LayoutBuilder::clear()
+mgmt::vulkan::descriptor::LayoutBuilder::clear()
 {
   bindings.clear();
   return core::Status::SUCCESS;
 }
 
 core::Result<VkDescriptorSetLayout, core::Status>
-mgmt::vulkan::Descriptor::LayoutBuilder::build(
+mgmt::vulkan::descriptor::LayoutBuilder::build(
   VkDevice device,
   VkShaderStageFlags shader_stages,
   void* p_next,

@@ -13,14 +13,14 @@ mgmt::vulkan::Manager::swapchain_end_commands(VkCommandBuffer cmd,
   auto current_frame = swapchain.get_frame(frame_number);
   // prepare the submission to the queue
   VkCommandBufferSubmitInfo cmd_submit_info =
-    Info::command_buffer_submit_info(cmd);
-  VkSemaphoreSubmitInfo wait_info = mgmt::vulkan::Info::semaphore_submit_info(
+    info::command_buffer_submit_info(cmd);
+  VkSemaphoreSubmitInfo wait_info = mgmt::vulkan::info::semaphore_submit_info(
     VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR,
     current_frame.swapchain_semaphore);
-  VkSemaphoreSubmitInfo signal_info = mgmt::vulkan::Info::semaphore_submit_info(
+  VkSemaphoreSubmitInfo signal_info = mgmt::vulkan::info::semaphore_submit_info(
     VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT, current_frame.render_semaphore);
   VkSubmitInfo2 submit =
-    mgmt::vulkan::Info::submit_info(&cmd_submit_info, &signal_info, &wait_info);
+    mgmt::vulkan::info::submit_info(&cmd_submit_info, &signal_info, &wait_info);
   // submit
   status = check(
     vkQueueSubmit2(graphics_queue_, 1, &submit, current_frame.render_fence));

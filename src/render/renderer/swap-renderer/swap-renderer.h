@@ -18,7 +18,7 @@ public:
   {
     const char* name;
 
-    mgmt::vulkan::Pipeline::Pipeline pipeline;
+    mgmt::vulkan::pipeline::Pipeline pipeline;
     ComputePushConstants data;
   };
 

@@ -1,6 +1,6 @@
 #include "manager.h"
 
-core::Result<mgmt::vulkan::Pipeline::Pipeline, core::Status>
+core::Result<mgmt::vulkan::pipeline::Pipeline, core::Status>
 mgmt::vulkan::Manager::create_pipeline(Swapchain::Swapchain& swapchain,
                                        VkPipelineLayoutCreateInfo& layout_info,
                                        char* shader_path)

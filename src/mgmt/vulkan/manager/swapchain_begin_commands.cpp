@@ -39,7 +39,7 @@ mgmt::vulkan::Manager::swapchain_begin_commands(u32 frame_number,
     logger.log("ready_swapchain failed resetting command buffer");
     return core::Status::ERROR;
   }
-  VkCommandBufferBeginInfo cmd_info = Info::command_buffer_begin_info(
+  VkCommandBufferBeginInfo cmd_info = info::command_buffer_begin_info(
     VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
   status = check(vkBeginCommandBuffer(cmd, &cmd_info));
   if (status != core::Status::SUCCESS) {

@@ -29,7 +29,7 @@ private:
   VkDevice device_;
   // alloc
   VmaAllocator allocator_;
-  Descriptor::Allocator descriptor_allocator_;
+  descriptor::Allocator descriptor_allocator_;
   // graphics queue
   VkQueue graphics_queue_;
   u32 graphics_queue_family_;

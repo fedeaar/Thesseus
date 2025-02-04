@@ -59,7 +59,7 @@ mgmt::vulkan::Manager::create_swapchain()
   draw_img_usage |=
     VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
     VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-  VkImageCreateInfo draw_img_info = mgmt::vulkan::Info::image_create_info(
+  VkImageCreateInfo draw_img_info = mgmt::vulkan::info::image_create_info(
     swapchain.draw_img.format, draw_img_usage, draw_img_extent);
   VmaAllocationCreateInfo draw_img_alloc_info = {};
   draw_img_alloc_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
@@ -72,7 +72,7 @@ mgmt::vulkan::Manager::create_swapchain()
                  &swapchain.draw_img.allocation,
                  nullptr);
   VkImageViewCreateInfo draw_img_view_info =
-    mgmt::vulkan::Info::imageview_create_info(swapchain.draw_img.format,
+    mgmt::vulkan::info::imageview_create_info(swapchain.draw_img.format,
                                               swapchain.draw_img.image,
                                               VK_IMAGE_ASPECT_COLOR_BIT);
   auto status = check(vkCreateImageView(
@@ -83,9 +83,9 @@ mgmt::vulkan::Manager::create_swapchain()
   }
   // create commands and sync structures
   auto fence_info =
-    mgmt::vulkan::Info::fence_create_info(VK_FENCE_CREATE_SIGNALED_BIT);
-  auto semaphore_info = mgmt::vulkan::Info::semaphore_create_info(0);
-  auto command_pool_info = mgmt::vulkan::Info::command_pool_create_info(
+    mgmt::vulkan::info::fence_create_info(VK_FENCE_CREATE_SIGNALED_BIT);
+  auto semaphore_info = mgmt::vulkan::info::semaphore_create_info(0);
+  auto command_pool_info = mgmt::vulkan::info::command_pool_create_info(
     graphics_queue_family_, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
   for (int i = 0; i < Swapchain::FRAME_OVERLAP; i++) {
     status = check(vkCreateCommandPool(
@@ -95,7 +95,7 @@ mgmt::vulkan::Manager::create_swapchain()
       return status;
     }
     auto command_buffer_alloc_info =
-      mgmt::vulkan::Info::command_buffer_allocate_info(
+      mgmt::vulkan::info::command_buffer_allocate_info(
         swapchain.frames[i].command_pool, 1);
     status =
       check(vkAllocateCommandBuffers(device_,
@@ -129,7 +129,7 @@ mgmt::vulkan::Manager::create_swapchain()
     }
   }
   // build draw_img layout
-  mgmt::vulkan::Descriptor::LayoutBuilder layout_builder;
+  mgmt::vulkan::descriptor::LayoutBuilder layout_builder;
   layout_builder.add_binding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
   auto layout_result =
     layout_builder.build(device_, VK_SHADER_STAGE_COMPUTE_BIT);
