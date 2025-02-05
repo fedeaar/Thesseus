@@ -5,15 +5,15 @@
 //
 
 core::Result<mgmt::vulkan::buffer::AllocatedBuffer, core::Status>
-mgmt::vulkan::Manager::create_buffer(size_t allocSize,
+mgmt::vulkan::Manager::create_buffer(size_t size,
                                      VkBufferUsageFlags flags,
                                      VmaMemoryUsage usage)
 {
   VkBufferCreateInfo buffer_info = { .sType =
                                        VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
   buffer_info.pNext = nullptr;
-  buffer_info.size = allocSize;
-  buffer_info.usage = usage;
+  buffer_info.size = size;
+  buffer_info.usage = flags;
   VmaAllocationCreateInfo alloc_info = {};
   alloc_info.usage = usage;
   alloc_info.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
@@ -89,6 +89,7 @@ mgmt::vulkan::Manager::upload_mesh(std::span<u32> indices,
   vmaMapMemory(allocator_, staging.allocation, &data);
   memcpy(data, vertices.data(), vb_s);
   memcpy((char*)data + vb_s, indices.data(), ib_s);
+  vmaUnmapMemory(allocator_, staging.allocation);
   imm_submit([&](VkCommandBuffer cmd) {
     VkBufferCopy vertex_copy{ 0 };
     vertex_copy.dstOffset = 0;

@@ -109,6 +109,14 @@ render::TriangleMeshRenderer::draw(
   u32 img_idx,
   mgmt::vulkan::swapchain::Swapchain& swapchain)
 {
+  VkRenderingAttachmentInfo color_attachment =
+    mgmt::vulkan::info::rendering_attachment_info(
+      swapchain.draw_img.view,
+      nullptr,
+      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+  VkRenderingInfo render_info = mgmt::vulkan::info::rendering_info(
+    swapchain_.draw_extent, &color_attachment, nullptr);
+  vkCmdBeginRendering(cmd, &render_info);
   vkCmdDraw(cmd, 3, 1, 0, 0);
   vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_.pipeline);
   mgmt::vulkan::mesh::GPUDrawPushConstants push_constants;

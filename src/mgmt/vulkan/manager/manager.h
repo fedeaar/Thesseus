@@ -61,10 +61,8 @@ public:
   core::Result<VkDescriptorPool, core::Status> create_descriptor_pool(
     VkDescriptorPoolCreateInfo pool_info);
   // buffers
-  core::Result<buffer::AllocatedBuffer, core::Status> create_buffer(
-    size_t allocSize,
-    VkBufferUsageFlags flags,
-    VmaMemoryUsage usage);
+  core::Result<buffer::AllocatedBuffer, core::Status>
+  create_buffer(size_t size, VkBufferUsageFlags flags, VmaMemoryUsage usage);
   core::Status destroy_buffer(buffer::AllocatedBuffer const& buffer);
   core::Result<mesh::GPUMeshBuffers, core::Status> upload_mesh(
     std::span<u32> indices,
