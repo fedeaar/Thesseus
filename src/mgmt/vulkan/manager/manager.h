@@ -1,8 +1,10 @@
 #pragma once
 
+#include "../buffer/buffer.h"
 #include "../descriptors/descriptors.h"
 #include "../info/info.h"
 #include "../manager.h"
+#include "../mesh/mesh.h"
 #include "../pipeline/pipeline.h"
 #include "../swapchain/swapchain.h"
 
@@ -35,6 +37,13 @@ private:
   u32 graphics_queue_family_;
   // surface
   VkSurfaceKHR surface_;
+  // imm submit
+  struct
+  {
+    VkFence fence;
+    VkCommandBuffer command_buffer;
+    VkCommandPool command_pool;
+  } imm_submit_;
 
 public:
   core::Status init();
@@ -48,8 +57,29 @@ public:
   VkDevice const& get_dev();
   VkQueue const& get_graphics_queue();
 
+  // descriptors
+  core::Result<VkDescriptorPool, core::Status> create_descriptor_pool(
+    VkDescriptorPoolCreateInfo pool_info);
+  // buffers
+  core::Result<buffer::AllocatedBuffer, core::Status> create_buffer(
+    size_t allocSize,
+    VkBufferUsageFlags flags,
+    VmaMemoryUsage usage);
+  core::Status destroy_buffer(buffer::AllocatedBuffer const& buffer);
+  core::Result<mesh::GPUMeshBuffers, core::Status> upload_mesh(
+    std::span<u32> indices,
+    std::span<mesh::Vertex> vertices);
+  // swapchain
   core::Result<swapchain::Swapchain, core::Status> create_swapchain();
-
+  core::Result<VkCommandBuffer, core::Status> swapchain_begin_commands(
+    u32 frame_number,
+    swapchain::Swapchain& swapchain,
+    u32& img_idx);
+  core::Status swapchain_end_commands(VkCommandBuffer cmd,
+                                      u32 frame_number,
+                                      u32 img_idx,
+                                      swapchain::Swapchain& swapchain);
+  // pipelines
   core::Result<pipeline::Pipeline, core::Status> create_compute_pipeline(
     swapchain::Swapchain& swapchain,
     VkPipelineLayoutCreateInfo& layout_info,
@@ -59,18 +89,8 @@ public:
     pipeline::Builder builder,
     char* vs_path,
     char* fs_path);
-
-  core::Result<VkDescriptorPool, core::Status> create_descriptor_pool(
-    VkDescriptorPoolCreateInfo pool_info);
-
-  core::Result<VkCommandBuffer, core::Status> swapchain_begin_commands(
-    u32 frame_number,
-    swapchain::Swapchain& swapchain,
-    u32& img_idx);
-  core::Status swapchain_end_commands(VkCommandBuffer cmd,
-                                      u32 frame_number,
-                                      u32 img_idx,
-                                      swapchain::Swapchain& swapchain);
+  // imm submit
+  core::Status imm_submit(std::function<void(VkCommandBuffer cmd)>&& function);
 };
 
 } // namespace vulkan

@@ -1,5 +1,9 @@
 #include "manager.h"
 
+//
+// create
+//
+
 core::Result<mgmt::vulkan::pipeline::Pipeline, core::Status>
 mgmt::vulkan::Manager::create_compute_pipeline(
   swapchain::Swapchain& swapchain,

@@ -8,6 +8,7 @@
 #include "../mgmt/vulkan/image/image.h"
 #include "../mgmt/vulkan/info/info.h"
 #include "../mgmt/vulkan/manager/manager.h"
+#include "../mgmt/vulkan/mesh/mesh.h"
 #include "../mgmt/vulkan/pipeline/pipeline.h"
 #include "../mgmt/vulkan/swapchain/swapchain.h"
 #include "../mgmt/window/manager.h"

@@ -3,6 +3,7 @@
 #include "../render.h"
 #include "../renderer/imgui-renderer/renderer.h"
 #include "../renderer/swap-renderer/renderer.h"
+#include "../renderer/triangle-mesh-renderer/renderer.h"
 #include "../renderer/triangle-renderer/renderer.h"
 
 namespace render {
@@ -31,6 +32,7 @@ public:
   SwapRenderer swap_renderer_;
   ImguiRenderer imgui_renderer_;
   TriangleRenderer triangle_renderer_;
+  TriangleMeshRenderer triangle_mesh_renderer_;
 
   core::Status init();
   Engine(Params& params);

@@ -1,3 +1,5 @@
+#define VMA_IMPLEMENTATION
+
 #include "manager.h"
 
 std::string const mgmt::vulkan::namespace_ = mgmt::namespace_ + "::vulkan";

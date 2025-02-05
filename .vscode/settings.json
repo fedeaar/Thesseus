@@ -89,7 +89,9 @@
         "forward_list": "cpp",
         "unordered_set": "cpp",
         "source_location": "cpp",
-        "ranges": "cpp"
+        "ranges": "cpp",
+        "buffer": "cpp",
+        "netfwd": "cpp"
     },
     "files.watcherExclude": {
         "build/**": true,

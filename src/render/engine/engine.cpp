@@ -34,6 +34,11 @@ render::Engine::init()
     logger_.err("init failed, triangle renderer could not be created");
     return core::Status::ERROR;
   }
+  status = triangle_mesh_renderer_.init(swapchain_);
+  if (status != core::Status::SUCCESS) {
+    logger_.err("init failed, triangle mesh renderer could not be created");
+    return core::Status::ERROR;
+  }
   status = imgui_renderer_.init(swapchain_);
   if (status != core::Status::SUCCESS) {
     logger_.err("init failed, imgui renderer could not be created");
@@ -49,6 +54,7 @@ render::Engine::Engine(render::Engine::Params& params)
   , vk_mgr_{ &window_mgr_ }
   , swap_renderer_{ &vk_mgr_ }
   , triangle_renderer_{ &vk_mgr_ }
+  , triangle_mesh_renderer_{ &vk_mgr_ }
   , imgui_renderer_{ &vk_mgr_, &window_mgr_ }
 {
 }
@@ -64,6 +70,7 @@ render::Engine::destroy()
     return core::Status::SUCCESS;
   }
   imgui_renderer_.destroy();
+  triangle_mesh_renderer_.destroy();
   triangle_renderer_.destroy();
   swap_renderer_.destroy();
   auto status = vk_mgr_.destroy();
@@ -122,6 +129,7 @@ render::Engine::render()
     VK_IMAGE_LAYOUT_GENERAL,
     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
   triangle_renderer_.draw(cmd, img_idx, swapchain_);
+  triangle_mesh_renderer_.draw(cmd, img_idx, swapchain_);
   mgmt::vulkan::image::transition_image(
     cmd,
     swapchain_.draw_img.image,

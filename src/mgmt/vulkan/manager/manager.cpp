@@ -1,4 +1,3 @@
-#define VMA_IMPLEMENTATION
 
 #include "manager.h"
 
@@ -6,6 +5,10 @@
 #include <SDL3/SDL_vulkan.h>
 #include <VkBootstrap.h>
 #include <vk_mem_alloc.h>
+
+//
+// constructor
+//
 
 core::Status
 mgmt::vulkan::Manager::init()
@@ -130,9 +133,39 @@ mgmt::vulkan::Manager::init()
     { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1 }
   };
   descriptor_allocator_.init_pool(device_, 10, sizes);
+  // create imm submit
+  VkFenceCreateInfo fence_info =
+    info::fence_create_info(VK_FENCE_CREATE_SIGNALED_BIT);
+  auto status =
+    check(vkCreateFence(device_, &fence_info, nullptr, &imm_submit_.fence));
+  if (status != core::Status::SUCCESS) {
+    logger.err("init failed, could not create imm fence: {}",
+               vkb_queue_index.error().message());
+    return core::Status::ERROR;
+  }
+  VkCommandPoolCreateInfo pool_info = info::command_pool_create_info(
+    graphics_queue_family_, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+  status = check(vkCreateCommandPool(
+    device_, &pool_info, nullptr, &imm_submit_.command_pool));
+  if (status != core::Status::SUCCESS) {
+    logger.err("init failed, could not create imm command pool: {}",
+               vkb_queue_index.error().message());
+    return core::Status::ERROR;
+  }
+  VkCommandBufferAllocateInfo cmd_info =
+    info::command_buffer_allocate_info(imm_submit_.command_pool, 1);
+  status = check(
+    vkAllocateCommandBuffers(device_, &cmd_info, &imm_submit_.command_buffer));
+  if (status != core::Status::SUCCESS) {
+    logger.err("init failed, could not alloc imm buffer: {}",
+               vkb_queue_index.error().message());
+    return core::Status::ERROR;
+  }
   // setup destroyers
   del_queue_.push([=]() {
     vkDeviceWaitIdle(device_);
+    vkDestroyCommandPool(device_, imm_submit_.command_pool, nullptr);
+    vkDestroyFence(device_, imm_submit_.fence, nullptr);
     descriptor_allocator_.destroy_pool(device_);
     vmaDestroyAllocator(allocator_);
     vkDestroySurfaceKHR(instance_, surface_, nullptr);
@@ -147,3 +180,55 @@ mgmt::vulkan::Manager::init()
 
 mgmt::vulkan::Manager::Manager(WindowManager* window_mgr)
   : window_mgr_{ window_mgr } {};
+
+//
+// destructor
+//
+
+core::Status
+mgmt::vulkan::Manager::destroy()
+{
+  if (!initialized) {
+    logger.err("destroy failed, called before initialization");
+    return core::Status::SUCCESS;
+  }
+  vkDeviceWaitIdle(device_);
+  del_queue_.flush();
+  initialized = false;
+  return core::Status::SUCCESS;
+};
+
+mgmt::vulkan::Manager::~Manager()
+{
+  if (initialized) {
+    destroy();
+  }
+};
+
+//
+// get
+//
+
+VkInstance const&
+mgmt::vulkan::Manager::get_instance()
+{
+  return instance_;
+}
+
+VkPhysicalDevice const&
+mgmt::vulkan::Manager::get_physical_dev()
+{
+  return gpu_;
+}
+
+VkDevice const&
+mgmt::vulkan::Manager::get_dev()
+{
+  return device_;
+}
+
+VkQueue const&
+mgmt::vulkan::Manager::get_graphics_queue()
+{
+  return graphics_queue_;
+}

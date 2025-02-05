@@ -1,5 +1,9 @@
 #include "manager.h"
 
+//
+// create
+//
+
 core::Result<VkDescriptorPool, core::Status>
 mgmt::vulkan::Manager::create_descriptor_pool(
   VkDescriptorPoolCreateInfo pool_info)
