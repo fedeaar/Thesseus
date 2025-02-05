@@ -30,6 +30,10 @@ add_library(stb INTERFACE)
 target_include_directories(stb INTERFACE stb)
 add_library(lib::stb ALIAS stb)
 
+# fastgltf
+add_subdirectory(fastgltf EXCLUDE_FROM_ALL)
+add_library(lib::fastgltf ALIAS fastgltf)
+
 # SDL3
 add_subdirectory(SDL EXCLUDE_FROM_ALL)
 add_library(lib::sdl ALIAS SDL3-shared)

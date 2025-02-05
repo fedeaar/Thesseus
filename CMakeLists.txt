@@ -50,7 +50,8 @@ set(LINK
   lib::vma 
   lib::sdl 
   lib::imgui 
-  lib::stb 
+  lib::stb
+  lib::fastgltf 
   lib::glm)
 
 # build shaders

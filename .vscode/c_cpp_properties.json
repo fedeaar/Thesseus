@@ -12,7 +12,8 @@
                 "${workspaceFolder}/lib/vulkan-malloc/include",
                 "${workspaceFolder}/lib/imgui",
                 "${workspaceFolder}/lib/imgui/backends",
-                "${workspaceFolder}/lib/fmt/include"
+                "${workspaceFolder}/lib/fmt/include",
+                "${workspaceFolder}/lib/fastgltf/include"
             ],
             "intelliSenseMode": "linux-gcc-x64",
             "compilerPath": "/usr/bin/gcc",

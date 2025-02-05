@@ -22,3 +22,6 @@
 [submodule "lib/fmt"]
 	path = lib/fmt
 	url = https://github.com/fmtlib/fmt
+[submodule "lib/fastgltf"]
+	path = lib/fastgltf
+	url = https://github.com/spnda/fastgltf
