@@ -12,6 +12,7 @@ io::text::read(const std::string& path)
     stream.close();
     return data;
   } catch (std::ifstream::failure& e) {
+    // TODO: use logger
     std::cerr << "File Error: " + path + " could not be read." << std::endl;
     throw e;
   }

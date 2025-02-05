@@ -4,6 +4,8 @@
 #include "../info/info.h"
 #include "../manager.h"
 
+#include <memory>
+
 namespace mgmt {
 namespace vulkan {
 
@@ -18,11 +20,24 @@ struct Vertex
   glm::vec4 color;
 };
 
+struct GeoSurface
+{
+  u32 start_idx;
+  u32 count;
+};
+
 struct GPUMeshBuffers
 {
   buffer::AllocatedBuffer index_buff;
   buffer::AllocatedBuffer vertex_buff;
   VkDeviceAddress vertex_buff_addr;
+};
+
+struct MeshAsset
+{
+  std::string name;
+  std::vector<GeoSurface> surfaces;
+  GPUMeshBuffers mesh_buffers;
 };
 
 struct GPUDrawPushConstants
@@ -31,7 +46,7 @@ struct GPUDrawPushConstants
   VkDeviceAddress vertex_buff_addr;
 };
 
-} // namespace buffer
+} // namespace mesh
 
 } // namespace vulkan
 } // namespace mgmt

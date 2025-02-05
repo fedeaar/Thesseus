@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../render.h"
+#include "../renderer/custom-mesh-renderer/renderer.h"
 #include "../renderer/imgui-renderer/renderer.h"
 #include "../renderer/swap-renderer/renderer.h"
 #include "../renderer/triangle-mesh-renderer/renderer.h"
@@ -33,6 +34,7 @@ public:
   ImguiRenderer imgui_renderer_;
   TriangleRenderer triangle_renderer_;
   TriangleMeshRenderer triangle_mesh_renderer_;
+  CustomMeshRenderer custom_mesh_renderer_;
 
   core::Status init();
   Engine(Params& params);

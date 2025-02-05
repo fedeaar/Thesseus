@@ -25,7 +25,7 @@ public:
   bool initialized = false;
 
   std::vector<ComputeEffect> effects_;
-  u32 current_effect_;
+  u32 current_effect_ = 0;
 
   core::Status init(mgmt::vulkan::swapchain::Swapchain& swapchain);
   SwapRenderer(mgmt::vulkan::Manager* vk_mgr);

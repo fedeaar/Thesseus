@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../core/destructor-queue.h"
+#include "../core/io/io.h"
 #include "../core/logger.hpp"
 #include "../core/result.hpp"
 #include "../core/status.h"

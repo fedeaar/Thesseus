@@ -67,6 +67,8 @@ public:
   core::Result<mesh::GPUMeshBuffers, core::Status> upload_mesh(
     std::span<u32> indices,
     std::span<mesh::Vertex> vertices);
+  core::Result<std::vector<std::shared_ptr<mesh::MeshAsset>>, core::Status>
+  load_gltf_meshes(char* path);
   // swapchain
   core::Result<swapchain::Swapchain, core::Status> create_swapchain();
   core::Result<VkCommandBuffer, core::Status> swapchain_begin_commands(
