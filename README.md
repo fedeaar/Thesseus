@@ -3,7 +3,7 @@
 ## initial setup
 
 ```bash
-# install global dependencies
+# install tools
 # likely will require sudoing
 apt-get update
 apt-get install \
@@ -11,9 +11,12 @@ apt-get install \
     cmake \
     gcc \
     clang \
-    build-essential \
-    libxmu-dev \
-    libxi-dev
+    build-essential
+
+# install global dependencies
+apt-get libxmu-dev libxi-dev
+
+# install vulkan sdk. See https://vulkan.lunarg.com/doc/sdk
 apt update
 apt install wget
 wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | tee /etc/apt/trusted.gpg.d/lunarg.asc
@@ -30,18 +33,15 @@ git submodule update --force
 ## build proyect
 
 ```bash
-# inside the container
-cd build
-
 # build game
-./build.sh -b 
+build/build.sh -b 
 
 # build debug version
-./build.sh -d
+build/build.sh -d
 
 # build test suite
-./build.sh -t
+build/build.sh -t
 
 # to run, add -r flag. for example:
-./build.sh -t -r
+build/build.sh -t -r
 ```
