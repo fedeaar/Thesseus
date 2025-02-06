@@ -70,21 +70,53 @@ mgmt::vulkan::Manager::create_swapchain()
   draw_img_alloc_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
   draw_img_alloc_info.requiredFlags =
     VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-  vmaCreateImage(allocator_,
-                 &draw_img_info,
-                 &draw_img_alloc_info,
-                 &swapchain.draw_img.image,
-                 &swapchain.draw_img.allocation,
-                 nullptr);
+  auto status = check(vmaCreateImage(allocator_,
+                                     &draw_img_info,
+                                     &draw_img_alloc_info,
+                                     &swapchain.draw_img.image,
+                                     &swapchain.draw_img.allocation,
+                                     nullptr));
+  if (status != core::Status::SUCCESS) {
+    logger.err("create_swapchain failed, could not create draw img view");
+    return core::Status::ERROR;
+  }
   VkImageViewCreateInfo draw_img_view_info =
     mgmt::vulkan::info::imageview_create_info(swapchain.draw_img.format,
                                               swapchain.draw_img.image,
                                               VK_IMAGE_ASPECT_COLOR_BIT);
-  auto status = check(vkCreateImageView(
+  status = check(vkCreateImageView(
     device_, &draw_img_view_info, nullptr, &swapchain.draw_img.view));
   if (status != core::Status::SUCCESS) {
     logger.err("create_swapchain failed, vkCreateImageView error");
     return status;
+  }
+  // create depth img
+  swapchain.depth_img.format = VK_FORMAT_D32_SFLOAT;
+  swapchain.depth_img.extent = draw_img_extent;
+  VkImageUsageFlags depth_img_usage{};
+  depth_img_usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+  VkImageCreateInfo depth_img_info = info::image_create_info(
+    swapchain.depth_img.format, depth_img_usage, draw_img_extent);
+  status = check(vmaCreateImage(allocator_,
+                                &depth_img_info,
+                                &draw_img_alloc_info,
+                                &swapchain.depth_img.image,
+                                &swapchain.depth_img.allocation,
+                                nullptr));
+  if (status != core::Status::SUCCESS) {
+    logger.err("create_swapchain failed, could not create depth img");
+    return core::Status::ERROR;
+  }
+  VkImageViewCreateInfo depth_view_info =
+    info::imageview_create_info(swapchain.depth_img.format,
+                                swapchain.depth_img.image,
+                                VK_IMAGE_ASPECT_DEPTH_BIT);
+
+  status = check(vkCreateImageView(
+    device_, &depth_view_info, nullptr, &swapchain.depth_img.view));
+  if (status != core::Status::SUCCESS) {
+    logger.err("create_swapchain failed, could not create depth img view");
+    return core::Status::ERROR;
   }
   // create commands and sync structures
   auto fence_info =
@@ -180,6 +212,9 @@ mgmt::vulkan::Manager::create_swapchain()
           device_, swapchain.frames[i].swapchain_semaphore, nullptr);
         // swapchain.frames_[i].del_queue.flush();
       }
+      vkDestroyImageView(device_, swapchain.depth_img.view, nullptr);
+      vmaDestroyImage(
+        allocator_, swapchain.depth_img.image, swapchain.depth_img.allocation);
       vkDestroyImageView(device_, swapchain.draw_img.view, nullptr);
       vmaDestroyImage(
         allocator_, swapchain.draw_img.image, swapchain.draw_img.allocation);

@@ -135,6 +135,11 @@ render::Engine::render()
     swapchain_.draw_img.image,
     VK_IMAGE_LAYOUT_GENERAL,
     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+  mgmt::vulkan::image::transition_image(
+    cmd,
+    swapchain_.depth_img.image,
+    VK_IMAGE_LAYOUT_UNDEFINED,
+    VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
   triangle_renderer_.draw(cmd, img_idx, swapchain_);
   triangle_mesh_renderer_.draw(cmd, img_idx, swapchain_);
   custom_mesh_renderer_.draw(cmd, img_idx, swapchain_);

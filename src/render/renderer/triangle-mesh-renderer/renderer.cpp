@@ -30,7 +30,7 @@ render::TriangleMeshRenderer::init(
   builder.disable_blending();
   builder.disable_depthtest();
   builder.set_color_attachment_format(swapchain_.draw_img.format);
-  builder.set_depth_format(VK_FORMAT_UNDEFINED);
+  builder.set_depth_format(swapchain_.depth_img.format);
   // pipeline init
   auto pipeline_result =
     vk_mgr_->create_gfx_pipeline(layout_info,
@@ -110,7 +110,7 @@ render::TriangleMeshRenderer::draw(
   mgmt::vulkan::swapchain::Swapchain& swapchain)
 {
   VkRenderingAttachmentInfo color_attachment =
-    mgmt::vulkan::info::rendering_attachment_info(
+    mgmt::vulkan::info::color_attachment_info(
       swapchain.draw_img.view,
       nullptr,
       VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);

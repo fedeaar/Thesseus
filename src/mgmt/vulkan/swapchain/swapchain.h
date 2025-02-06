@@ -27,6 +27,7 @@ struct Swapchain
   std::vector<VkImage> imgs;
   std::vector<VkImageView> img_views;
   image::AllocatedImage draw_img;
+  image::AllocatedImage depth_img;
   VkExtent2D draw_extent;
   VkDescriptorSet draw_img_descriptors;
   VkDescriptorSetLayout draw_img_descriptor_layout;

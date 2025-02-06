@@ -93,7 +93,7 @@ render::ImguiRenderer::draw(VkCommandBuffer cmd,
     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
   VkRenderingAttachmentInfo color_attachment =
-    mgmt::vulkan::info::rendering_attachment_info(
+    mgmt::vulkan::info::color_attachment_info(
       img_view, nullptr, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
   VkRenderingInfo renderInfo = mgmt::vulkan::info::rendering_info(
     swapchain.extent, &color_attachment, nullptr);

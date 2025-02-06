@@ -38,8 +38,9 @@ public:
   void set_multisampling_none();
   void set_color_attachment_format(VkFormat format);
   void set_depth_format(VkFormat format);
-  void disable_blending();
+  void enable_depthtest(bool enable, VkCompareOp op);
   void disable_depthtest();
+  void disable_blending();
   core::Result<VkPipeline, core::Status> build_pipeline(VkDevice device);
 };
 

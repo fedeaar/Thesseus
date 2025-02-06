@@ -52,9 +52,11 @@ imageview_create_info(VkFormat format,
 
 // render
 VkRenderingAttachmentInfo
-rendering_attachment_info(VkImageView view,
-                          VkClearValue* clear,
-                          VkImageLayout layout);
+color_attachment_info(VkImageView view,
+                      VkClearValue* clear,
+                      VkImageLayout layout);
+VkRenderingAttachmentInfo
+depth_attachment_info(VkImageView view, VkImageLayout layout);
 
 VkRenderingInfo
 rendering_info(VkExtent2D render_extent,

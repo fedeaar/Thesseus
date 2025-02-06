@@ -116,6 +116,20 @@ mgmt::vulkan::pipeline::Builder::disable_blending()
 }
 
 void
+mgmt::vulkan::pipeline::Builder::enable_depthtest(bool enable, VkCompareOp op)
+{
+  depth_stencil_.depthTestEnable = VK_TRUE;
+  depth_stencil_.depthWriteEnable = enable;
+  depth_stencil_.depthCompareOp = op;
+  depth_stencil_.depthBoundsTestEnable = VK_FALSE;
+  depth_stencil_.stencilTestEnable = VK_FALSE;
+  depth_stencil_.front = {};
+  depth_stencil_.back = {};
+  depth_stencil_.minDepthBounds = 0.f;
+  depth_stencil_.maxDepthBounds = 1.f;
+}
+
+void
 mgmt::vulkan::pipeline::Builder::disable_depthtest()
 {
   depth_stencil_.depthTestEnable = VK_FALSE;

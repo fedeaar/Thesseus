@@ -164,9 +164,9 @@ mgmt::vulkan::info::imageview_create_info(VkFormat format,
 //
 
 VkRenderingAttachmentInfo
-mgmt::vulkan::info::rendering_attachment_info(VkImageView view,
-                                              VkClearValue* clear,
-                                              VkImageLayout layout)
+mgmt::vulkan::info::color_attachment_info(VkImageView view,
+                                          VkClearValue* clear,
+                                          VkImageLayout layout)
 {
   VkRenderingAttachmentInfo info{};
   info.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
@@ -180,6 +180,21 @@ mgmt::vulkan::info::rendering_attachment_info(VkImageView view,
     info.clearValue = *clear;
   }
 
+  return info;
+}
+
+VkRenderingAttachmentInfo
+mgmt::vulkan::info::depth_attachment_info(VkImageView view,
+                                          VkImageLayout layout)
+{
+  VkRenderingAttachmentInfo info{};
+  info.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+  info.pNext = nullptr;
+  info.imageView = view;
+  info.imageLayout = layout;
+  info.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  info.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+  info.clearValue.depthStencil.depth = 0.f;
   return info;
 }
 
