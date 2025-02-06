@@ -1,3 +1,4 @@
+#include "camera/camera.h"
 #include "event/event.h"
 #include "render/engine/engine.h"
 
@@ -19,6 +20,7 @@ int
 main(int argc, char* args[])
 {
   render::Engine engine{ global };
-  EventLoop main{ &engine };
+  Camera camera{ engine.get_aspect_ratio() };
+  EventLoop main{ &engine, &camera };
   return main.run();
 }

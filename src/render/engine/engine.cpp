@@ -110,7 +110,7 @@ render::Engine::~Engine()
 //
 
 core::Status
-render::Engine::render()
+render::Engine::render(Camera& camera)
 {
   // we assume we are init
   u32 img_idx;
@@ -142,7 +142,7 @@ render::Engine::render()
     VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
   triangle_renderer_.draw(cmd, img_idx, swapchain_);
   triangle_mesh_renderer_.draw(cmd, img_idx, swapchain_);
-  custom_mesh_renderer_.draw(cmd, img_idx, swapchain_);
+  custom_mesh_renderer_.draw(cmd, img_idx, swapchain_, camera);
   mgmt::vulkan::image::transition_image(
     cmd,
     swapchain_.draw_img.image,

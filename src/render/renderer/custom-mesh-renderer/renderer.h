@@ -24,6 +24,7 @@ public:
 
   core::Status draw(VkCommandBuffer cmd,
                     u32 img_idx,
-                    mgmt::vulkan::swapchain::Swapchain& swapchain);
+                    mgmt::vulkan::swapchain::Swapchain& swapchain,
+                    Camera& camera);
 };
 } // namespace render

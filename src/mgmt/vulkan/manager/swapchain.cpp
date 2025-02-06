@@ -111,7 +111,6 @@ mgmt::vulkan::Manager::create_swapchain()
     info::imageview_create_info(swapchain.depth_img.format,
                                 swapchain.depth_img.image,
                                 VK_IMAGE_ASPECT_DEPTH_BIT);
-
   status = check(vkCreateImageView(
     device_, &depth_view_info, nullptr, &swapchain.depth_img.view));
   if (status != core::Status::SUCCESS) {

@@ -17,9 +17,10 @@ EventLoop::init()
   return core::Status::SUCCESS;
 }
 
-EventLoop::EventLoop(render::Engine* engine)
-  : engine_(engine)
-  , input_handler_(this, engine) {};
+EventLoop::EventLoop(render::Engine* engine, Camera* camera)
+  : engine_{ engine }
+  , camera_{ camera }
+  , input_handler_{ this, engine, camera } {};
 
 //
 // destructor
@@ -78,7 +79,7 @@ EventLoop::tick()
     ImGui::InputFloat4("data4", (float*)&selected.data.data4);
   }
   ImGui::End();
-  engine_->render();
+  engine_->render(*camera_);
 }
 
 core::Status

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../camera/camera.h"
 #include "../core/destructor-queue.h"
 #include "../core/logger.hpp"
 #include "../core/result.hpp"

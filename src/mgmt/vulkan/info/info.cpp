@@ -194,7 +194,7 @@ mgmt::vulkan::info::depth_attachment_info(VkImageView view,
   info.imageLayout = layout;
   info.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
   info.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-  info.clearValue.depthStencil.depth = 0.f;
+  info.clearValue.depthStencil.depth = 1.f;
   return info;
 }
 

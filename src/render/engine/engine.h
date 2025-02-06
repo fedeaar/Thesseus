@@ -42,8 +42,9 @@ public:
   core::Status destroy();
   ~Engine();
 
-  core::Status render();
+  core::Status render(Camera& camera);
 
   f32 get_aspect_ratio() { return window_mgr_.aspect_ratio; };
+  mgmt::WindowManager* get_window_mgr() { return &window_mgr_; };
 };
 } // namespace render
