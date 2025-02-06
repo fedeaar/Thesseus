@@ -28,11 +28,11 @@ render::CustomMeshRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
   builder.set_polygon_mode(VK_POLYGON_MODE_FILL);
   builder.set_cull_mode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
   builder.set_multisampling_none();
-  builder.disable_blending();
+  builder.enable_blending_additive();
   builder.enable_depthtest(true, VK_COMPARE_OP_LESS_OR_EQUAL);
   builder.set_color_attachment_format(swapchain_.draw_img.format);
   builder.set_depth_format(swapchain_.depth_img.format);
-  // pipeline init
+  // pipeline initc
   auto pipeline_result =
     vk_mgr_->create_gfx_pipeline(layout_info,
                                  builder,

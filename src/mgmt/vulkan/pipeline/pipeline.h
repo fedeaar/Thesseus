@@ -40,6 +40,8 @@ public:
   void set_depth_format(VkFormat format);
   void enable_depthtest(bool enable, VkCompareOp op);
   void disable_depthtest();
+  void enable_blending_additive();
+  void enable_blending_alphablend();
   void disable_blending();
   core::Result<VkPipeline, core::Status> build_pipeline(VkDevice device);
 };

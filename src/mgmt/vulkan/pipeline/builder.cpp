@@ -107,6 +107,36 @@ mgmt::vulkan::pipeline::Builder::set_depth_format(VkFormat format)
 }
 
 void
+mgmt::vulkan::pipeline::Builder::enable_blending_additive()
+{
+  color_blend_att_.colorWriteMask =
+    VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+    VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+  color_blend_att_.blendEnable = VK_TRUE;
+  color_blend_att_.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+  color_blend_att_.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+  color_blend_att_.colorBlendOp = VK_BLEND_OP_ADD;
+  color_blend_att_.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+  color_blend_att_.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+  color_blend_att_.alphaBlendOp = VK_BLEND_OP_ADD;
+}
+
+void
+mgmt::vulkan::pipeline::Builder::enable_blending_alphablend()
+{
+  color_blend_att_.colorWriteMask =
+    VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+    VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+  color_blend_att_.blendEnable = VK_TRUE;
+  color_blend_att_.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+  color_blend_att_.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+  color_blend_att_.colorBlendOp = VK_BLEND_OP_ADD;
+  color_blend_att_.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+  color_blend_att_.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+  color_blend_att_.alphaBlendOp = VK_BLEND_OP_ADD;
+}
+
+void
 mgmt::vulkan::pipeline::Builder::disable_blending()
 {
   color_blend_att_.colorWriteMask =
