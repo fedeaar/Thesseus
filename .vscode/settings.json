@@ -111,6 +111,12 @@
         "bin/**": true,
         "CMakeFiles/**": true,
     },
+    "C_Cpp.files.exclude": {
+        "build/**": true,
+        "lib/**": true,
+        "bin/**": true,
+        "CMakeFiles/**": true,
+    },
     "C_Cpp.default.includePath": [
         "${workspaceFolder}/src/**"
     ]
