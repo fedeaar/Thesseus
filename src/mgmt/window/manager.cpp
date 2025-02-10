@@ -16,7 +16,8 @@ mgmt::WindowManager::init()
     return core::Status::ERROR;
   }
   // create window
-  u32 flags = (u32)(SDL_WINDOW_VULKAN | SDL_WINDOW_MAXIMIZED);
+  u32 flags =
+    (u32)(SDL_WINDOW_VULKAN | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_RESIZABLE);
   window_ =
     SDL_CreateWindow(window_name.c_str(), extent_.width, extent_.height, flags);
   if (window_ == NULL) {

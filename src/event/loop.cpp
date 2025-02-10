@@ -59,6 +59,7 @@ EventLoop::tick_delta()
 inline void
 EventLoop::tick()
 {
+  engine_->maybe_resize_swapchain(); // fixme
   input_handler_.poll();
   // camera_->set_frame_delta(tick_delta()); // TODO: camera should handle this
   // (?) todo: move
@@ -66,6 +67,7 @@ EventLoop::tick()
   ImGui_ImplSDL3_NewFrame();
   ImGui::NewFrame();
   if (ImGui::Begin("background")) {
+    ImGui::SliderFloat("Render Scale", &engine_->render_scale, 0.3f, 1.f);
     auto& selected =
       engine_->swap_renderer_.effects_[engine_->swap_renderer_.current_effect_];
     ImGui::Text("Selected effect: ", selected.name);
@@ -79,6 +81,7 @@ EventLoop::tick()
     ImGui::InputFloat4("data4", (float*)&selected.data.data4);
   }
   ImGui::End();
+  ImGui::Render();
   engine_->render(*camera_);
 }
 

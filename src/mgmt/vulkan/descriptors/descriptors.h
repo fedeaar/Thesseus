@@ -22,7 +22,7 @@ struct LayoutBuilder
     VkDescriptorSetLayoutCreateFlags flags = 0);
 };
 
-struct Allocator
+struct StaticAllocator
 {
   struct PoolSizeRatio
   {

@@ -19,6 +19,7 @@ public:
 
   bool initialized = false;
   u32 frame = 0;
+  f32 render_scale = 1.f;
 
 private:
   std::string const namespace_ = render::namespace_ + "::Engine";
@@ -46,5 +47,11 @@ public:
 
   f32 get_aspect_ratio() { return window_mgr_.aspect_ratio; };
   mgmt::WindowManager* get_window_mgr() { return &window_mgr_; };
+  void maybe_resize_swapchain()
+  {
+    if (vk_mgr_.resize_requested) { // move
+      vk_mgr_.resize_swapchain(swapchain_);
+    }
+  }
 };
 } // namespace render

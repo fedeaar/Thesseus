@@ -84,7 +84,6 @@ render::ImguiRenderer::draw(VkCommandBuffer cmd,
                             u32 img_idx,
                             mgmt::vulkan::swapchain::Swapchain& swapchain)
 {
-  ImGui::Render();
   auto img = swapchain.imgs[img_idx];
   auto img_view = swapchain.img_views[img_idx];
   mgmt::vulkan::image::transition_image(

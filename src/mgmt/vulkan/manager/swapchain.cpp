@@ -209,7 +209,7 @@ mgmt::vulkan::Manager::create_swapchain()
           device_, swapchain.frames[i].render_semaphore, nullptr);
         vkDestroySemaphore(
           device_, swapchain.frames[i].swapchain_semaphore, nullptr);
-        // swapchain.frames_[i].del_queue.flush();
+        // swapchain.frames[i].del_queue.flush();
       }
       vkDestroyImageView(device_, swapchain.depth_img.view, nullptr);
       vmaDestroyImage(
@@ -224,6 +224,16 @@ mgmt::vulkan::Manager::create_swapchain()
     });
   // success
   return swapchain;
+}
+
+core::Status
+mgmt::vulkan::Manager::_destroy_swapchain(swapchain::Swapchain& swapchain)
+{
+  vkDestroySwapchainKHR(device_, swapchain.swapchain, nullptr);
+  // destroy swapchain resources
+  for (int i = 0; i < swapchain.img_views.size(); ++i) {
+    vkDestroyImageView(device_, swapchain.img_views[i], nullptr);
+  }
 }
 
 //
@@ -248,19 +258,22 @@ mgmt::vulkan::Manager::swapchain_begin_commands(u32 frame_number,
     return core::Status::ERROR;
   }
   current_frame.del_queue.flush();
+  auto vk_err = vkAcquireNextImageKHR(device_,
+                                      swapchain.swapchain,
+                                      1000000000,
+                                      current_frame.swapchain_semaphore,
+                                      nullptr,
+                                      &img_idx);
+  if (vk_err == VK_ERROR_OUT_OF_DATE_KHR) {
+    resize_requested = true;
+    return core::Status::RETRYABLE_ERROR;
+  } else if (vk_err && vk_err != VK_SUBOPTIMAL_KHR) {
+    logger.log("ready_swapchain failed acquiring image");
+    return core::Status::ERROR;
+  }
   status = check(vkResetFences(device_, 1, &current_frame.render_fence));
   if (status != core::Status::SUCCESS) {
     logger.log("ready_swapchain failed resetting fence");
-    return core::Status::ERROR;
-  }
-  status = check(vkAcquireNextImageKHR(device_,
-                                       swapchain.swapchain,
-                                       1000000000,
-                                       current_frame.swapchain_semaphore,
-                                       nullptr,
-                                       &img_idx));
-  if (status != core::Status::SUCCESS) {
-    logger.log("ready_swapchain failed acquiring image");
     return core::Status::ERROR;
   }
   VkCommandBuffer cmd = current_frame.main_command_buffer;
@@ -315,10 +328,44 @@ mgmt::vulkan::Manager::swapchain_end_commands(VkCommandBuffer cmd,
   present_info.pWaitSemaphores = &current_frame.render_semaphore;
   present_info.waitSemaphoreCount = 1;
   present_info.pImageIndices = &img_idx;
-  status = check(vkQueuePresentKHR(graphics_queue_, &present_info));
-  if (status != core::Status::SUCCESS) {
-    return core::Status::ERROR; // todo@mgmt: log error msg
+  auto vk_err = vkQueuePresentKHR(graphics_queue_, &present_info);
+  if (vk_err == VK_ERROR_OUT_OF_DATE_KHR) {
+    resize_requested = true;
+    return core::Status::RETRYABLE_ERROR;
+  } else if (vk_err && vk_err != VK_SUBOPTIMAL_KHR) {
+    logger.log("ready_swapchain failed acquiring image");
+    return core::Status::ERROR;
   }
   // success
+  return core::Status::SUCCESS;
+}
+
+core::Status
+mgmt::vulkan::Manager::resize_swapchain(swapchain::Swapchain& swapchain)
+{
+  vkDeviceWaitIdle(device_);
+  _destroy_swapchain(swapchain);
+  int w, h; // move
+  SDL_GetWindowSize(window_mgr_->get_window(), &w, &h);
+  vkb::SwapchainBuilder swapchainBuilder{ gpu_, device_, surface_ };
+  swapchain.image_fmt = VK_FORMAT_B8G8R8A8_UNORM;
+  vkb::Swapchain vkb_swapchain =
+    swapchainBuilder
+      //.use_default_format_selection()
+      .set_desired_format(
+        VkSurfaceFormatKHR{ .format = swapchain.image_fmt,
+                            .colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR })
+      // use vsync present mode
+      .set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
+      .set_desired_extent(w, h)
+      .add_image_usage_flags(VK_IMAGE_USAGE_TRANSFER_DST_BIT)
+      .build()
+      .value();
+  swapchain.extent = vkb_swapchain.extent;
+  // store swapchain and its related images
+  swapchain.swapchain = vkb_swapchain.swapchain;
+  swapchain.imgs = vkb_swapchain.get_images().value();
+  swapchain.img_views = vkb_swapchain.get_image_views().value();
+  resize_requested = false;
   return core::Status::SUCCESS;
 }

@@ -129,7 +129,7 @@ mgmt::vulkan::Manager::init()
   allocator_info.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
   vmaCreateAllocator(&allocator_info, &allocator_);
   // create descriptors
-  descriptor::Allocator::PoolSizeRatio sizes[1] = {
+  descriptor::StaticAllocator::PoolSizeRatio sizes[1] = {
     { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1 }
   };
   descriptor_allocator_.init_pool(device_, 10, sizes);

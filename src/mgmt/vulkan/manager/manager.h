@@ -18,6 +18,7 @@ class Manager
 {
 public:
   bool initialized = false;
+  bool resize_requested = false; // TODO: move to swapchain
 
 private:
   mgmt::WindowManager* window_mgr_;
@@ -71,6 +72,8 @@ public:
   load_gltf_meshes(char* path);
   // swapchain
   core::Result<swapchain::Swapchain, core::Status> create_swapchain();
+  core::Status _destroy_swapchain(swapchain::Swapchain& swapchain);
+  core::Status resize_swapchain(swapchain::Swapchain& swapchain);
   core::Result<VkCommandBuffer, core::Status> swapchain_begin_commands(
     u32 frame_number,
     swapchain::Swapchain& swapchain,
