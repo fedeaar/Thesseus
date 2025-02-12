@@ -129,9 +129,8 @@ mgmt::vulkan::Manager::init()
   allocator_info.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
   vmaCreateAllocator(&allocator_info, &allocator_);
   // create descriptors
-  descriptor::StaticAllocator::PoolSizeRatio sizes[1] = {
-    { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1 }
-  };
+  descriptor::PoolSizeRatio sizes[1] = { { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+                                           1 } };
   descriptor_allocator_.init_pool(device_, 10, sizes);
   // create imm submit
   VkFenceCreateInfo fence_info =
@@ -231,4 +230,10 @@ VkQueue const&
 mgmt::vulkan::Manager::get_graphics_queue()
 {
   return graphics_queue_;
+}
+
+VmaAllocator const&
+mgmt::vulkan::Manager::get_allocator()
+{
+  return allocator_;
 }

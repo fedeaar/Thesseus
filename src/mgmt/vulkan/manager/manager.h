@@ -32,7 +32,7 @@ private:
   VkDevice device_;
   // alloc
   VmaAllocator allocator_;
-  descriptor::Allocator descriptor_allocator_;
+  descriptor::StaticAllocator descriptor_allocator_;
   // graphics queue
   VkQueue graphics_queue_;
   u32 graphics_queue_family_;
@@ -57,6 +57,7 @@ public:
   VkPhysicalDevice const& get_physical_dev();
   VkDevice const& get_dev();
   VkQueue const& get_graphics_queue();
+  VmaAllocator const& get_allocator();
 
   // descriptors
   core::Result<VkDescriptorPool, core::Status> create_descriptor_pool(
@@ -94,6 +95,19 @@ public:
     char* fs_path);
   // imm submit
   core::Status imm_submit(std::function<void(VkCommandBuffer cmd)>&& function);
+  // images
+  core::Result<image::AllocatedImage, core::Status> create_image(
+    VkExtent3D size,
+    VkFormat format,
+    VkImageUsageFlags usage,
+    bool mipmapped = false);
+  core::Result<image::AllocatedImage, core::Status> create_image(
+    void* data,
+    VkExtent3D size,
+    VkFormat format,
+    VkImageUsageFlags usage,
+    bool mipmapped = false);
+  core::Status destroy_image(const image::AllocatedImage& img);
 };
 
 } // namespace vulkan

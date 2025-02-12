@@ -6,6 +6,7 @@
 #include "../core/result.hpp"
 #include "../core/status.h"
 #include "../core/types.h"
+#include "../mgmt/vulkan/descriptors/descriptors.h"
 #include "../mgmt/vulkan/image/image.h"
 #include "../mgmt/vulkan/info/info.h"
 #include "../mgmt/vulkan/manager/manager.h"

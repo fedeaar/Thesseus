@@ -53,3 +53,115 @@ mgmt::vulkan::descriptor::StaticAllocator::allocate(
   }
   return set;
 }
+
+//
+// dynamic allocator
+//
+
+void
+mgmt::vulkan::descriptor::DynamicAllocator::init(
+  VkDevice device,
+  u32 set_count,
+  std::span<mgmt::vulkan::descriptor::PoolSizeRatio> init_ratios)
+{
+  ratios.clear();
+  for (auto ratio : init_ratios) {
+    ratios.push_back(ratio);
+  }
+  VkDescriptorPool new_pool = create_pool(device, set_count, init_ratios);
+  sets_per_pool = set_count * 1.5;
+  ready.push_back(new_pool);
+}
+
+void
+mgmt::vulkan::descriptor::DynamicAllocator::clear_pools(VkDevice device)
+{
+  for (auto pool : ready) {
+    vkResetDescriptorPool(device, pool, 0);
+  }
+  for (auto pool : full) {
+    vkResetDescriptorPool(device, pool, 0);
+    ready.push_back(pool);
+  }
+  full.clear();
+};
+
+void
+mgmt::vulkan::descriptor::DynamicAllocator::destroy_pools(VkDevice device)
+{
+  for (auto pool : ready) {
+    vkDestroyDescriptorPool(device, pool, nullptr);
+  }
+  ready.clear();
+  for (auto pool : full) {
+    vkDestroyDescriptorPool(device, pool, nullptr);
+  }
+  full.clear();
+};
+
+VkDescriptorSet
+mgmt::vulkan::descriptor::DynamicAllocator::allocate(
+  VkDevice device,
+  VkDescriptorSetLayout layout,
+  void* next)
+{
+  VkDescriptorPool pool = get_pool(device);
+  VkDescriptorSetAllocateInfo info = {};
+  info.pNext = next;
+  info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+  info.descriptorPool = pool;
+  info.descriptorSetCount = 1;
+  info.pSetLayouts = &layout;
+  VkDescriptorSet descriptor_set;
+  VkResult result = vkAllocateDescriptorSets(device, &info, &descriptor_set);
+  if (result == VK_ERROR_OUT_OF_POOL_MEMORY ||
+      result == VK_ERROR_FRAGMENTED_POOL) {
+    full.push_back(pool);
+    pool = get_pool(device);
+    info.descriptorPool = pool;
+    auto result =
+      check(vkAllocateDescriptorSets(device, &info, &descriptor_set));
+    // TODO handle error
+  }
+  ready.push_back(pool);
+  return descriptor_set;
+};
+
+VkDescriptorPool
+mgmt::vulkan::descriptor::DynamicAllocator::get_pool(VkDevice device)
+{
+  VkDescriptorPool new_pool;
+  if (ready.size() != 0) {
+    new_pool = ready.back();
+    ready.pop_back();
+  } else {
+    new_pool = create_pool(device, sets_per_pool, ratios);
+    sets_per_pool = sets_per_pool * 1.5;
+    if (sets_per_pool > 4092) {
+      sets_per_pool = 4092;
+    }
+  }
+  return new_pool;
+};
+
+VkDescriptorPool
+mgmt::vulkan::descriptor::DynamicAllocator::create_pool(
+  VkDevice device,
+  u32 set_count,
+  std::span<mgmt::vulkan::descriptor::PoolSizeRatio> create_ratios)
+{
+  std::vector<VkDescriptorPoolSize> sizes;
+  for (PoolSizeRatio ratio : create_ratios) {
+    sizes.push_back(VkDescriptorPoolSize{
+      .type = ratio.type, .descriptorCount = u32(ratio.ratio * set_count) });
+  }
+  VkDescriptorPoolCreateInfo pool_info = {};
+  pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+  pool_info.flags = 0;
+  pool_info.maxSets = set_count;
+  pool_info.poolSizeCount = (uint32_t)sizes.size();
+  pool_info.pPoolSizes = sizes.data();
+  VkDescriptorPool new_pool;
+  vkCreateDescriptorPool(device, &pool_info, nullptr, &new_pool);
+  return new_pool;
+};

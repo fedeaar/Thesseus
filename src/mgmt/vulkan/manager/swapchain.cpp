@@ -124,6 +124,14 @@ mgmt::vulkan::Manager::create_swapchain()
   auto command_pool_info = mgmt::vulkan::info::command_pool_create_info(
     graphics_queue_family_, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
   for (int i = 0; i < swapchain::FRAME_OVERLAP; i++) {
+    std::vector<descriptor::PoolSizeRatio> frame_sizes = {
+      { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 3 },
+      { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 3 },
+      { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3 },
+      { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4 },
+    };
+    swapchain.frames[i].frame_descriptors = descriptor::DynamicAllocator{};
+    swapchain.frames[i].frame_descriptors.init(device_, 1000, frame_sizes);
     status = check(vkCreateCommandPool(
       device_, &command_pool_info, nullptr, &swapchain.frames[i].command_pool));
     if (status != core::Status::SUCCESS) {
@@ -183,21 +191,16 @@ mgmt::vulkan::Manager::create_swapchain()
   }
   swapchain.draw_img_descriptors = descriptor_result.value();
   // update descriptor sets
-  VkDescriptorImageInfo img_info_{};
-  img_info_.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-  img_info_.imageView = swapchain.draw_img.view;
-  VkWriteDescriptorSet draw_img_write_ = {};
-  draw_img_write_.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-  draw_img_write_.pNext = nullptr;
-  draw_img_write_.dstBinding = 0;
-  draw_img_write_.dstSet = swapchain.draw_img_descriptors;
-  draw_img_write_.descriptorCount = 1;
-  draw_img_write_.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-  draw_img_write_.pImageInfo = &img_info_;
-  vkUpdateDescriptorSets(device_, 1, &draw_img_write_, 0, nullptr);
+  descriptor::Writer writer;
+  writer.write_image(0,
+                     swapchain.draw_img.view,
+                     VK_NULL_HANDLE,
+                     VK_IMAGE_LAYOUT_GENERAL,
+                     VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+  writer.update_set(device_, swapchain.draw_img_descriptors);
   // set destroyer
   del_queue_.push(
-    [=]() { // TODO@engine: no need to keep swapchain existing here ?
+    [=]() mutable { // TODO@engine: no need to keep swapchain existing here ?
       vkDeviceWaitIdle(device_);
       vkDestroyDescriptorSetLayout(
         device_, swapchain.draw_img_descriptor_layout, nullptr);
@@ -209,7 +212,8 @@ mgmt::vulkan::Manager::create_swapchain()
           device_, swapchain.frames[i].render_semaphore, nullptr);
         vkDestroySemaphore(
           device_, swapchain.frames[i].swapchain_semaphore, nullptr);
-        // swapchain.frames[i].del_queue.flush();
+        swapchain.frames[i].frame_descriptors.destroy_pools(device_);
+        swapchain.frames[i].del_queue.flush();
       }
       vkDestroyImageView(device_, swapchain.depth_img.view, nullptr);
       vmaDestroyImage(
@@ -258,6 +262,7 @@ mgmt::vulkan::Manager::swapchain_begin_commands(u32 frame_number,
     return core::Status::ERROR;
   }
   current_frame.del_queue.flush();
+  current_frame.frame_descriptors.clear_pools(device_);
   auto vk_err = vkAcquireNextImageKHR(device_,
                                       swapchain.swapchain,
                                       1000000000,

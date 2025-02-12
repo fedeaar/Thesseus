@@ -123,7 +123,7 @@ render::Engine::render(Camera& camera)
     min(swapchain_.extent.height, swapchain_.draw_img.extent.height) *
     render_scale;
   auto command_buffer_result =
-    vk_mgr_.swapchain_begin_commands(frame, swapchain_, img_idx);
+    vk_mgr_.swapchain_begin_commands(swapchain_.frame, swapchain_, img_idx);
   if (!command_buffer_result.has_value()) {
     return command_buffer_result.error(); // todo@engine: error msg
   }
@@ -167,9 +167,10 @@ render::Engine::render(Camera& camera)
     swapchain_.imgs[img_idx],
     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
     VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-  auto status = vk_mgr_.swapchain_end_commands(cmd, frame, img_idx, swapchain_);
+  auto status =
+    vk_mgr_.swapchain_end_commands(cmd, swapchain_.frame, img_idx, swapchain_);
   if (status != core::Status::SUCCESS) {
     return status; // todo@engine: log error message
   }
-  frame++;
+  swapchain_.frame++;
 }

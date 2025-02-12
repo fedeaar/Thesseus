@@ -18,7 +18,6 @@ public:
   };
 
   bool initialized = false;
-  u32 frame = 0;
   f32 render_scale = 1.f;
 
 private:

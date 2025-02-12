@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../descriptors/descriptors.h"
 #include "../image/image.h"
 #include "../manager.h"
 
@@ -17,6 +18,7 @@ struct Frame
   VkSemaphore swapchain_semaphore, render_semaphore;
   VkFence render_fence;
   DestructorQueue del_queue;
+  descriptor::DynamicAllocator frame_descriptors;
 };
 
 struct Swapchain
@@ -32,8 +34,9 @@ struct Swapchain
   VkDescriptorSet draw_img_descriptors;
   VkDescriptorSetLayout draw_img_descriptor_layout;
   Frame frames[FRAME_OVERLAP];
+  u32 frame = 0;
 
-  Frame const& get_frame(u32 frame_number);
+  Frame& get_frame(u32 frame_number);
 };
 
 } // namespace swapchain
