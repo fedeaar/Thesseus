@@ -4,16 +4,16 @@
 // constructor
 //
 
-core::Status
+core::code
 mgmt::WindowManager::init()
 {
   if (initialized) {
-    return core::Status::SUCCESS;
+    return core::code::SUCCESS;
   }
   // initialize SDL
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     logger_.err("init failed to initialize SDL, {}", SDL_GetError());
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   // create window
   u32 flags =
@@ -22,11 +22,11 @@ mgmt::WindowManager::init()
     SDL_CreateWindow(window_name.c_str(), extent_.width, extent_.height, flags);
   if (window_ == NULL) {
     logger_.err("init failed to create window, {}", SDL_GetError());
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   // success
   initialized = true;
-  return core::Status::SUCCESS;
+  return core::code::SUCCESS;
 }
 
 mgmt::WindowManager::WindowManager(u32 width,
@@ -42,19 +42,19 @@ mgmt::WindowManager::WindowManager(u32 width,
 // destructor
 //
 
-core::Status
+core::code
 mgmt::WindowManager::destroy()
 {
   if (!initialized) {
     logger_.err("destroy called before initialization");
-    return core::Status::SUCCESS;
+    return core::code::SUCCESS;
   }
   // destroy window
   SDL_DestroyWindow(window_);
   window_ = nullptr;
   // success
   initialized = false;
-  return core::Status::SUCCESS;
+  return core::code::SUCCESS;
 }
 
 mgmt::WindowManager::~WindowManager()
@@ -80,17 +80,17 @@ mgmt::WindowManager::get_extent()
   return extent_;
 }
 
-core::Result<char const* const*, core::Status>
+core::Result<char const* const*, core::code>
 mgmt::WindowManager::get_required_extensions(u32& count)
 {
   if (!initialized) {
     logger_.err("get_required_extensions called before initialization");
-    return core::Status::NOT_INIT;
+    return core::code::NOT_INIT;
   }
   auto extensions = SDL_Vulkan_GetInstanceExtensions(&count);
   if (extensions == NULL) {
     logger_.err("get_required_extensions failed, error: {}", SDL_GetError());
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   return extensions;
 }
@@ -99,17 +99,17 @@ mgmt::WindowManager::get_required_extensions(u32& count)
 // build surface
 //
 
-core::Status
+core::code
 mgmt::WindowManager::build_surface(VkInstance& instance, VkSurfaceKHR* surface)
 {
   if (!initialized) {
     logger_.err("build_surface called before initialization");
-    return core::Status::NOT_INIT;
+    return core::code::NOT_INIT;
   }
   // create surface
   if (!SDL_Vulkan_CreateSurface(window_, instance, nullptr, surface)) {
     logger_.err("build_surface failed to create surface, {}", SDL_GetError());
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
-  return core::Status::SUCCESS;
+  return core::code::SUCCESS;
 }

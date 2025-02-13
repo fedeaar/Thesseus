@@ -4,11 +4,11 @@
 // constructor
 //
 
-core::Status
+core::code
 render::BackgroundRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
 {
   if (initialized) {
-    return core::Status::SUCCESS;
+    return core::code::SUCCESS;
   }
   // layout
   VkPipelineLayoutCreateInfo layout_info{};
@@ -27,7 +27,7 @@ render::BackgroundRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
     swapchain, layout_info, "./shaders/gradient-color.comp.spv");
   if (!gradient_pipe_result.has_value()) {
     logger_.err("create_compute_pipeline failed to create gradient pipeline");
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   render::BackgroundRenderer::ComputeEffect gradient = {
     .name = "gradient",
@@ -40,7 +40,7 @@ render::BackgroundRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
     swapchain, layout_info, "./shaders/sky.comp.spv");
   if (!sky_pipeline_result.has_value()) {
     logger_.err("create_compute_pipeline failed to create sky pipeline");
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   render::BackgroundRenderer::ComputeEffect sky = {
     .name = "sky",
@@ -51,7 +51,7 @@ render::BackgroundRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
   effects_.push_back(sky);
   // success
   initialized = true;
-  return core::Status::SUCCESS;
+  return core::code::SUCCESS;
 }
 
 render::BackgroundRenderer::BackgroundRenderer(mgmt::vulkan::Manager* vk_mgr)
@@ -61,12 +61,12 @@ render::BackgroundRenderer::BackgroundRenderer(mgmt::vulkan::Manager* vk_mgr)
 // destructor
 //
 
-core::Status
+core::code
 render::BackgroundRenderer::destroy()
 {
   // todo@engine: handle pipes?
   initialized = false;
-  return core::Status::SUCCESS;
+  return core::code::SUCCESS;
 }
 
 render::BackgroundRenderer::~BackgroundRenderer()
@@ -80,7 +80,7 @@ render::BackgroundRenderer::~BackgroundRenderer()
 // draw
 //
 
-core::Status
+core::code
 render::BackgroundRenderer::draw(VkCommandBuffer cmd,
                                  mgmt::vulkan::swapchain::Swapchain& swapchain)
 {
@@ -106,5 +106,5 @@ render::BackgroundRenderer::draw(VkCommandBuffer cmd,
                 std::ceil(swapchain.draw_extent.width / 16.0),
                 std::ceil(swapchain.draw_extent.height / 16.0),
                 1);
-  return core::Status::SUCCESS;
+  return core::code::SUCCESS;
 };

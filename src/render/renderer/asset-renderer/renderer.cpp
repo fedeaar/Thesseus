@@ -6,11 +6,11 @@
 // constructor
 //
 
-core::Status
+core::code
 render::AssetRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
 {
   if (initialized) {
-    return core::Status::SUCCESS;
+    return core::code::SUCCESS;
   }
   // layout
   mgmt::vulkan::descriptor::LayoutBuilder layout_builder;
@@ -19,7 +19,7 @@ render::AssetRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
     layout_builder.build(vk_mgr_->get_dev(), VK_SHADER_STAGE_FRAGMENT_BIT);
   if (!result.has_value()) {
     // TODO
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   single_img_layout_ = result.value();
   VkPushConstantRange buff_range{};
@@ -51,14 +51,14 @@ render::AssetRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
                                  "./shaders/tex_image.frag.spv");
   if (!pipeline_result.has_value()) {
     logger_.err("init failed, create_gfx_pipeline failed to create pipeline");
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   pipeline_ = pipeline_result.value();
   // init mesh
   auto meshes_result = vk_mgr_->load_gltf_meshes("./res/basicmesh.glb");
   if (!meshes_result.has_value()) {
     logger_.err("could not load meshes");
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   meshes_ = meshes_result.value();
   mgmt::vulkan::descriptor::LayoutBuilder descriptor_builder;
@@ -76,7 +76,7 @@ render::AssetRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
                                           VK_IMAGE_USAGE_SAMPLED_BIT);
   if (!img_result.has_value()) {
     logger_.err("could not load white img");
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   white_img_ = img_result.value();
   u32 gray = glm::packUnorm4x8(glm::vec4(0.66f, 0.66f, 0.66f, 1));
@@ -86,7 +86,7 @@ render::AssetRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
                                      VK_IMAGE_USAGE_SAMPLED_BIT);
   if (!img_result.has_value()) {
     logger_.err("could not load gray img");
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   gray_img_ = img_result.value();
   u32 black = glm::packUnorm4x8(glm::vec4(0, 0, 0, 0));
@@ -96,7 +96,7 @@ render::AssetRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
                                      VK_IMAGE_USAGE_SAMPLED_BIT);
   if (!img_result.has_value()) {
     logger_.err("could not load black img");
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   black_img_ = img_result.value();
   u32 magenta = glm::packUnorm4x8(glm::vec4(1, 0, 1, 1));
@@ -112,7 +112,7 @@ render::AssetRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
                                      VK_IMAGE_USAGE_SAMPLED_BIT);
   if (!img_result.has_value()) {
     logger_.err("could not load checker img");
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   error_checker_img_ = img_result.value();
   // create default samplers
@@ -146,7 +146,7 @@ render::AssetRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
   });
   // success
   initialized = true;
-  return core::Status::SUCCESS;
+  return core::code::SUCCESS;
 }
 
 render::AssetRenderer::AssetRenderer(mgmt::vulkan::Manager* vk_mgr)
@@ -156,13 +156,13 @@ render::AssetRenderer::AssetRenderer(mgmt::vulkan::Manager* vk_mgr)
 // destructor
 //
 
-core::Status
+core::code
 render::AssetRenderer::destroy()
 {
   // todo@engine: handle pipes?
   del_queue_.flush();
   initialized = false;
-  return core::Status::SUCCESS;
+  return core::code::SUCCESS;
 }
 
 render::AssetRenderer::~AssetRenderer()
@@ -176,7 +176,7 @@ render::AssetRenderer::~AssetRenderer()
 // draw
 //
 
-core::Status
+core::code
 render::AssetRenderer::draw(VkCommandBuffer cmd,
                             mgmt::vulkan::swapchain::Swapchain& swapchain,
                             Camera& camera)
@@ -266,5 +266,5 @@ render::AssetRenderer::draw(VkCommandBuffer cmd,
                    0,
                    0);
   vkCmdEndRendering(cmd);
-  return core::Status::SUCCESS;
+  return core::code::SUCCESS;
 };

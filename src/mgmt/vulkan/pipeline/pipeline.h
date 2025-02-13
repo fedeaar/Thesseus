@@ -43,10 +43,10 @@ public:
   void enable_blending_additive();
   void enable_blending_alphablend();
   void disable_blending();
-  core::Result<VkPipeline, core::Status> build_pipeline(VkDevice device);
+  core::Result<VkPipeline, core::code> build_pipeline(VkDevice device);
 };
 
-core::Result<VkShaderModule, core::Status>
+core::Result<VkShaderModule, core::code>
 load_shader_module(const char* file_path, VkDevice device);
 } // namespace pipeline
 

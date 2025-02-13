@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../base/base.h"
+#include "../renderer.h"
 
 namespace render {
 
@@ -27,13 +27,13 @@ public:
   std::vector<ComputeEffect> effects_;
   u32 current_effect_ = 0;
 
-  core::Status init(mgmt::vulkan::swapchain::Swapchain& swapchain);
+  core::code init(mgmt::vulkan::swapchain::Swapchain& swapchain);
   BackgroundRenderer(mgmt::vulkan::Manager* vk_mgr);
 
-  core::Status destroy();
+  core::code destroy();
   ~BackgroundRenderer();
 
-  core::Status draw(VkCommandBuffer cmd,
-                    mgmt::vulkan::swapchain::Swapchain& swapchain);
+  core::code draw(VkCommandBuffer cmd,
+                  mgmt::vulkan::swapchain::Swapchain& swapchain);
 };
 } // namespace render

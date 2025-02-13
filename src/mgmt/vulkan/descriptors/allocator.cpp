@@ -1,6 +1,6 @@
 #include "descriptors.h"
 
-core::Status
+core::code
 mgmt::vulkan::descriptor::StaticAllocator::init_pool(
   VkDevice device,
   u32 max_sets,
@@ -21,20 +21,20 @@ mgmt::vulkan::descriptor::StaticAllocator::init_pool(
   return check(vkCreateDescriptorPool(device, &info, nullptr, &pool));
 }
 
-core::Status
+core::code
 mgmt::vulkan::descriptor::StaticAllocator::destroy_pool(VkDevice device)
 {
   vkDestroyDescriptorPool(device, pool, nullptr);
-  return core::Status::SUCCESS;
+  return core::code::SUCCESS;
 }
 
-core::Status
+core::code
 mgmt::vulkan::descriptor::StaticAllocator::clear(VkDevice device)
 {
   return check(vkResetDescriptorPool(device, pool, 0));
 }
 
-core::Result<VkDescriptorSet, core::Status>
+core::Result<VkDescriptorSet, core::code>
 mgmt::vulkan::descriptor::StaticAllocator::allocate(
   VkDevice device,
   VkDescriptorSetLayout layout)
@@ -48,7 +48,7 @@ mgmt::vulkan::descriptor::StaticAllocator::allocate(
   info.pSetLayouts = &layout;
   VkDescriptorSet set;
   auto status = check(vkAllocateDescriptorSets(device, &info, &set));
-  if (status != core::Status::SUCCESS) {
+  if (status != core::code::SUCCESS) {
     return status;
   }
   return set;

@@ -1,6 +1,6 @@
 #include "camera/camera.h"
 #include "event/event.h"
-#include "render/render.h"
+#include "render/include.h"
 
 //
 // global
@@ -22,5 +22,8 @@ main(int argc, char* args[])
   render::Engine engine{ global };
   Camera camera{ engine.get_aspect_ratio() };
   EventLoop main{ &engine, &camera };
-  return main.run();
+  if (main.run() != core::code::SUCCESS) {
+    return 1;
+  }
+  return 0;
 }

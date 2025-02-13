@@ -17,13 +17,13 @@ struct AllocatedImage
   VmaAllocation allocation;
 };
 
-core::Status
+core::code
 transition_image(VkCommandBuffer cmd,
                  VkImage image,
                  VkImageLayout current,
                  VkImageLayout next);
 
-core::Status
+core::code
 copy_image(VkCommandBuffer cmd,
            VkImage source,
            VkImage destination,

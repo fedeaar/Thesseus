@@ -4,7 +4,7 @@
 // create
 //
 
-core::Result<mgmt::vulkan::buffer::AllocatedBuffer, core::Status>
+core::Result<mgmt::vulkan::buffer::AllocatedBuffer, core::code>
 mgmt::vulkan::Manager::create_buffer(size_t size,
                                      VkBufferUsageFlags flags,
                                      VmaMemoryUsage usage)
@@ -24,9 +24,9 @@ mgmt::vulkan::Manager::create_buffer(size_t size,
                                       &buffer.buffer,
                                       &buffer.allocation,
                                       &buffer.info));
-  if (status != core::Status::SUCCESS) {
+  if (status != core::code::SUCCESS) {
     logger.err("create_buffer failed, vmaCreateBuffer error");
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   return buffer;
 }
@@ -35,19 +35,19 @@ mgmt::vulkan::Manager::create_buffer(size_t size,
 // destroy
 //
 
-core::Status
+core::code
 mgmt::vulkan::Manager::destroy_buffer(
   mgmt::vulkan::buffer::AllocatedBuffer const& buffer)
 {
   vmaDestroyBuffer(allocator_, buffer.buffer, buffer.allocation);
-  return core::Status::SUCCESS;
+  return core::code::SUCCESS;
 }
 
 //
 // mesh
 //
 
-core::Result<mgmt::vulkan::mesh::GPUMeshBuffers, core::Status>
+core::Result<mgmt::vulkan::mesh::GPUMeshBuffers, core::code>
 mgmt::vulkan::Manager::upload_mesh(std::span<u32> indices,
                                    std::span<mesh::Vertex> vertices)
 {
@@ -61,7 +61,7 @@ mgmt::vulkan::Manager::upload_mesh(std::span<u32> indices,
     VMA_MEMORY_USAGE_GPU_ONLY);
   if (!vertex_buff_result.has_value()) {
     logger.err("upload_mesh failed, could not create vertex buffer");
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   mesh.vertex_buff = vertex_buff_result.value();
   VkBufferDeviceAddressInfo addr_info = {
@@ -75,14 +75,14 @@ mgmt::vulkan::Manager::upload_mesh(std::span<u32> indices,
                                          VMA_MEMORY_USAGE_GPU_ONLY);
   if (!index_buff_result.has_value()) {
     logger.err("upload_mesh failed, could not create index buffer");
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   mesh.index_buff = index_buff_result.value();
   auto staging_result = create_buffer(
     vb_s + ib_s, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
   if (!index_buff_result.has_value()) {
     logger.err("upload_mesh failed, could not create staging buffer");
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   auto staging = staging_result.value();
   void* data;
@@ -109,13 +109,13 @@ mgmt::vulkan::Manager::upload_mesh(std::span<u32> indices,
 };
 
 core::Result<std::vector<std::shared_ptr<mgmt::vulkan::mesh::MeshAsset>>,
-             core::Status>
+             core::code>
 mgmt::vulkan::Manager::load_gltf_meshes(char* path)
 {
   fastgltf::Asset asset;
-  if (io::gltf::load(path, &asset) != core::Status::SUCCESS) {
+  if (io::gltf::load(path, &asset) != core::code::SUCCESS) {
     logger.err("load_gltf_meshes failed, could not load gltf asset");
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   std::vector<std::shared_ptr<mesh::MeshAsset>> meshes;
   std::vector<u32> indices;
@@ -132,7 +132,7 @@ mgmt::vulkan::Manager::load_gltf_meshes(char* path)
       if (!it.indicesAccessor.has_value()) {
         // todo: better handling
         logger.log("load_gltf_mesh failed, gltf failed is invalid");
-        return core::Status::ERROR;
+        return core::code::ERROR;
       }
       auto& idx_acc = asset.accessors[it.indicesAccessor.value()];
       new_surface.count = (u32)idx_acc.count;
@@ -144,7 +144,7 @@ mgmt::vulkan::Manager::load_gltf_meshes(char* path)
       if (pos == it.attributes.end()) {
         // todo: better handling
         logger.log("load_gltf_mesh failed, gltf failed is invalid");
-        return core::Status::ERROR;
+        return core::code::ERROR;
       }
       auto& pos_acc = asset.accessors[pos->accessorIndex];
       if (!pos_acc.bufferViewIndex.has_value()) {
@@ -201,7 +201,7 @@ mgmt::vulkan::Manager::load_gltf_meshes(char* path)
     auto upload_result = upload_mesh(indices, vertices);
     if (!upload_result.has_value()) {
       logger.err("load_gltf_meshes failed, could not load gltf asset to gpu");
-      return core::Status::ERROR;
+      return core::code::ERROR;
     }
     new_mesh.mesh_buffers = upload_result.value();
     meshes.emplace_back(std::make_shared<mesh::MeshAsset>(std::move(new_mesh)));

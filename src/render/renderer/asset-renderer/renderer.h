@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../base/base.h"
+#include "../renderer.h"
 #include <memory>
 
 namespace render {
@@ -33,14 +33,14 @@ private:
   VkSampler default_nearest_sampler_;
 
 public:
-  core::Status init(mgmt::vulkan::swapchain::Swapchain& swapchain);
+  core::code init(mgmt::vulkan::swapchain::Swapchain& swapchain);
   AssetRenderer(mgmt::vulkan::Manager* vk_mgr);
 
-  core::Status destroy();
+  core::code destroy();
   ~AssetRenderer();
 
-  core::Status draw(VkCommandBuffer cmd,
-                    mgmt::vulkan::swapchain::Swapchain& swapchain,
-                    Camera& camera);
+  core::code draw(VkCommandBuffer cmd,
+                  mgmt::vulkan::swapchain::Swapchain& swapchain,
+                  Camera& camera);
 };
 } // namespace render

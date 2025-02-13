@@ -47,10 +47,10 @@ private:
   } imm_submit_;
 
 public:
-  core::Status init();
+  core::code init();
   Manager(mgmt::WindowManager* window_);
 
-  core::Status destroy();
+  core::code destroy();
   ~Manager();
 
   VkInstance const& get_instance();
@@ -60,50 +60,50 @@ public:
   VmaAllocator const& get_allocator();
 
   // descriptors
-  core::Result<VkDescriptorPool, core::Status> create_descriptor_pool(
+  core::Result<VkDescriptorPool, core::code> create_descriptor_pool(
     VkDescriptorPoolCreateInfo pool_info);
   // buffers
-  core::Result<buffer::AllocatedBuffer, core::Status>
+  core::Result<buffer::AllocatedBuffer, core::code>
   create_buffer(size_t size, VkBufferUsageFlags flags, VmaMemoryUsage usage);
-  core::Status destroy_buffer(buffer::AllocatedBuffer const& buffer);
-  core::Result<mesh::GPUMeshBuffers, core::Status> upload_mesh(
+  core::code destroy_buffer(buffer::AllocatedBuffer const& buffer);
+  core::Result<mesh::GPUMeshBuffers, core::code> upload_mesh(
     std::span<u32> indices,
     std::span<mesh::Vertex> vertices);
-  core::Result<std::vector<std::shared_ptr<mesh::MeshAsset>>, core::Status>
+  core::Result<std::vector<std::shared_ptr<mesh::MeshAsset>>, core::code>
   load_gltf_meshes(char* path);
   // swapchain
-  core::Result<swapchain::Swapchain, core::Status> create_swapchain();
-  core::Status _destroy_swapchain(swapchain::Swapchain& swapchain);
-  core::Status resize_swapchain(swapchain::Swapchain& swapchain);
-  core::Result<VkCommandBuffer, core::Status> swapchain_begin_commands(
+  core::Result<swapchain::Swapchain, core::code> create_swapchain();
+  core::code _destroy_swapchain(swapchain::Swapchain& swapchain);
+  core::code resize_swapchain(swapchain::Swapchain& swapchain);
+  core::Result<VkCommandBuffer, core::code> swapchain_begin_commands(
     swapchain::Swapchain& swapchain);
-  core::Status swapchain_end_commands(VkCommandBuffer cmd,
-                                      swapchain::Swapchain& swapchain);
+  core::code swapchain_end_commands(VkCommandBuffer cmd,
+                                    swapchain::Swapchain& swapchain);
   // pipelines
-  core::Result<pipeline::Pipeline, core::Status> create_compute_pipeline(
+  core::Result<pipeline::Pipeline, core::code> create_compute_pipeline(
     swapchain::Swapchain& swapchain,
     VkPipelineLayoutCreateInfo& layout_info,
     char* shader_path);
-  core::Result<pipeline::Pipeline, core::Status> create_gfx_pipeline(
+  core::Result<pipeline::Pipeline, core::code> create_gfx_pipeline(
     VkPipelineLayoutCreateInfo& layout_info,
     pipeline::Builder builder,
     char* vs_path,
     char* fs_path);
   // imm submit
-  core::Status imm_submit(std::function<void(VkCommandBuffer cmd)>&& function);
+  core::code imm_submit(std::function<void(VkCommandBuffer cmd)>&& function);
   // images
-  core::Result<image::AllocatedImage, core::Status> create_image(
+  core::Result<image::AllocatedImage, core::code> create_image(
     VkExtent3D size,
     VkFormat format,
     VkImageUsageFlags usage,
     bool mipmapped = false);
-  core::Result<image::AllocatedImage, core::Status> create_image(
+  core::Result<image::AllocatedImage, core::code> create_image(
     void* data,
     VkExtent3D size,
     VkFormat format,
     VkImageUsageFlags usage,
     bool mipmapped = false);
-  core::Status destroy_image(const image::AllocatedImage& img);
+  core::code destroy_image(const image::AllocatedImage& img);
 };
 
 } // namespace vulkan

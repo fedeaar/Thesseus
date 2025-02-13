@@ -4,46 +4,46 @@
 // constructor
 //
 
-core::Status
+core::code
 render::Engine::init()
 {
-  if (initialized == Status::INIT) {
-    return core::Status::SUCCESS;
+  if (initialized == core::status::INIT) {
+    return core::code::SUCCESS;
   }
-  if (initialized == Status::ERROR) {
-    return core::Status::ERROR;
+  if (initialized == core::status::ERROR) {
+    return core::code::ERROR;
   }
-  if (window_mgr_.init() != core::Status::SUCCESS) {
+  if (window_mgr_.init() != core::code::SUCCESS) {
     logger_.err("init failed, window mgr could not be created");
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
-  if (vk_mgr_.init() != core::Status::SUCCESS) {
+  if (vk_mgr_.init() != core::code::SUCCESS) {
     logger_.err("init failed, vk mgr could not be created");
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   auto swapchain_result = vk_mgr_.create_swapchain();
   if (!swapchain_result.has_value()) {
     logger_.err("init failed, swapchain could not be created");
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   swapchain_ = swapchain_result.value();
   auto status = background_renderer_.init(swapchain_);
-  if (status != core::Status::SUCCESS) {
+  if (status != core::code::SUCCESS) {
     logger_.err("init failed, swap renderer could not be created");
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   status = asset_renderer_.init(swapchain_);
-  if (status != core::Status::SUCCESS) {
+  if (status != core::code::SUCCESS) {
     logger_.err("init failed, triangle mesh renderer could not be created");
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   status = imgui_renderer_.init(swapchain_);
-  if (status != core::Status::SUCCESS) {
+  if (status != core::code::SUCCESS) {
     logger_.err("init failed, imgui renderer could not be created");
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
-  initialized = Status::INIT;
-  return core::Status::SUCCESS;
+  initialized = core::status::INIT;
+  return core::code::SUCCESS;
 }
 
 render::Engine::Engine(render::Engine::Params& params)
@@ -59,14 +59,14 @@ render::Engine::Engine(render::Engine::Params& params)
 // destructor
 //
 
-core::Status
+core::code
 render::Engine::destroy()
 {
-  if (initialized == Status::NOT_INIT) {
-    return core::Status::SUCCESS;
+  if (initialized == core::status::NOT_INIT) {
+    return core::code::SUCCESS;
   }
-  if (initialized == Status::ERROR) {
-    return core::Status::ERROR;
+  if (initialized == core::status::ERROR) {
+    return core::code::ERROR;
   }
   auto imgui_renderer_status = imgui_renderer_.destroy();
   auto asset_renderer_status = asset_renderer_.destroy();
@@ -74,39 +74,39 @@ render::Engine::destroy()
   auto vk_mgr_status = vk_mgr_.destroy();
   auto window_mgr_status = window_mgr_.destroy();
   bool fail = false;
-  if (imgui_renderer_status != core::Status::SUCCESS) {
+  if (imgui_renderer_status != core::code::SUCCESS) {
     logger_.err("failed to destroy imgui renderer");
     fail = true;
   }
-  if (asset_renderer_status != core::Status::SUCCESS) {
+  if (asset_renderer_status != core::code::SUCCESS) {
     logger_.err("failed to destroy asset renderer");
     fail = true;
   }
-  if (background_renderer_status != core::Status::SUCCESS) {
+  if (background_renderer_status != core::code::SUCCESS) {
     logger_.err("failed to destroy background renderer");
     fail = true;
   }
-  if (vk_mgr_status != core::Status::SUCCESS) {
+  if (vk_mgr_status != core::code::SUCCESS) {
     logger_.err("failed to destroy vulkan manager");
     fail = true;
   }
-  if (window_mgr_status != core::Status::SUCCESS) {
+  if (window_mgr_status != core::code::SUCCESS) {
     logger_.err("failed to destroy window manager");
     fail = true;
   }
   if (fail) {
-    initialized = Status::ERROR;
-    return core::Status::ERROR;
+    initialized = core::status::ERROR;
+    return core::code::ERROR;
   }
-  initialized = Status::NOT_INIT;
-  return core::Status::SUCCESS;
+  initialized = core::status::NOT_INIT;
+  return core::code::SUCCESS;
 }
 
 render::Engine::~Engine()
 {
-  if (initialized != Status::NOT_INIT) {
+  if (initialized != core::status::NOT_INIT) {
     auto status = destroy();
-    if (status != core::Status::SUCCESS) {
+    if (status != core::code::SUCCESS) {
       logger_.err("failed to destroy engine, aborting");
       abort();
     }
@@ -117,7 +117,7 @@ render::Engine::~Engine()
 // render
 //
 
-core::Status
+core::code
 render::Engine::render(Camera& camera)
 {
   // we assume we are init
@@ -164,7 +164,7 @@ render::Engine::render(Camera& camera)
     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
     VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
   auto status = vk_mgr_.swapchain_end_commands(cmd, swapchain_);
-  if (status != core::Status::SUCCESS) {
+  if (status != core::code::SUCCESS) {
     return status; // todo@engine: log error message
   }
 }

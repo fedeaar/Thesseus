@@ -1,10 +1,6 @@
 #pragma once
 
-#include "../base/base.h"
-
-#include <backends/imgui_impl_sdl3.h>
-#include <backends/imgui_impl_vulkan.h>
-#include <imgui.h>
+#include "../renderer.h"
 
 namespace render {
 
@@ -14,13 +10,13 @@ private:
   mgmt::WindowManager* window_mgr_;
 
 public:
-  core::Status init(mgmt::vulkan::swapchain::Swapchain& swapchain);
+  core::code init(mgmt::vulkan::swapchain::Swapchain& swapchain);
   ImguiRenderer(mgmt::vulkan::Manager* vk_mgr, mgmt::WindowManager* window_mgr);
 
-  core::Status destroy();
+  core::code destroy();
   ~ImguiRenderer();
 
-  core::Status draw(VkCommandBuffer cmd,
-                    mgmt::vulkan::swapchain::Swapchain& swapchain);
+  core::code draw(VkCommandBuffer cmd,
+                  mgmt::vulkan::swapchain::Swapchain& swapchain);
 };
 } // namespace render

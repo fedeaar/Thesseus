@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../camera/camera.h"
-#include "../core/core.h"
-#include "../render/render.h"
+#include "../core/include.h"
+#include "../render/include.h"
 
 #include <SDL3/SDL.h>
 #include <backends/imgui_impl_sdl3.h>
@@ -27,7 +27,7 @@ private:
   inline void poll_keyboard();
 
 public:
-  core::Status init();
+  core::code init();
   InputHandler(EventLoop* loop, render::Engine* engine, Camera* camera);
 
   void poll();
@@ -44,8 +44,8 @@ private:
   bool quit_ = false;
   f32 last_tick_ = 0.0f;
 
-  core::Status init();
-  core::Status destroy();
+  core::code init();
+  core::code destroy();
 
   void quit();
 
@@ -54,5 +54,5 @@ private:
 
 public:
   EventLoop(render::Engine* engine, Camera* camera);
-  core::Status run();
+  core::code run();
 };

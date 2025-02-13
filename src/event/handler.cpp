@@ -4,7 +4,7 @@
 // constructor
 //
 
-core::Status
+core::code
 InputHandler::init()
 {
   if (mouse_lock_) {
@@ -14,7 +14,7 @@ InputHandler::init()
   }
   SDL_SetWindowRelativeMouseMode(engine_->get_window_mgr()->get_window(),
                                  mouse_lock_);
-  return core::Status::SUCCESS;
+  return core::code::SUCCESS;
 }
 
 InputHandler::InputHandler(EventLoop* loop,

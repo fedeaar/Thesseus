@@ -28,14 +28,14 @@ public:
   WindowManager(u32 width, u32 height, std::string const& window_name);
   ~WindowManager();
 
-  core::Status init();
-  core::Status destroy();
+  core::code init();
+  core::code destroy();
 
   SDL_Window* get_window();
   VkExtent2D& get_extent();
 
-  core::Result<char const* const*, core::Status> get_required_extensions(
+  core::Result<char const* const*, core::code> get_required_extensions(
     u32& count);
-  core::Status build_surface(VkInstance& instance, VkSurfaceKHR* surface);
+  core::code build_surface(VkInstance& instance, VkSurfaceKHR* surface);
 };
 } // namespace mgmt

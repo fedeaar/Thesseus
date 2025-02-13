@@ -1,6 +1,6 @@
 #include "descriptors.h"
 
-core::Status
+core::code
 mgmt::vulkan::descriptor::LayoutBuilder::add_binding(u32 binding,
                                                      VkDescriptorType type)
 {
@@ -9,17 +9,17 @@ mgmt::vulkan::descriptor::LayoutBuilder::add_binding(u32 binding,
   bind.descriptorCount = 1;
   bind.descriptorType = type;
   bindings.push_back(bind);
-  return core::Status::SUCCESS;
+  return core::code::SUCCESS;
 }
 
-core::Status
+core::code
 mgmt::vulkan::descriptor::LayoutBuilder::clear()
 {
   bindings.clear();
-  return core::Status::SUCCESS;
+  return core::code::SUCCESS;
 }
 
-core::Result<VkDescriptorSetLayout, core::Status>
+core::Result<VkDescriptorSetLayout, core::code>
 mgmt::vulkan::descriptor::LayoutBuilder::build(
   VkDevice device,
   VkShaderStageFlags shader_stages,
@@ -39,7 +39,7 @@ mgmt::vulkan::descriptor::LayoutBuilder::build(
   VkDescriptorSetLayout set;
   auto status =
     check(vkCreateDescriptorSetLayout(device, &info, nullptr, &set));
-  if (status != core::Status::SUCCESS) {
+  if (status != core::code::SUCCESS) {
     return status;
   }
   return set;

@@ -1,7 +1,7 @@
 #pragma once
 
+#include "../enum.h"
 #include "../result.hpp"
-#include "../status.h"
 #include "../types.h"
 
 #include <fastgltf/glm_element_traits.hpp>
@@ -34,7 +34,7 @@ free(u8* image);
 
 namespace gltf {
 
-core::Status
+core::code
 load(std::filesystem::path path, fastgltf::Asset* asset_ptr);
 }
 

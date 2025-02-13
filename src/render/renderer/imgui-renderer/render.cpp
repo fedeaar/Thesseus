@@ -1,10 +1,14 @@
 #include "renderer.h"
 
+#include <backends/imgui_impl_sdl3.h>
+#include <backends/imgui_impl_vulkan.h>
+#include <imgui.h>
+
 //
 // constructor
 //
 
-core::Status
+core::code
 render::ImguiRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
 {
   // create pool
@@ -45,7 +49,7 @@ render::ImguiRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
   ImGui_ImplVulkan_CreateFontsTexture();
   // success
   initialized = true;
-  return core::Status::SUCCESS;
+  return core::code::SUCCESS;
 }
 
 render::ImguiRenderer::ImguiRenderer(mgmt::vulkan::Manager* vk_mgr,
@@ -57,16 +61,16 @@ render::ImguiRenderer::ImguiRenderer(mgmt::vulkan::Manager* vk_mgr,
 // destructor
 //
 
-core::Status
+core::code
 render::ImguiRenderer::destroy()
 {
   if (!initialized) {
-    return core::Status::SUCCESS;
+    return core::code::SUCCESS;
   }
   vkDeviceWaitIdle(vk_mgr_->get_dev());
   ImGui_ImplVulkan_Shutdown();
   initialized = false;
-  return core::Status::SUCCESS;
+  return core::code::SUCCESS;
 }
 
 render::ImguiRenderer::~ImguiRenderer()
@@ -78,7 +82,7 @@ render::ImguiRenderer::~ImguiRenderer()
 // draw
 //
 
-core::Status
+core::code
 render::ImguiRenderer::draw(VkCommandBuffer cmd,
                             mgmt::vulkan::swapchain::Swapchain& swapchain)
 {
@@ -97,5 +101,5 @@ render::ImguiRenderer::draw(VkCommandBuffer cmd,
   vkCmdBeginRendering(cmd, &renderInfo);
   ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
   vkCmdEndRendering(cmd);
-  return core::Status::SUCCESS;
+  return core::code::SUCCESS;
 }

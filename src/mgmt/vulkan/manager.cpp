@@ -6,12 +6,12 @@ std::string const mgmt::vulkan::namespace_ = mgmt::namespace_ + "::vulkan";
 
 core::Logger mgmt::vulkan::logger{ namespace_ };
 
-core::Status
+core::code
 mgmt::vulkan::check(VkResult result)
 {
   if (result != 0) {
     logger.err("vulkan error: {}", string_VkResult(result));
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
-  return core::Status::SUCCESS;
+  return core::code::SUCCESS;
 };

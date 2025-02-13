@@ -3,13 +3,13 @@
 #include <fastgltf/core.hpp>
 #include <fastgltf/types.hpp>
 
-core::Status
+core::code
 io::gltf::load(std::filesystem::path path, fastgltf::Asset* asset_ptr)
 {
   if (!std::filesystem::exists(path)) {
     // todo: use logger
     std::cout << "gltf load error: failed to find " << path << std::endl;
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   static constexpr auto ext = fastgltf::Extensions::KHR_mesh_quantization |
                               fastgltf::Extensions::KHR_texture_transform |
@@ -26,15 +26,15 @@ io::gltf::load(std::filesystem::path path, fastgltf::Asset* asset_ptr)
     // todo: use logger
     std::cout << "Failed to open glTF file: "
               << fastgltf::getErrorMessage(file.error()) << std::endl;
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   auto asset = parser.loadGltf(file.get(), path.parent_path(), options);
   if (asset.error() != fastgltf::Error::None) {
     // todo: use logger
     std::cout << "Failed to load glTF: "
               << fastgltf::getErrorMessage(asset.error()) << '\n';
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   *asset_ptr = std::move(asset.get());
-  return core::Status::SUCCESS;
+  return core::code::SUCCESS;
 }

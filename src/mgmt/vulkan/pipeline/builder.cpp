@@ -177,7 +177,7 @@ mgmt::vulkan::pipeline::Builder::disable_depthtest()
 // build
 //
 
-core::Result<VkPipeline, core::Status>
+core::Result<VkPipeline, core::code>
 mgmt::vulkan::pipeline::Builder::build_pipeline(VkDevice device)
 {
   // default
@@ -224,9 +224,9 @@ mgmt::vulkan::pipeline::Builder::build_pipeline(VkDevice device)
   VkPipeline gfx_pipeline;
   auto status = check(vkCreateGraphicsPipelines(
     device, VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &gfx_pipeline));
-  if (status != core::Status::SUCCESS) {
+  if (status != core::code::SUCCESS) {
     logger.err("build_pipeline failed");
-    return core::Status::ERROR;
+    return core::code::ERROR;
   }
   return gfx_pipeline;
 }

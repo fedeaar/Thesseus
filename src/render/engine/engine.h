@@ -1,26 +1,19 @@
 #pragma once
 
-#include "../base/base.h"
-#include "../renderer/renderer.h"
+#include "../render.h"
+#include "../renderer/include.h"
 
 namespace render {
 class Engine
 {
 public:
-  enum Status
-  {
-    NOT_INIT = 0,
-    INIT = 1,
-    ERROR = 2
-  };
-
   struct Params
   {
     u32 screen_width, screen_height;
     std::string name;
   };
 
-  Status initialized = NOT_INIT;
+  core::status initialized = core::status::NOT_INIT;
 
 private:
   std::string const namespace_ = render::namespace_ + "::Engine";
@@ -35,13 +28,13 @@ public:
   AssetRenderer asset_renderer_;
   ImguiRenderer imgui_renderer_;
 
-  core::Status init();
+  core::code init();
   Engine(Params& params);
 
-  core::Status destroy();
+  core::code destroy();
   ~Engine();
 
-  core::Status render(Camera& camera);
+  core::code render(Camera& camera);
 
   f32 get_aspect_ratio();
   f32& get_render_scale();

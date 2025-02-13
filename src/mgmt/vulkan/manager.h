@@ -15,7 +15,7 @@ extern std::string const namespace_;
 
 extern core::Logger logger;
 
-core::Status
+core::code
 check(VkResult result);
 
 } // namespace vulkan

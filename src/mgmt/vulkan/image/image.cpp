@@ -1,6 +1,6 @@
 #include "image.h"
 
-core::Status
+core::code
 mgmt::vulkan::image::copy_image(VkCommandBuffer cmd,
                                 VkImage source,
                                 VkImage destination,
@@ -33,10 +33,10 @@ mgmt::vulkan::image::copy_image(VkCommandBuffer cmd,
   blit_info.regionCount = 1;
   blit_info.pRegions = &blit_region;
   vkCmdBlitImage2(cmd, &blit_info);
-  return core::Status::SUCCESS;
+  return core::code::SUCCESS;
 }
 
-core::Status
+core::code
 mgmt::vulkan::image::transition_image(VkCommandBuffer cmd,
                                       VkImage image,
                                       VkImageLayout current,
@@ -66,5 +66,5 @@ mgmt::vulkan::image::transition_image(VkCommandBuffer cmd,
   dependency_info.imageMemoryBarrierCount = 1;
   dependency_info.pImageMemoryBarriers = &img_barrier;
   vkCmdPipelineBarrier2(cmd, &dependency_info);
-  return core::Status::SUCCESS;
+  return core::code::SUCCESS;
 }

@@ -30,7 +30,7 @@ git submodule update --init --recursive --progress
 git submodule update --force
 ```
 
-## build proyect
+## building the proyect
 
 ```bash
 # build game
@@ -45,3 +45,21 @@ build/build.sh -t
 # to run, add -r flag. for example:
 build/build.sh -t -r
 ```
+
+## Style guidelines
+
+1. use kebabcase for folders and files.
+
+2. use snakecase for namespaces, enums and variables.
+
+3. use pascalcase for classes and structs. 
+
+4. each folder should ideally be considered its own module. It should:
+
+    - have its own CMakeLists.txt
+    - have its own include.h (for outwards declarations)
+    - have an equally named header file for base dependencies of its files and subfolders (for inner declarations)
+
+5. prefer importing include.h files over inner headers between modules.
+
+6. prefer the `core` enums for return codes and state codes, as well as the `core` types.

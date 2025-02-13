@@ -4,17 +4,17 @@
 // constructor
 //
 
-core::Status
+core::code
 EventLoop::init()
 {
   // TODO: proper error handling
-  if (engine_->init() != core::Status::SUCCESS) {
-    return core::Status::ERROR;
+  if (engine_->init() != core::code::SUCCESS) {
+    return core::code::ERROR;
   }
-  if (!input_handler_.init()) {
-    return core::Status::ERROR;
+  if (input_handler_.init() != core::code::SUCCESS) {
+    return core::code::ERROR;
   }
-  return core::Status::SUCCESS;
+  return core::code::SUCCESS;
 }
 
 EventLoop::EventLoop(render::Engine* engine, Camera* camera)
@@ -26,15 +26,15 @@ EventLoop::EventLoop(render::Engine* engine, Camera* camera)
 // destructor
 //
 
-core::Status
+core::code
 EventLoop::destroy()
 {
   // TODO: proper error handling
-  if (!engine_->destroy()) {
-    return core::Status::ERROR;
+  if (engine_->destroy() != core::code::SUCCESS) {
+    return core::code::ERROR;
   }
   SDL_Quit(); // TODO: this should not be here
-  return core::Status::SUCCESS;
+  return core::code::SUCCESS;
 }
 
 //
@@ -85,11 +85,11 @@ EventLoop::tick()
   engine_->render(*camera_);
 }
 
-core::Status
+core::code
 EventLoop::run()
 {
   // TODO: proper error handling
-  if (!init()) {
+  if (init() != core::code::SUCCESS) {
     return destroy();
   }
   while (!quit_) {
