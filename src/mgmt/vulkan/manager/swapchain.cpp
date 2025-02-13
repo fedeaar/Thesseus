@@ -245,12 +245,16 @@ mgmt::vulkan::Manager::_destroy_swapchain(swapchain::Swapchain& swapchain)
 //
 
 core::Result<VkCommandBuffer, core::Status>
-mgmt::vulkan::Manager::swapchain_begin_commands(u32 frame_number,
-                                                swapchain::Swapchain& swapchain,
-                                                u32& img_idx)
+mgmt::vulkan::Manager::swapchain_begin_commands(swapchain::Swapchain& swapchain)
 {
   // we assume we are init
-  auto current_frame = swapchain.get_frame(frame_number);
+  swapchain.draw_extent.width =
+    min(swapchain.extent.width, swapchain.draw_img.extent.width) *
+    swapchain.render_scale;
+  swapchain.draw_extent.height =
+    min(swapchain.extent.height, swapchain.draw_img.extent.height) *
+    swapchain.render_scale;
+  auto current_frame = swapchain.get_current_frame();
   // wait and prepare for next render
   auto status = check(vkWaitForFences(device_,
                                       1,
@@ -268,7 +272,7 @@ mgmt::vulkan::Manager::swapchain_begin_commands(u32 frame_number,
                                       1000000000,
                                       current_frame.swapchain_semaphore,
                                       nullptr,
-                                      &img_idx);
+                                      &swapchain.current_img_idx);
   if (vk_err == VK_ERROR_OUT_OF_DATE_KHR) {
     resize_requested = true;
     return core::Status::RETRYABLE_ERROR;
@@ -299,15 +303,13 @@ mgmt::vulkan::Manager::swapchain_begin_commands(u32 frame_number,
 
 core::Status
 mgmt::vulkan::Manager::swapchain_end_commands(VkCommandBuffer cmd,
-                                              u32 frame_number,
-                                              u32 img_idx,
                                               swapchain::Swapchain& swapchain)
 {
   auto status = check(vkEndCommandBuffer(cmd));
   if (status != core::Status::SUCCESS) {
     return core::Status::ERROR; // todo@mgmt: log error msg
   }
-  auto current_frame = swapchain.get_frame(frame_number);
+  auto current_frame = swapchain.get_current_frame();
   // prepare the submission to the queue
   VkCommandBufferSubmitInfo cmd_submit_info =
     info::command_buffer_submit_info(cmd);
@@ -332,8 +334,9 @@ mgmt::vulkan::Manager::swapchain_end_commands(VkCommandBuffer cmd,
   present_info.swapchainCount = 1;
   present_info.pWaitSemaphores = &current_frame.render_semaphore;
   present_info.waitSemaphoreCount = 1;
-  present_info.pImageIndices = &img_idx;
+  present_info.pImageIndices = &swapchain.current_img_idx;
   auto vk_err = vkQueuePresentKHR(graphics_queue_, &present_info);
+  swapchain.frame++;
   if (vk_err == VK_ERROR_OUT_OF_DATE_KHR) {
     resize_requested = true;
     return core::Status::RETRYABLE_ERROR;

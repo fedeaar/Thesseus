@@ -1,11 +1,11 @@
 #pragma once
 
-#include "../renderer.h"
+#include "../base/base.h"
 #include <memory>
 
 namespace render {
 
-class CustomMeshRenderer : Renderer
+class AssetRenderer : Renderer
 {
 public:
   bool initialized = false;
@@ -34,13 +34,12 @@ private:
 
 public:
   core::Status init(mgmt::vulkan::swapchain::Swapchain& swapchain);
-  CustomMeshRenderer(mgmt::vulkan::Manager* vk_mgr);
+  AssetRenderer(mgmt::vulkan::Manager* vk_mgr);
 
   core::Status destroy();
-  ~CustomMeshRenderer();
+  ~AssetRenderer();
 
   core::Status draw(VkCommandBuffer cmd,
-                    u32 img_idx,
                     mgmt::vulkan::swapchain::Swapchain& swapchain,
                     Camera& camera);
 };

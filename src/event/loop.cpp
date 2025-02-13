@@ -67,14 +67,14 @@ EventLoop::tick()
   ImGui_ImplSDL3_NewFrame();
   ImGui::NewFrame();
   if (ImGui::Begin("background")) {
-    ImGui::SliderFloat("Render Scale", &engine_->render_scale, 0.3f, 1.f);
-    auto& selected =
-      engine_->swap_renderer_.effects_[engine_->swap_renderer_.current_effect_];
+    ImGui::SliderFloat("Render Scale", &engine_->get_render_scale(), 0.3f, 1.f);
+    auto& selected = engine_->background_renderer_
+                       .effects_[engine_->background_renderer_.current_effect_];
     ImGui::Text("Selected effect: ", selected.name);
     ImGui::SliderInt("Effect Index",
-                     (i32*)&engine_->swap_renderer_.current_effect_,
+                     (i32*)&engine_->background_renderer_.current_effect_,
                      0,
-                     engine_->swap_renderer_.effects_.size() - 1);
+                     engine_->background_renderer_.effects_.size() - 1);
     ImGui::InputFloat4("data1", (float*)&selected.data.data1);
     ImGui::InputFloat4("data2", (float*)&selected.data.data2);
     ImGui::InputFloat4("data3", (float*)&selected.data.data3);

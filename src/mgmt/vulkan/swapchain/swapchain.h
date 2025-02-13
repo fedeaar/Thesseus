@@ -35,8 +35,12 @@ struct Swapchain
   VkDescriptorSetLayout draw_img_descriptor_layout;
   Frame frames[FRAME_OVERLAP];
   u32 frame = 0;
+  u32 current_img_idx = 0;
+  f32 render_scale = 1.f;
 
-  Frame& get_frame(u32 frame_number);
+  Frame& get_current_frame();
+  VkImage& get_current_image();
+  VkImageView& get_current_image_view();
 };
 
 } // namespace swapchain

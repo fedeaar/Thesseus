@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../renderer.h"
+#include "../base/base.h"
 
 #include <backends/imgui_impl_sdl3.h>
 #include <backends/imgui_impl_vulkan.h>
@@ -21,7 +21,6 @@ public:
   ~ImguiRenderer();
 
   core::Status draw(VkCommandBuffer cmd,
-                    u32 img_idx,
                     mgmt::vulkan::swapchain::Swapchain& swapchain);
 };
 } // namespace render

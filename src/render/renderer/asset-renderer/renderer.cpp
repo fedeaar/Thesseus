@@ -7,12 +7,11 @@
 //
 
 core::Status
-render::CustomMeshRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
+render::AssetRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
 {
   if (initialized) {
     return core::Status::SUCCESS;
   }
-  swapchain_ = swapchain;
   // layout
   mgmt::vulkan::descriptor::LayoutBuilder layout_builder;
   layout_builder.add_binding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
@@ -42,8 +41,8 @@ render::CustomMeshRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
   // builder.enable_blending_additive();
   builder.disable_blending();
   builder.enable_depthtest(true, VK_COMPARE_OP_LESS_OR_EQUAL);
-  builder.set_color_attachment_format(swapchain_.draw_img.format);
-  builder.set_depth_format(swapchain_.depth_img.format);
+  builder.set_color_attachment_format(swapchain.draw_img.format);
+  builder.set_depth_format(swapchain.depth_img.format);
   // pipeline initc
   auto pipeline_result =
     vk_mgr_->create_gfx_pipeline(layout_info,
@@ -150,7 +149,7 @@ render::CustomMeshRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
   return core::Status::SUCCESS;
 }
 
-render::CustomMeshRenderer::CustomMeshRenderer(mgmt::vulkan::Manager* vk_mgr)
+render::AssetRenderer::AssetRenderer(mgmt::vulkan::Manager* vk_mgr)
   : render::Renderer{ vk_mgr } {};
 
 //
@@ -158,7 +157,7 @@ render::CustomMeshRenderer::CustomMeshRenderer(mgmt::vulkan::Manager* vk_mgr)
 //
 
 core::Status
-render::CustomMeshRenderer::destroy()
+render::AssetRenderer::destroy()
 {
   // todo@engine: handle pipes?
   del_queue_.flush();
@@ -166,7 +165,7 @@ render::CustomMeshRenderer::destroy()
   return core::Status::SUCCESS;
 }
 
-render::CustomMeshRenderer::~CustomMeshRenderer()
+render::AssetRenderer::~AssetRenderer()
 {
   if (initialized) {
     destroy();
@@ -178,12 +177,11 @@ render::CustomMeshRenderer::~CustomMeshRenderer()
 //
 
 core::Status
-render::CustomMeshRenderer::draw(VkCommandBuffer cmd,
-                                 u32 img_idx,
-                                 mgmt::vulkan::swapchain::Swapchain& swapchain,
-                                 Camera& camera)
+render::AssetRenderer::draw(VkCommandBuffer cmd,
+                            mgmt::vulkan::swapchain::Swapchain& swapchain,
+                            Camera& camera)
 {
-  auto current_frame = swapchain.get_frame(swapchain.frame);
+  auto current_frame = swapchain.get_current_frame();
   // mgmt::vulkan::buffer::AllocatedBuffer scene_buffer =
   //   vk_mgr_
   //     ->create_buffer(sizeof(GPUSceneData),
@@ -212,9 +210,9 @@ render::CustomMeshRenderer::draw(VkCommandBuffer cmd,
       swapchain.draw_img.view, nullptr, VK_IMAGE_LAYOUT_GENERAL);
   VkRenderingAttachmentInfo depth_attachment =
     mgmt::vulkan::info::depth_attachment_info(
-      swapchain_.depth_img.view, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+      swapchain.depth_img.view, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
   VkRenderingInfo render_info = mgmt::vulkan::info::rendering_info(
-    swapchain_.draw_extent, &color_attachment, &depth_attachment);
+    swapchain.draw_extent, &color_attachment, &depth_attachment);
   vkCmdBeginRendering(cmd, &render_info);
   vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_.pipeline);
   VkDescriptorSet set = current_frame.frame_descriptors.allocate(

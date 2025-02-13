@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../renderer.h"
+#include "../base/base.h"
 
 namespace render {
 
-class SwapRenderer : Renderer
+class BackgroundRenderer : Renderer
 {
 public:
   struct ComputePushConstants
@@ -28,13 +28,12 @@ public:
   u32 current_effect_ = 0;
 
   core::Status init(mgmt::vulkan::swapchain::Swapchain& swapchain);
-  SwapRenderer(mgmt::vulkan::Manager* vk_mgr);
+  BackgroundRenderer(mgmt::vulkan::Manager* vk_mgr);
 
   core::Status destroy();
-  ~SwapRenderer();
+  ~BackgroundRenderer();
 
   core::Status draw(VkCommandBuffer cmd,
-                    u32 img_idx,
                     mgmt::vulkan::swapchain::Swapchain& swapchain);
 };
 } // namespace render

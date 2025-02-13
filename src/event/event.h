@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../camera/camera.h"
-#include "../core/types.h"
-#include "../render/engine/engine.h"
+#include "../core/core.h"
+#include "../render/render.h"
 
 #include <SDL3/SDL.h>
 #include <backends/imgui_impl_sdl3.h>

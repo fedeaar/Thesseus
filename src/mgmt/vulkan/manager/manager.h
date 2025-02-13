@@ -76,12 +76,8 @@ public:
   core::Status _destroy_swapchain(swapchain::Swapchain& swapchain);
   core::Status resize_swapchain(swapchain::Swapchain& swapchain);
   core::Result<VkCommandBuffer, core::Status> swapchain_begin_commands(
-    u32 frame_number,
-    swapchain::Swapchain& swapchain,
-    u32& img_idx);
+    swapchain::Swapchain& swapchain);
   core::Status swapchain_end_commands(VkCommandBuffer cmd,
-                                      u32 frame_number,
-                                      u32 img_idx,
                                       swapchain::Swapchain& swapchain);
   // pipelines
   core::Result<pipeline::Pipeline, core::Status> create_compute_pipeline(

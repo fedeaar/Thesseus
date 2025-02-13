@@ -4,7 +4,7 @@
 #include <stb_image.h>
 
 u8*
-io::image::raw(const std::string& path,
+io::image::raw(std::string const& path,
                i32* width,
                i32* height,
                i32* comp,

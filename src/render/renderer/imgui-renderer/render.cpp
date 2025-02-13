@@ -7,7 +7,6 @@
 core::Status
 render::ImguiRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
 {
-  swapchain_ = swapchain;
   // create pool
   VkDescriptorPoolSize pool_sizes[] = {
     { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
@@ -40,7 +39,7 @@ render::ImguiRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
   };
   init_info.PipelineRenderingCreateInfo.colorAttachmentCount = 1;
   init_info.PipelineRenderingCreateInfo.pColorAttachmentFormats =
-    &swapchain_.image_fmt;
+    &swapchain.image_fmt;
   init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
   ImGui_ImplVulkan_Init(&init_info);
   ImGui_ImplVulkan_CreateFontsTexture();
@@ -81,11 +80,10 @@ render::ImguiRenderer::~ImguiRenderer()
 
 core::Status
 render::ImguiRenderer::draw(VkCommandBuffer cmd,
-                            u32 img_idx,
                             mgmt::vulkan::swapchain::Swapchain& swapchain)
 {
-  auto img = swapchain.imgs[img_idx];
-  auto img_view = swapchain.img_views[img_idx];
+  auto img = swapchain.get_current_image();
+  auto img_view = swapchain.get_current_image_view();
   mgmt::vulkan::image::transition_image(
     cmd,
     img,

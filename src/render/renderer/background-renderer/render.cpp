@@ -5,12 +5,11 @@
 //
 
 core::Status
-render::SwapRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
+render::BackgroundRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
 {
   if (initialized) {
     return core::Status::SUCCESS;
   }
-  swapchain_ = swapchain;
   // layout
   VkPipelineLayoutCreateInfo layout_info{};
   layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -30,7 +29,7 @@ render::SwapRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
     logger_.err("create_compute_pipeline failed to create gradient pipeline");
     return core::Status::ERROR;
   }
-  render::SwapRenderer::ComputeEffect gradient = {
+  render::BackgroundRenderer::ComputeEffect gradient = {
     .name = "gradient",
     .pipeline = gradient_pipe_result.value(),
     .data = { .data1 = glm::vec4(1, 0, 0, 1), .data2 = glm::vec4(0, 0, 1, 1) }
@@ -43,7 +42,7 @@ render::SwapRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
     logger_.err("create_compute_pipeline failed to create sky pipeline");
     return core::Status::ERROR;
   }
-  render::SwapRenderer::ComputeEffect sky = {
+  render::BackgroundRenderer::ComputeEffect sky = {
     .name = "sky",
     .pipeline = sky_pipeline_result.value(),
     .data = { .data1 = glm::vec4(0.1, 0.2, 0.4, 0.97) }
@@ -55,7 +54,7 @@ render::SwapRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
   return core::Status::SUCCESS;
 }
 
-render::SwapRenderer::SwapRenderer(mgmt::vulkan::Manager* vk_mgr)
+render::BackgroundRenderer::BackgroundRenderer(mgmt::vulkan::Manager* vk_mgr)
   : render::Renderer{ vk_mgr } {};
 
 //
@@ -63,14 +62,14 @@ render::SwapRenderer::SwapRenderer(mgmt::vulkan::Manager* vk_mgr)
 //
 
 core::Status
-render::SwapRenderer::destroy()
+render::BackgroundRenderer::destroy()
 {
   // todo@engine: handle pipes?
   initialized = false;
   return core::Status::SUCCESS;
 }
 
-render::SwapRenderer::~SwapRenderer()
+render::BackgroundRenderer::~BackgroundRenderer()
 {
   if (initialized) {
     destroy();
@@ -82,11 +81,10 @@ render::SwapRenderer::~SwapRenderer()
 //
 
 core::Status
-render::SwapRenderer::draw(VkCommandBuffer cmd,
-                           u32 img_idx,
-                           mgmt::vulkan::swapchain::Swapchain& swapchain)
+render::BackgroundRenderer::draw(VkCommandBuffer cmd,
+                                 mgmt::vulkan::swapchain::Swapchain& swapchain)
 {
-  render::SwapRenderer::ComputeEffect& effect = effects_[current_effect_];
+  render::BackgroundRenderer::ComputeEffect& effect = effects_[current_effect_];
   vkCmdBindPipeline(
     cmd, VK_PIPELINE_BIND_POINT_COMPUTE, effect.pipeline.pipeline);
   // bind the descriptor set containing the draw image for the compute

@@ -1,11 +1,11 @@
 #pragma once
 
-#include <cmath>
+#include "../core/core.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "../core/inline.hpp"
-#include "../core/types.h"
+#include <cmath>
 
 class Camera
 {
