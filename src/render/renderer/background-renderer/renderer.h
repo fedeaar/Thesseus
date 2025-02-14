@@ -33,7 +33,7 @@ public:
   core::code destroy();
   ~BackgroundRenderer();
 
-  core::code draw(VkCommandBuffer cmd,
-                  mgmt::vulkan::swapchain::Swapchain& swapchain);
+  void draw(mgmt::vulkan::swapchain::Swapchain& swapchain);
 };
+
 } // namespace render

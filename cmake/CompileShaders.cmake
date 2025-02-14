@@ -2,9 +2,9 @@
 function(compile_shaders)
   find_program(GLSL_VALIDATOR glslangValidator HINTS /usr/bin /usr/local/bin $ENV{VULKAN_SDK}/Bin/ $ENV{VULKAN_SDK}/Bin32/)
   file(GLOB_RECURSE GLSL_SOURCE_FILES
-      ${PROJECT_SOURCE_DIR}/src/*.frag
-      ${PROJECT_SOURCE_DIR}/src/*.vert
-      ${PROJECT_SOURCE_DIR}/src/*.comp)
+      ${PROJECT_SOURCE_DIR}/res/shaders/*.frag
+      ${PROJECT_SOURCE_DIR}/res/shaders/*.vert
+      ${PROJECT_SOURCE_DIR}/res/shaders/*.comp)
   foreach(GLSL ${GLSL_SOURCE_FILES})
     message(STATUS "BUILDING SHADER ${GLSL}")
     get_filename_component(FILE_NAME ${GLSL} NAME)

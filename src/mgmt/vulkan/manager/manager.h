@@ -17,7 +17,7 @@ namespace vulkan {
 class Manager
 {
 public:
-  bool initialized = false;
+  core::status initialized = core::status::NOT_INIT;
   bool resize_requested = false; // TODO: move to swapchain
 
 private:
@@ -62,6 +62,7 @@ public:
   // descriptors
   core::Result<VkDescriptorPool, core::code> create_descriptor_pool(
     VkDescriptorPoolCreateInfo pool_info);
+  core::code destroy_descriptor_pool(VkDescriptorPool& pool);
   // buffers
   core::Result<buffer::AllocatedBuffer, core::code>
   create_buffer(size_t size, VkBufferUsageFlags flags, VmaMemoryUsage usage);
@@ -75,10 +76,8 @@ public:
   core::Result<swapchain::Swapchain, core::code> create_swapchain();
   core::code _destroy_swapchain(swapchain::Swapchain& swapchain);
   core::code resize_swapchain(swapchain::Swapchain& swapchain);
-  core::Result<VkCommandBuffer, core::code> swapchain_begin_commands(
-    swapchain::Swapchain& swapchain);
-  core::code swapchain_end_commands(VkCommandBuffer cmd,
-                                    swapchain::Swapchain& swapchain);
+  core::code swapchain_begin_commands(swapchain::Swapchain& swapchain);
+  core::code swapchain_end_commands(swapchain::Swapchain& swapchain);
   // pipelines
   core::Result<pipeline::Pipeline, core::code> create_compute_pipeline(
     swapchain::Swapchain& swapchain,
@@ -104,6 +103,8 @@ public:
     VkImageUsageFlags usage,
     bool mipmapped = false);
   core::code destroy_image(const image::AllocatedImage& img);
+  // dev
+  core::code device_wait_idle();
 };
 
 } // namespace vulkan

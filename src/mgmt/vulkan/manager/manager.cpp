@@ -13,18 +13,20 @@
 core::code
 mgmt::vulkan::Manager::init()
 {
-  if (initialized) {
+  if (initialized == core::status::INIT) {
     return core::code::SUCCESS;
   }
   if (!window_mgr_->initialized) {
-    logger.err("init failed, window_mgr is not initialized");
+    core::Logger::err("mgmt::vulkan::Manager::init",
+                      "window_mgr is not initialized");
     return core::code::ERROR;
   }
   // load system info
   auto system_info_result = vkb::SystemInfo::get_system_info();
   if (!system_info_result.has_value()) {
-    logger.err("init failed, get_system_info error: {}",
-               system_info_result.error().message());
+    core::Logger::err("mgmt::vulkan::Manager::init",
+                      "get_system_info error: {}",
+                      system_info_result.error().message());
     return core::code::ERROR;
   }
   auto system_info = system_info_result.value();
@@ -33,19 +35,23 @@ mgmt::vulkan::Manager::init()
   u32 extensions_count;
   auto extension_ptr = SDL_Vulkan_GetInstanceExtensions(&extensions_count);
   if (extension_ptr == NULL) {
-    logger.err("get_required_extensions failed, error: {}", SDL_GetError());
+    core::Logger::err("mgmt::vulkan::Manager::init",
+                      "get_required_extensions failed, error: {}",
+                      SDL_GetError());
     return core::code::ERROR;
   }
   if (!system_info.is_extension_available(VK_EXT_DEBUG_REPORT_EXTENSION_NAME)) {
-    logger.err("init failed, required extension not available: {}",
-               VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+    core::Logger::err("mgmt::vulkan::Manager::init",
+                      "required extension not available: {}",
+                      VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
     return core::code::ERROR;
   }
   extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
   for (int i = 0; i < extensions_count; ++i) {
     if (!system_info.is_extension_available(extension_ptr[i])) {
-      logger.err("init failed, required extension not available: {}",
-                 extension_ptr[i]);
+      core::Logger::err("mgmt::vulkan::Manager::init",
+                        "required extension not available: {}",
+                        extension_ptr[i]);
       return core::code::ERROR;
     }
     extensions.push_back(extension_ptr[i]);
@@ -60,8 +66,9 @@ mgmt::vulkan::Manager::init()
       .enable_extensions(extensions)
       .build();
   if (!instance_result.has_value()) {
-    logger.err("init failed, could not build instance: {}",
-               instance_result.error().message());
+    core::Logger::err("mgmt::vulkan::Manager::init",
+                      "could not build instance: {}",
+                      instance_result.error().message());
     return core::code::ERROR;
   }
   vkb::Instance vkb_instance = instance_result.value();
@@ -89,8 +96,9 @@ mgmt::vulkan::Manager::init()
                            .set_surface(surface_)
                            .select();
   if (!selector_result.has_value()) {
-    logger.err("init failed, could not select physical device: {}",
-               selector_result.error().message());
+    core::Logger::err("mgmt::vulkan::Manager::init",
+                      "could not select physical device: {}",
+                      selector_result.error().message());
     return core::code::ERROR;
   }
   auto vkb_phys_device = selector_result.value();
@@ -98,8 +106,9 @@ mgmt::vulkan::Manager::init()
   vkb::DeviceBuilder device_builder{ vkb_phys_device };
   auto device_builder_result = device_builder.build();
   if (!device_builder_result.has_value()) {
-    logger.err("init failed, could not build device: {}",
-               device_builder_result.error().message());
+    core::Logger::err("mgmt::vulkan::Manager::init",
+                      "could not build device: {}",
+                      device_builder_result.error().message());
     return core::code::ERROR;
   }
   auto vkb_device = device_builder_result.value();
@@ -108,15 +117,17 @@ mgmt::vulkan::Manager::init()
   // get graphics queue
   auto vkb_graphics_queue = vkb_device.get_queue(vkb::QueueType::graphics);
   if (!vkb_graphics_queue.has_value()) {
-    logger.err("init failed, could not get graphics queue: {}",
-               vkb_graphics_queue.error().message());
+    core::Logger::err("mgmt::vulkan::Manager::init",
+                      "could not get graphics queue: {}",
+                      vkb_graphics_queue.error().message());
     return core::code::ERROR;
   }
   graphics_queue_ = vkb_graphics_queue.value();
   auto vkb_queue_index = vkb_device.get_queue_index(vkb::QueueType::graphics);
   if (!vkb_queue_index.has_value()) {
-    logger.err("init failed, could not get graphics queue index: {}",
-               vkb_queue_index.error().message());
+    core::Logger::err("mgmt::vulkan::Manager::init",
+                      "could not get graphics queue index: {}",
+                      vkb_queue_index.error().message());
     return core::code::ERROR;
   }
   graphics_queue_family_ = vkb_queue_index.value();
@@ -137,8 +148,9 @@ mgmt::vulkan::Manager::init()
   auto status =
     check(vkCreateFence(device_, &fence_info, nullptr, &imm_submit_.fence));
   if (status != core::code::SUCCESS) {
-    logger.err("init failed, could not create imm fence: {}",
-               vkb_queue_index.error().message());
+    core::Logger::err("mgmt::vulkan::Manager::init",
+                      "could not create imm fence: {}",
+                      vkb_queue_index.error().message());
     return core::code::ERROR;
   }
   VkCommandPoolCreateInfo pool_info = info::command_pool_create_info(
@@ -146,8 +158,9 @@ mgmt::vulkan::Manager::init()
   status = check(vkCreateCommandPool(
     device_, &pool_info, nullptr, &imm_submit_.command_pool));
   if (status != core::code::SUCCESS) {
-    logger.err("init failed, could not create imm command pool: {}",
-               vkb_queue_index.error().message());
+    core::Logger::err("mgmt::vulkan::Manager::init",
+                      "could not create imm command pool: {}",
+                      vkb_queue_index.error().message());
     return core::code::ERROR;
   }
   VkCommandBufferAllocateInfo cmd_info =
@@ -155,8 +168,9 @@ mgmt::vulkan::Manager::init()
   status = check(
     vkAllocateCommandBuffers(device_, &cmd_info, &imm_submit_.command_buffer));
   if (status != core::code::SUCCESS) {
-    logger.err("init failed, could not alloc imm buffer: {}",
-               vkb_queue_index.error().message());
+    core::Logger::err("mgmt::vulkan::Manager::init",
+                      "could not alloc imm buffer: {}",
+                      vkb_queue_index.error().message());
     return core::code::ERROR;
   }
   // setup destroyers
@@ -172,7 +186,7 @@ mgmt::vulkan::Manager::init()
     vkDestroyInstance(instance_, nullptr);
   });
   // success
-  initialized = true;
+  initialized = core::status::INIT;
   return core::code::SUCCESS;
 }
 
@@ -186,21 +200,20 @@ mgmt::vulkan::Manager::Manager(WindowManager* window_mgr)
 core::code
 mgmt::vulkan::Manager::destroy()
 {
-  if (!initialized) {
-    logger.err("destroy failed, called before initialization");
+  if (initialized == core::status::NOT_INIT) {
+    core::Logger::err("mgmt::vulkan::Manager::destroy",
+                      "called before initialization");
     return core::code::SUCCESS;
   }
-  vkDeviceWaitIdle(device_);
+  device_wait_idle();
   del_queue_.flush();
-  initialized = false;
+  initialized = core::status::NOT_INIT;
   return core::code::SUCCESS;
 };
 
 mgmt::vulkan::Manager::~Manager()
 {
-  if (initialized) {
-    destroy();
-  }
+  destroy();
 };
 
 //
@@ -235,4 +248,17 @@ VmaAllocator const&
 mgmt::vulkan::Manager::get_allocator()
 {
   return allocator_;
+}
+
+//
+// dev
+//
+
+core::code
+mgmt::vulkan::Manager::device_wait_idle()
+{
+  if (initialized != core::status::INIT) {
+    return core::code::NOT_INIT;
+  }
+  return check(vkDeviceWaitIdle(device_));
 }

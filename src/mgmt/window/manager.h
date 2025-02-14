@@ -18,9 +18,6 @@ public:
   std::string const& window_name;
 
 private:
-  std::string const namespace_ = mgmt::namespace_ + "::WindowManager";
-  core::Logger logger_{ namespace_ };
-
   SDL_Window* window_ = nullptr;
   VkExtent2D extent_;
 

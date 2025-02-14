@@ -41,6 +41,11 @@ struct Swapchain
   Frame& get_current_frame();
   VkImage& get_current_image();
   VkImageView& get_current_image_view();
+  VkCommandBuffer& get_current_cmd_buffer();
+
+  core::code draw_img_transition(VkImageLayout current, VkImageLayout next);
+  core::code depth_img_transition(VkImageLayout current, VkImageLayout next);
+  core::code current_img_transition(VkImageLayout current, VkImageLayout next);
 };
 
 } // namespace swapchain

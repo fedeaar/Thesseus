@@ -11,10 +11,6 @@
 namespace mgmt {
 namespace vulkan {
 
-extern std::string const namespace_;
-
-extern core::Logger logger;
-
 core::code
 check(VkResult result);
 

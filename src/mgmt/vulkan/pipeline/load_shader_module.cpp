@@ -8,7 +8,9 @@ mgmt::vulkan::pipeline::load_shader_module(const char* file_path,
 {
   std::ifstream file(file_path, std::ios::ate | std::ios::binary);
   if (!file.is_open()) {
-    logger.err("load_shader_module failed, could not open file {}", file_path);
+    core::Logger::err("mgmt::vulkan::pipeline::load_shader_module",
+                      "could not open file {}",
+                      file_path);
     return core::code::ERROR;
   }
   size_t size = (size_t)file.tellg();
@@ -25,7 +27,8 @@ mgmt::vulkan::pipeline::load_shader_module(const char* file_path,
   auto status =
     check(vkCreateShaderModule(device, &info, nullptr, &shader_module));
   if (status != core::code::SUCCESS) {
-    logger.err("load_shader_module failed, vkCreateShaderModule error");
+    core::Logger::err("mgmt::vulkan::pipeline::load_shader_module",
+                      "vkCreateShaderModule error");
     return status;
   }
   return shader_module;

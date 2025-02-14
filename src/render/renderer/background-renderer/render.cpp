@@ -26,7 +26,8 @@ render::BackgroundRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
   auto gradient_pipe_result = vk_mgr_->create_compute_pipeline(
     swapchain, layout_info, "./shaders/gradient-color.comp.spv");
   if (!gradient_pipe_result.has_value()) {
-    logger_.err("create_compute_pipeline failed to create gradient pipeline");
+    core::Logger::err("render::BackgroundRenderer::init",
+                      "failed to create gradient pipeline");
     return core::code::ERROR;
   }
   render::BackgroundRenderer::ComputeEffect gradient = {
@@ -39,7 +40,8 @@ render::BackgroundRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
   auto sky_pipeline_result = vk_mgr_->create_compute_pipeline(
     swapchain, layout_info, "./shaders/sky.comp.spv");
   if (!sky_pipeline_result.has_value()) {
-    logger_.err("create_compute_pipeline failed to create sky pipeline");
+    core::Logger::err("render::BackgroundRenderer::init",
+                      "failed to create sky pipeline");
     return core::code::ERROR;
   }
   render::BackgroundRenderer::ComputeEffect sky = {
@@ -80,11 +82,11 @@ render::BackgroundRenderer::~BackgroundRenderer()
 // draw
 //
 
-core::code
-render::BackgroundRenderer::draw(VkCommandBuffer cmd,
-                                 mgmt::vulkan::swapchain::Swapchain& swapchain)
+void
+render::BackgroundRenderer::draw(mgmt::vulkan::swapchain::Swapchain& swapchain)
 {
-  render::BackgroundRenderer::ComputeEffect& effect = effects_[current_effect_];
+  auto cmd = swapchain.get_current_cmd_buffer();
+  auto& effect = effects_[current_effect_];
   vkCmdBindPipeline(
     cmd, VK_PIPELINE_BIND_POINT_COMPUTE, effect.pipeline.pipeline);
   // bind the descriptor set containing the draw image for the compute
@@ -106,5 +108,4 @@ render::BackgroundRenderer::draw(VkCommandBuffer cmd,
                 std::ceil(swapchain.draw_extent.width / 16.0),
                 std::ceil(swapchain.draw_extent.height / 16.0),
                 1);
-  return core::code::SUCCESS;
 };

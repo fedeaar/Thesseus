@@ -4,11 +4,11 @@
 #include <stb_image.h>
 
 u8*
-io::image::raw(std::string const& path,
-               i32* width,
-               i32* height,
-               i32* comp,
-               i32 req_comp)
+core::io::image::raw(std::string const& path,
+                     i32* width,
+                     i32* height,
+                     i32* comp,
+                     i32 req_comp)
 {
   // TODO: proper error handling
   stbi_set_flip_vertically_on_load(true);
@@ -16,7 +16,7 @@ io::image::raw(std::string const& path,
 }
 
 void
-io::image::free(u8* image)
+core::io::image::free(u8* image)
 {
   stbi_image_free(image);
 }

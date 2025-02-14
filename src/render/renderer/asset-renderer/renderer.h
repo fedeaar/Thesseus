@@ -39,8 +39,7 @@ public:
   core::code destroy();
   ~AssetRenderer();
 
-  core::code draw(VkCommandBuffer cmd,
-                  mgmt::vulkan::swapchain::Swapchain& swapchain,
-                  Camera& camera);
+  void draw(mgmt::vulkan::swapchain::Swapchain& swapchain, Camera& camera);
 };
+
 } // namespace render

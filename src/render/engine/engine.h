@@ -16,9 +16,6 @@ public:
   core::status initialized = core::status::NOT_INIT;
 
 private:
-  std::string const namespace_ = render::namespace_ + "::Engine";
-  core::Logger logger_{ namespace_ };
-
   mgmt::WindowManager window_mgr_;
   mgmt::vulkan::Manager vk_mgr_;
   mgmt::vulkan::swapchain::Swapchain swapchain_;
@@ -34,7 +31,7 @@ public:
   core::code destroy();
   ~Engine();
 
-  core::code render(Camera& camera);
+  void render(Camera& camera);
 
   f32 get_aspect_ratio();
   f32& get_render_scale();

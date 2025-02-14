@@ -57,9 +57,11 @@ build/build.sh -t -r
 4. each folder should ideally be considered its own module. It should:
 
     - have its own CMakeLists.txt
-    - have its own include.h (for outwards declarations)
-    - have an equally named header file for base dependencies of its files and subfolders (for inner declarations)
+    - have its own include.h (for outwards includes)
+    - have an equally named header file for base dependencies of its files and subfolders (for inner includes)
 
 5. prefer importing include.h files over inner headers between modules.
 
 6. prefer the `core` enums for return codes and state codes, as well as the `core` types.
+
+7. prefer core::Logger over other logging mechanisms.

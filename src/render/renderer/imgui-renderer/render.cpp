@@ -11,6 +11,21 @@
 core::code
 render::ImguiRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
 {
+  if (initialized == core::status::INIT) {
+    return core::code::SUCCESS;
+  }
+  if (initialized == core::status::ERROR) {
+    return core::code::IN_ERROR_STATE;
+  }
+  // init context
+  ImGui::CreateContext();
+  // sdl impl
+  if (!ImGui_ImplSDL3_InitForVulkan(window_mgr_->get_window())) {
+    core::Logger::err("render::ImguiRenderer::init",
+                      "failed to initialize imgui sdl3 impl.");
+    initialized = core::status::ERROR;
+    return core::code::ERROR;
+  }
   // create pool
   VkDescriptorPoolSize pool_sizes[] = {
     { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
@@ -25,16 +40,21 @@ render::ImguiRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
   }
   pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
   pool_info.pPoolSizes = pool_sizes;
-  VkDescriptorPool pool = vk_mgr_->create_descriptor_pool(pool_info).value();
-  // init imgui and sdl
-  ImGui::CreateContext();
-  ImGui_ImplSDL3_InitForVulkan(window_mgr_->get_window());
+  auto pool_result = vk_mgr_->create_descriptor_pool(pool_info);
+  if (!pool_result.has_value()) {
+    core::Logger::err("render::ImguiRenderer::init",
+                      "failed to create descriptor pool.");
+    initialized = core::status::ERROR;
+    return core::code::ERROR;
+  }
+  imgui_pool_ = pool_result.value();
+  // vulkan impl
   ImGui_ImplVulkan_InitInfo init_info = {};
   init_info.Instance = vk_mgr_->get_instance();
   init_info.PhysicalDevice = vk_mgr_->get_physical_dev();
   init_info.Device = vk_mgr_->get_dev();
   init_info.Queue = vk_mgr_->get_graphics_queue();
-  init_info.DescriptorPool = pool;
+  init_info.DescriptorPool = imgui_pool_;
   init_info.MinImageCount = 3;
   init_info.ImageCount = 3;
   init_info.UseDynamicRendering = true;
@@ -45,10 +65,21 @@ render::ImguiRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
   init_info.PipelineRenderingCreateInfo.pColorAttachmentFormats =
     &swapchain.image_fmt;
   init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-  ImGui_ImplVulkan_Init(&init_info);
-  ImGui_ImplVulkan_CreateFontsTexture();
+  if (!ImGui_ImplVulkan_Init(&init_info)) {
+    core::Logger::err("render::ImguiRenderer::init",
+                      "failed to initialize imgui vulkan impl.");
+    initialized = core::status::ERROR;
+    return core::code::ERROR;
+  }
+  // textures
+  if (!ImGui_ImplVulkan_CreateFontsTexture()) {
+    core::Logger::err("render::ImguiRenderer::init",
+                      "failed to create fonts texture.");
+    initialized = core::status::ERROR;
+    return core::code::ERROR;
+  }
   // success
-  initialized = true;
+  initialized = core::status::INIT;
   return core::code::SUCCESS;
 }
 
@@ -64,12 +95,13 @@ render::ImguiRenderer::ImguiRenderer(mgmt::vulkan::Manager* vk_mgr,
 core::code
 render::ImguiRenderer::destroy()
 {
-  if (!initialized) {
+  if (initialized == core::status::NOT_INIT) {
     return core::code::SUCCESS;
   }
-  vkDeviceWaitIdle(vk_mgr_->get_dev());
+  vk_mgr_->device_wait_idle();
   ImGui_ImplVulkan_Shutdown();
-  initialized = false;
+  // vk_mgr_->destroy_descriptor_pool(imgui_pool_);
+  initialized = core::status::NOT_INIT;
   return core::code::SUCCESS;
 }
 
@@ -82,24 +114,23 @@ render::ImguiRenderer::~ImguiRenderer()
 // draw
 //
 
-core::code
-render::ImguiRenderer::draw(VkCommandBuffer cmd,
-                            mgmt::vulkan::swapchain::Swapchain& swapchain)
+void
+render::ImguiRenderer::draw(mgmt::vulkan::swapchain::Swapchain& swapchain)
 {
+  // we assume we are init
+  auto cmd = swapchain.get_current_cmd_buffer();
   auto img = swapchain.get_current_image();
   auto img_view = swapchain.get_current_image_view();
+  auto color_attachment = mgmt::vulkan::info::color_attachment_info(
+    img_view, nullptr, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+  auto renderInfo = mgmt::vulkan::info::rendering_info(
+    swapchain.extent, &color_attachment, nullptr);
   mgmt::vulkan::image::transition_image(
     cmd,
     img,
     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-  VkRenderingAttachmentInfo color_attachment =
-    mgmt::vulkan::info::color_attachment_info(
-      img_view, nullptr, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-  VkRenderingInfo renderInfo = mgmt::vulkan::info::rendering_info(
-    swapchain.extent, &color_attachment, nullptr);
   vkCmdBeginRendering(cmd, &renderInfo);
   ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
   vkCmdEndRendering(cmd);
-  return core::code::SUCCESS;
 }

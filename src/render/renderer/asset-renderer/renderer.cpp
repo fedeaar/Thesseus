@@ -50,14 +50,15 @@ render::AssetRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
                                  "./shaders/colored_triangle_mesh_vs.vert.spv",
                                  "./shaders/tex_image.frag.spv");
   if (!pipeline_result.has_value()) {
-    logger_.err("init failed, create_gfx_pipeline failed to create pipeline");
+    core::Logger::err("render::AssetRenderer::init",
+                      "create_gfx_pipeline failed to create pipeline");
     return core::code::ERROR;
   }
   pipeline_ = pipeline_result.value();
   // init mesh
-  auto meshes_result = vk_mgr_->load_gltf_meshes("./res/basicmesh.glb");
+  auto meshes_result = vk_mgr_->load_gltf_meshes("./res/meshes/basicmesh.glb");
   if (!meshes_result.has_value()) {
-    logger_.err("could not load meshes");
+    core::Logger::err("render::AssetRenderer::init", "could not load meshes");
     return core::code::ERROR;
   }
   meshes_ = meshes_result.value();
@@ -75,7 +76,8 @@ render::AssetRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
                                           VK_FORMAT_R8G8B8A8_UNORM,
                                           VK_IMAGE_USAGE_SAMPLED_BIT);
   if (!img_result.has_value()) {
-    logger_.err("could not load white img");
+    core::Logger::err("render::AssetRenderer::init",
+                      "could not load white img");
     return core::code::ERROR;
   }
   white_img_ = img_result.value();
@@ -85,7 +87,7 @@ render::AssetRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
                                      VK_FORMAT_R8G8B8A8_UNORM,
                                      VK_IMAGE_USAGE_SAMPLED_BIT);
   if (!img_result.has_value()) {
-    logger_.err("could not load gray img");
+    core::Logger::err("render::AssetRenderer::init", "could not load gray img");
     return core::code::ERROR;
   }
   gray_img_ = img_result.value();
@@ -95,7 +97,8 @@ render::AssetRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
                                      VK_FORMAT_R8G8B8A8_UNORM,
                                      VK_IMAGE_USAGE_SAMPLED_BIT);
   if (!img_result.has_value()) {
-    logger_.err("could not load black img");
+    core::Logger::err("render::AssetRenderer::init",
+                      "could not load black img");
     return core::code::ERROR;
   }
   black_img_ = img_result.value();
@@ -111,7 +114,8 @@ render::AssetRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
                                      VK_FORMAT_R8G8B8A8_UNORM,
                                      VK_IMAGE_USAGE_SAMPLED_BIT);
   if (!img_result.has_value()) {
-    logger_.err("could not load checker img");
+    core::Logger::err("render::AssetRenderer::init",
+                      "could not load checker img");
     return core::code::ERROR;
   }
   error_checker_img_ = img_result.value();
@@ -176,11 +180,11 @@ render::AssetRenderer::~AssetRenderer()
 // draw
 //
 
-core::code
-render::AssetRenderer::draw(VkCommandBuffer cmd,
-                            mgmt::vulkan::swapchain::Swapchain& swapchain,
+void
+render::AssetRenderer::draw(mgmt::vulkan::swapchain::Swapchain& swapchain,
                             Camera& camera)
 {
+  auto cmd = swapchain.get_current_cmd_buffer();
   auto current_frame = swapchain.get_current_frame();
   // mgmt::vulkan::buffer::AllocatedBuffer scene_buffer =
   //   vk_mgr_
@@ -205,13 +209,11 @@ render::AssetRenderer::draw(VkCommandBuffer cmd,
   //                     0,
   //                     VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
   // writer.update_set(vk_mgr_->get_dev(), global_descriptor_set);
-  VkRenderingAttachmentInfo color_attachment =
-    mgmt::vulkan::info::color_attachment_info(
-      swapchain.draw_img.view, nullptr, VK_IMAGE_LAYOUT_GENERAL);
-  VkRenderingAttachmentInfo depth_attachment =
-    mgmt::vulkan::info::depth_attachment_info(
-      swapchain.depth_img.view, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
-  VkRenderingInfo render_info = mgmt::vulkan::info::rendering_info(
+  auto color_attachment = mgmt::vulkan::info::color_attachment_info(
+    swapchain.draw_img.view, nullptr, VK_IMAGE_LAYOUT_GENERAL);
+  auto depth_attachment = mgmt::vulkan::info::depth_attachment_info(
+    swapchain.depth_img.view, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+  auto render_info = mgmt::vulkan::info::rendering_info(
     swapchain.draw_extent, &color_attachment, &depth_attachment);
   vkCmdBeginRendering(cmd, &render_info);
   vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_.pipeline);
@@ -266,5 +268,4 @@ render::AssetRenderer::draw(VkCommandBuffer cmd,
                    0,
                    0);
   vkCmdEndRendering(cmd);
-  return core::code::SUCCESS;
 };

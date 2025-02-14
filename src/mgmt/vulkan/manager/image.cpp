@@ -32,7 +32,8 @@ mgmt::vulkan::Manager::create_image(VkExtent3D size,
                                      &new_img.allocation,
                                      nullptr));
   if (status != core::code::SUCCESS) {
-    logger.err("create_image error, failed vmaCreateImage");
+    core::Logger::err("mgmt::vulkan::Manager::create_image",
+                      "failed vmaCreateImage");
     return core::code::ERROR;
   }
   VkImageAspectFlags aspectFlag = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -45,7 +46,8 @@ mgmt::vulkan::Manager::create_image(VkExtent3D size,
   status =
     check(vkCreateImageView(device_, &view_info, nullptr, &new_img.view));
   if (status != core::code::SUCCESS) {
-    logger.err("create_image error, failed vkCreateImageView");
+    core::Logger::err("mgmt::vulkan::Manager::create_image",
+                      "failed vkCreateImageView");
     return core::code::ERROR;
   }
   return new_img;
@@ -58,12 +60,12 @@ mgmt::vulkan::Manager::create_image(void* data,
                                     VkImageUsageFlags usage,
                                     bool mipmapped)
 {
-  u32 data_size =
-    size.depth * size.width * size.height * 4; // FIXME: this is unsafe
+  u32 data_size = size.depth * size.width * size.height * 4; // FIXME
   auto buff_result = create_buffer(
     data_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
   if (!buff_result.has_value()) {
-    logger.err("create_image error: create_buffer failed");
+    core::Logger::err("mgmt::vulkan::Manager::create_image",
+                      "create_buffer failed");
     return core::code::ERROR;
   }
   buffer::AllocatedBuffer upload_buff = buff_result.value();
@@ -74,7 +76,8 @@ mgmt::vulkan::Manager::create_image(void* data,
                                    VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
                                  mipmapped);
   if (!img_result.has_value()) {
-    logger.err("create_image error: create_image overload failed");
+    core::Logger::err("mgmt::vulkan::Manager::create_image",
+                      "create_image overload failed");
     return core::code::ERROR;
   }
   image::AllocatedImage new_image = img_result.value();
@@ -105,12 +108,14 @@ mgmt::vulkan::Manager::create_image(void* data,
   });
   if (status != core::code::SUCCESS) {
     // TODO: destroy buffer nevertheless
-    logger.err("create_image error: images setup overload failed");
+    core::Logger::err("mgmt::vulkan::Manager::create_image",
+                      "images setup overload failed");
     return core::code::ERROR;
   }
   status = destroy_buffer(upload_buff);
   if (status != core::code::SUCCESS) {
-    logger.err("create_image error: destroy_buffer failed");
+    core::Logger::err("mgmt::vulkan::Manager::create_image",
+                      "destroy_buffer failed");
     return core::code::ERROR;
   }
   return new_image;

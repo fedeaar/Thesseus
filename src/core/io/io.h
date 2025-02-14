@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../enum.h"
+#include "../logger.hpp"
 #include "../result.hpp"
 #include "../types.h"
 
@@ -13,6 +14,7 @@
 #include <memory>
 #include <string>
 
+namespace core {
 namespace io {
 
 namespace text {
@@ -39,3 +41,4 @@ load(std::filesystem::path path, fastgltf::Asset* asset_ptr);
 }
 
 } // namespace io
+} // namespace core

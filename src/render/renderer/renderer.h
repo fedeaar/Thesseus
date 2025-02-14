@@ -7,12 +7,9 @@ namespace render {
 class Renderer
 {
 public:
-  bool initialized = false;
+  core::status initialized = core::status::NOT_INIT;
 
 protected:
-  std::string const namespace_ = render::namespace_ + "::Renderer";
-  core::Logger logger_{ namespace_ };
-
   mgmt::vulkan::Manager* vk_mgr_;
 
 public:
@@ -22,7 +19,7 @@ public:
   core::code destroy();
   ~Renderer();
 
-  core::code draw(VkCommandBuffer cmd,
-                  mgmt::vulkan::swapchain::Swapchain& swapchain);
+  void draw(mgmt::vulkan::swapchain::Swapchain& swapchain);
 };
+
 } // namespace render

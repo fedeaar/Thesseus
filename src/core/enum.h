@@ -4,18 +4,19 @@ namespace core {
 
 enum class code
 {
-  NOT_IMPLEMENTED = -4,
-  RETRYABLE_ERROR = -3,
-  NOT_INIT = -2,
-  ERROR = -1,
-  SUCCESS = 1,
+  NOT_IMPLEMENTED,
+  RETRYABLE_ERROR,
+  NOT_INIT,
+  IN_ERROR_STATE,
+  ERROR,
+  SUCCESS,
 };
 
 enum class status
 {
-  ERROR = -2,
-  NOT_INIT = -1,
-  INIT = 1
+  ERROR,
+  NOT_INIT,
+  INIT,
 };
 
 } // namespace core

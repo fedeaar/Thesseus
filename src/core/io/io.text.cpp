@@ -1,7 +1,7 @@
 #include "io.h"
 
 std::string
-io::text::read(std::string const& path)
+core::io::text::read(std::string const& path)
 {
   std::ifstream stream;
   stream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -12,8 +12,8 @@ io::text::read(std::string const& path)
     stream.close();
     return data;
   } catch (std::ifstream::failure& e) {
-    // TODO: use logger
-    std::cerr << "File Error: " + path + " could not be read." << std::endl;
+    Logger::err(
+      "core::io::text::read", "file Error: {} could not be read.", path);
     throw e;
   }
 }

@@ -225,7 +225,8 @@ mgmt::vulkan::pipeline::Builder::build_pipeline(VkDevice device)
   auto status = check(vkCreateGraphicsPipelines(
     device, VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &gfx_pipeline));
   if (status != core::code::SUCCESS) {
-    logger.err("build_pipeline failed");
+    core::Logger::err("mgmt::vulkan::pipeline::Builder::build_pipeline",
+                      "vkCreateGraphicsPipelines failed");
     return core::code::ERROR;
   }
   return gfx_pipeline;

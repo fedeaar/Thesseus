@@ -12,9 +12,15 @@
 core::Result<mgmt::vulkan::swapchain::Swapchain, core::code>
 mgmt::vulkan::Manager::create_swapchain()
 {
-  if (!initialized) {
-    logger.err("create_swapchain failed, called before initialization");
+  if (initialized == core::status::NOT_INIT) {
+    core::Logger::err("mgmt::vulkan::Manager::create_swapchain",
+                      "called before initialization");
     return core::code::NOT_INIT;
+  }
+  if (initialized == core::status::ERROR) {
+    core::Logger::err("mgmt::vulkan::Manager::create_swapchain",
+                      "manager is in error state");
+    return core::code::IN_ERROR_STATE;
   }
   swapchain::Swapchain swapchain = { .image_fmt = VK_FORMAT_B8G8R8A8_UNORM };
   // we assume window_mgr is initialized
@@ -32,8 +38,9 @@ mgmt::vulkan::Manager::create_swapchain()
       .add_image_usage_flags(VK_IMAGE_USAGE_TRANSFER_DST_BIT)
       .build();
   if (!vkb_swapchain_result.has_value()) {
-    logger.err("create_swapchain failed, swapchain builder error: {}",
-               vkb_swapchain_result.error().message());
+    core::Logger::err("mgmt::vulkan::Manager::create_swapchain",
+                      "swapchain builder error: {}",
+                      vkb_swapchain_result.error().message());
     return core::code::ERROR;
   }
   auto vkb_swapchain = vkb_swapchain_result.value();
@@ -42,16 +49,18 @@ mgmt::vulkan::Manager::create_swapchain()
   // create image
   auto vkb_swapchain_imgs_result = vkb_swapchain.get_images();
   if (!vkb_swapchain_imgs_result.has_value()) {
-    logger.err("create_swapchain failed, get_images error: {}",
-               vkb_swapchain_imgs_result.error().message());
+    core::Logger::err("mgmt::vulkan::Manager::create_swapchain",
+                      "get_images error: {}",
+                      vkb_swapchain_imgs_result.error().message());
     return core::code::ERROR;
   }
   swapchain.imgs = vkb_swapchain_imgs_result.value();
   // create image views
   auto vkb_swapchain_img_views_result = vkb_swapchain.get_image_views();
   if (!vkb_swapchain_img_views_result.has_value()) {
-    logger.err("create_swapchain failed, get_image_views error: {}",
-               vkb_swapchain_img_views_result.error().message());
+    core::Logger::err("mgmt::vulkan::Manager::create_swapchain",
+                      "get_image_views error: {}",
+                      vkb_swapchain_img_views_result.error().message());
     return core::code::ERROR;
   }
   swapchain.img_views = vkb_swapchain_img_views_result.value();
@@ -77,7 +86,8 @@ mgmt::vulkan::Manager::create_swapchain()
                                      &swapchain.draw_img.allocation,
                                      nullptr));
   if (status != core::code::SUCCESS) {
-    logger.err("create_swapchain failed, could not create draw img view");
+    core::Logger::err("mgmt::vulkan::Manager::create_swapchain",
+                      "could not create draw img view");
     return core::code::ERROR;
   }
   VkImageViewCreateInfo draw_img_view_info =
@@ -87,7 +97,8 @@ mgmt::vulkan::Manager::create_swapchain()
   status = check(vkCreateImageView(
     device_, &draw_img_view_info, nullptr, &swapchain.draw_img.view));
   if (status != core::code::SUCCESS) {
-    logger.err("create_swapchain failed, vkCreateImageView error");
+    core::Logger::err("mgmt::vulkan::Manager::create_swapchain",
+                      "vkCreateImageView error");
     return status;
   }
   // create depth img
@@ -104,7 +115,8 @@ mgmt::vulkan::Manager::create_swapchain()
                                 &swapchain.depth_img.allocation,
                                 nullptr));
   if (status != core::code::SUCCESS) {
-    logger.err("create_swapchain failed, could not create depth img");
+    core::Logger::err("mgmt::vulkan::Manager::create_swapchain",
+                      "could not create depth img");
     return core::code::ERROR;
   }
   VkImageViewCreateInfo depth_view_info =
@@ -114,7 +126,8 @@ mgmt::vulkan::Manager::create_swapchain()
   status = check(vkCreateImageView(
     device_, &depth_view_info, nullptr, &swapchain.depth_img.view));
   if (status != core::code::SUCCESS) {
-    logger.err("create_swapchain failed, could not create depth img view");
+    core::Logger::err("mgmt::vulkan::Manager::create_swapchain",
+                      "could not create depth img view");
     return core::code::ERROR;
   }
   // create commands and sync structures
@@ -135,7 +148,8 @@ mgmt::vulkan::Manager::create_swapchain()
     status = check(vkCreateCommandPool(
       device_, &command_pool_info, nullptr, &swapchain.frames[i].command_pool));
     if (status != core::code::SUCCESS) {
-      logger.err("create_swapchain failed, vkCreateCommandPool error");
+      core::Logger::err("mgmt::vulkan::Manager::create_swapchain",
+                        "vkCreateCommandPool error");
       return status;
     }
     auto command_buffer_alloc_info =
@@ -146,13 +160,15 @@ mgmt::vulkan::Manager::create_swapchain()
                                      &command_buffer_alloc_info,
                                      &swapchain.frames[i].main_command_buffer));
     if (status != core::code::SUCCESS) {
-      logger.err("create_swapchain failed, vkAllocateCommandBuffers error");
+      core::Logger::err("mgmt::vulkan::Manager::create_swapchain",
+                        "vkAllocateCommandBuffers error");
       return status;
     }
     status = check(vkCreateFence(
       device_, &fence_info, nullptr, &swapchain.frames[i].render_fence));
     if (status != core::code::SUCCESS) {
-      logger.err("create_swapchain failed, vkCreateFence error");
+      core::Logger::err("mgmt::vulkan::Manager::create_swapchain",
+                        "vkCreateFence error");
       return status;
     }
     status = check(vkCreateSemaphore(device_,
@@ -160,7 +176,8 @@ mgmt::vulkan::Manager::create_swapchain()
                                      nullptr,
                                      &swapchain.frames[i].swapchain_semaphore));
     if (status != core::code::SUCCESS) {
-      logger.err("create_swapchain failed, vkCreateSemaphore error");
+      core::Logger::err("mgmt::vulkan::Manager::create_swapchain",
+                        "vkCreateSemaphore error");
       return status;
     }
     status = check(vkCreateSemaphore(device_,
@@ -168,7 +185,8 @@ mgmt::vulkan::Manager::create_swapchain()
                                      nullptr,
                                      &swapchain.frames[i].render_semaphore));
     if (status != core::code::SUCCESS) {
-      logger.err("create_swapchain failed, vkCreateSemaphore error");
+      core::Logger::err("mgmt::vulkan::Manager::create_swapchain",
+                        "vkCreateSemaphore error");
       return status;
     }
   }
@@ -178,7 +196,8 @@ mgmt::vulkan::Manager::create_swapchain()
   auto layout_result =
     layout_builder.build(device_, VK_SHADER_STAGE_COMPUTE_BIT);
   if (!layout_result.has_value()) {
-    logger.err("create_swapchain failed, layout_builder error");
+    core::Logger::err("mgmt::vulkan::Manager::create_swapchain",
+                      "layout_builder error");
     return layout_result.error();
   }
   swapchain.draw_img_descriptor_layout = layout_result.value();
@@ -186,7 +205,8 @@ mgmt::vulkan::Manager::create_swapchain()
   auto descriptor_result = descriptor_allocator_.allocate(
     device_, swapchain.draw_img_descriptor_layout);
   if (!descriptor_result.has_value()) {
-    logger.err("create_swapchain failed, descriptor_allocator error");
+    core::Logger::err("mgmt::vulkan::Manager::create_swapchain",
+                      "descriptor_allocator error");
     return descriptor_result.error();
   }
   swapchain.draw_img_descriptors = descriptor_result.value();
@@ -244,7 +264,7 @@ mgmt::vulkan::Manager::_destroy_swapchain(swapchain::Swapchain& swapchain)
 // commands
 //
 
-core::Result<VkCommandBuffer, core::code>
+core::code
 mgmt::vulkan::Manager::swapchain_begin_commands(swapchain::Swapchain& swapchain)
 {
   // we assume we are init
@@ -262,7 +282,8 @@ mgmt::vulkan::Manager::swapchain_begin_commands(swapchain::Swapchain& swapchain)
                                       true,
                                       1000000000)); // 1s
   if (status != core::code::SUCCESS) {
-    logger.log("ready_swapchain failed awaiting render fence");
+    core::Logger::log("mgmt::vulkan::Manager::swapchain_begin_commands",
+                      "failed awaiting render fence");
     return core::code::ERROR;
   }
   current_frame.del_queue.flush();
@@ -277,34 +298,38 @@ mgmt::vulkan::Manager::swapchain_begin_commands(swapchain::Swapchain& swapchain)
     resize_requested = true;
     return core::code::RETRYABLE_ERROR;
   } else if (vk_err && vk_err != VK_SUBOPTIMAL_KHR) {
-    logger.log("ready_swapchain failed acquiring image");
+    core::Logger::log("mgmt::vulkan::Manager::swapchain_begin_commands",
+                      "failed acquiring image");
     return core::code::ERROR;
   }
   status = check(vkResetFences(device_, 1, &current_frame.render_fence));
   if (status != core::code::SUCCESS) {
-    logger.log("ready_swapchain failed resetting fence");
+    core::Logger::log("mgmt::vulkan::Manager::swapchain_begin_commands",
+                      "failed resetting fence");
     return core::code::ERROR;
   }
-  VkCommandBuffer cmd = current_frame.main_command_buffer;
+  auto cmd = swapchain.get_current_cmd_buffer();
   status = check(vkResetCommandBuffer(cmd, 0));
   if (status != core::code::SUCCESS) {
-    logger.log("ready_swapchain failed resetting command buffer");
+    core::Logger::log("mgmt::vulkan::Manager::swapchain_begin_commands",
+                      "failed resetting command buffer");
     return core::code::ERROR;
   }
   VkCommandBufferBeginInfo cmd_info = info::command_buffer_begin_info(
     VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
   status = check(vkBeginCommandBuffer(cmd, &cmd_info));
   if (status != core::code::SUCCESS) {
-    logger.log("ready_swapchain failed initializing command buffer");
+    core::Logger::log("mgmt::vulkan::Manager::swapchain_begin_commands",
+                      "failed initializing command buffer");
     return core::code::ERROR;
   }
-  return cmd;
+  return core::code::SUCCESS;
 }
 
 core::code
-mgmt::vulkan::Manager::swapchain_end_commands(VkCommandBuffer cmd,
-                                              swapchain::Swapchain& swapchain)
+mgmt::vulkan::Manager::swapchain_end_commands(swapchain::Swapchain& swapchain)
 {
+  auto cmd = swapchain.get_current_cmd_buffer();
   auto status = check(vkEndCommandBuffer(cmd));
   if (status != core::code::SUCCESS) {
     return core::code::ERROR; // todo@mgmt: log error msg
@@ -341,7 +366,8 @@ mgmt::vulkan::Manager::swapchain_end_commands(VkCommandBuffer cmd,
     resize_requested = true;
     return core::code::RETRYABLE_ERROR;
   } else if (vk_err && vk_err != VK_SUBOPTIMAL_KHR) {
-    logger.log("ready_swapchain failed acquiring image");
+    core::Logger::log("mgmt::vulkan::Manager::swapchain_end_commands",
+                      "failed acquiring image");
     return core::code::ERROR;
   }
   // success
