@@ -9,9 +9,11 @@
 // create
 //
 
-core::Result<mgmt::vulkan::swapchain::Swapchain, core::code>
+/*
+core::Result<mgmt::vulkan::Swapchain, core::code>
 mgmt::vulkan::Manager::create_swapchain()
 {
+
   if (initialized == core::status::NOT_INIT) {
     core::Logger::err("mgmt::vulkan::Manager::create_swapchain",
                       "called before initialization");
@@ -22,10 +24,10 @@ mgmt::vulkan::Manager::create_swapchain()
                       "manager is in error state");
     return core::code::IN_ERROR_STATE;
   }
-  swapchain::Swapchain swapchain = { .image_fmt = VK_FORMAT_B8G8R8A8_UNORM };
+  Swapchain swapchain = { .image_fmt = VK_FORMAT_B8G8R8A8_UNORM };
   // we assume window_mgr is initialized
-  u32 width = window_mgr_->get_extent().width;
-  u32 height = window_mgr_->get_extent().height;
+  u32 width = window_mgr_->get_state().extent.width;
+  u32 height = window_mgr_->get_state().extent.height;
   vkb::SwapchainBuilder swapchain_builder{ gpu_, device_, surface_ };
   // create swapchain
   auto vkb_swapchain_result =
@@ -251,7 +253,7 @@ mgmt::vulkan::Manager::create_swapchain()
 }
 
 core::code
-mgmt::vulkan::Manager::_destroy_swapchain(swapchain::Swapchain& swapchain)
+mgmt::vulkan::Manager::_destroy_swapchain(Swapchain& swapchain)
 {
   vkDestroySwapchainKHR(device_, swapchain.swapchain, nullptr);
   // destroy swapchain resources
@@ -265,7 +267,7 @@ mgmt::vulkan::Manager::_destroy_swapchain(swapchain::Swapchain& swapchain)
 //
 
 core::code
-mgmt::vulkan::Manager::swapchain_begin_commands(swapchain::Swapchain& swapchain)
+mgmt::vulkan::Manager::swapchain_begin_commands(Swapchain& swapchain)
 {
   // we assume we are init
   swapchain.draw_extent.width =
@@ -327,7 +329,7 @@ mgmt::vulkan::Manager::swapchain_begin_commands(swapchain::Swapchain& swapchain)
 }
 
 core::code
-mgmt::vulkan::Manager::swapchain_end_commands(swapchain::Swapchain& swapchain)
+mgmt::vulkan::Manager::swapchain_end_commands(Swapchain& swapchain)
 {
   auto cmd = swapchain.get_current_cmd_buffer();
   auto status = check(vkEndCommandBuffer(cmd));
@@ -375,7 +377,7 @@ mgmt::vulkan::Manager::swapchain_end_commands(swapchain::Swapchain& swapchain)
 }
 
 core::code
-mgmt::vulkan::Manager::resize_swapchain(swapchain::Swapchain& swapchain)
+mgmt::vulkan::Manager::resize_swapchain(Swapchain& swapchain)
 {
   vkDeviceWaitIdle(device_);
   _destroy_swapchain(swapchain);
@@ -403,3 +405,4 @@ mgmt::vulkan::Manager::resize_swapchain(swapchain::Swapchain& swapchain)
   resize_requested = false;
   return core::code::SUCCESS;
 }
+*/

@@ -13,9 +13,3 @@
 #include <span>
 #include <string>
 #include <vector>
-
-namespace render {
-
-extern std::string const namespace_;
-
-} // namespace render

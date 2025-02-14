@@ -4,6 +4,7 @@
 #include "../renderer/include.h"
 
 namespace render {
+
 class Engine
 {
 public:
@@ -13,18 +14,20 @@ public:
     std::string name;
   };
 
-  core::status initialized = core::status::NOT_INIT;
+  struct State
+  {
+    core::status initialized = core::status::NOT_INIT;
+    mgmt::window::Manager window_mgr;
+    mgmt::vulkan::Manager vk_mgr;
+    mgmt::vulkan::Swapchain swapchain;
+  } state;
 
 private:
-  mgmt::WindowManager window_mgr_;
-  mgmt::vulkan::Manager vk_mgr_;
-  mgmt::vulkan::swapchain::Swapchain swapchain_;
-
-public:
   BackgroundRenderer background_renderer_;
   AssetRenderer asset_renderer_;
   ImguiRenderer imgui_renderer_;
 
+public:
   core::code init();
   Engine(Params& params);
 
@@ -35,7 +38,7 @@ public:
 
   f32 get_aspect_ratio();
   f32& get_render_scale();
-  mgmt::WindowManager* get_window_mgr();
+  mgmt::window::Manager* get_window_mgr();
   void maybe_resize_swapchain();
 };
 

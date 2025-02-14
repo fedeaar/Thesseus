@@ -7,7 +7,7 @@
 //
 
 core::code
-render::AssetRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
+render::AssetRenderer::init(mgmt::vulkan::Swapchain& swapchain)
 {
   if (initialized) {
     return core::code::SUCCESS;
@@ -181,8 +181,7 @@ render::AssetRenderer::~AssetRenderer()
 //
 
 void
-render::AssetRenderer::draw(mgmt::vulkan::swapchain::Swapchain& swapchain,
-                            Camera& camera)
+render::AssetRenderer::draw(mgmt::vulkan::Swapchain& swapchain, Camera& camera)
 {
   auto cmd = swapchain.get_current_cmd_buffer();
   auto current_frame = swapchain.get_current_frame();

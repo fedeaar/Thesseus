@@ -19,7 +19,7 @@ public:
   core::code destroy();
   ~Renderer();
 
-  void draw(mgmt::vulkan::swapchain::Swapchain& swapchain);
+  void draw(mgmt::vulkan::Swapchain& swapchain);
 };
 
 } // namespace render

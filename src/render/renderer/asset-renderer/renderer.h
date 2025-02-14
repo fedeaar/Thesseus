@@ -33,13 +33,13 @@ private:
   VkSampler default_nearest_sampler_;
 
 public:
-  core::code init(mgmt::vulkan::swapchain::Swapchain& swapchain);
+  core::code init(mgmt::vulkan::Swapchain& swapchain);
   AssetRenderer(mgmt::vulkan::Manager* vk_mgr);
 
   core::code destroy();
   ~AssetRenderer();
 
-  void draw(mgmt::vulkan::swapchain::Swapchain& swapchain, Camera& camera);
+  void draw(mgmt::vulkan::Swapchain& swapchain, Camera& camera);
 };
 
 } // namespace render

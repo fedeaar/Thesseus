@@ -3,7 +3,7 @@
 #include "manager.h"
 
 core::code
-mgmt::vulkan::check(VkResult result)
+mgmt::vulkan::check(VkResult const& result)
 {
   if (result != 0) {
     core::Logger::err(

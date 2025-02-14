@@ -12,7 +12,7 @@ namespace mgmt {
 namespace vulkan {
 
 core::code
-check(VkResult result);
+check(VkResult const& result);
 
 } // namespace vulkan
 } // namespace mgmt

@@ -1,61 +1,9 @@
 #include "manager.h"
 
-//
-// create
-//
-
-core::Result<mgmt::vulkan::image::AllocatedImage, core::code>
-mgmt::vulkan::Manager::create_image(VkExtent3D size,
-                                    VkFormat format,
-                                    VkImageUsageFlags usage,
-                                    bool mipmapped)
-{
-  image::AllocatedImage new_img;
-  new_img.format = format;
-  new_img.extent = size;
-
-  VkImageCreateInfo img_info = info::image_create_info(format, usage, size);
-  if (mipmapped) {
-    img_info.mipLevels = static_cast<u32>(std::floor(
-                           std::log2(std::max(size.width, size.height)))) +
-                         1;
-  }
-  VmaAllocationCreateInfo alloc_info = {};
-  alloc_info.usage =
-    VMA_MEMORY_USAGE_GPU_ONLY; // always allocate images on dedicated GPU memory
-  alloc_info.requiredFlags =
-    VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-  auto status = check(vmaCreateImage(allocator_,
-                                     &img_info,
-                                     &alloc_info,
-                                     &new_img.image,
-                                     &new_img.allocation,
-                                     nullptr));
-  if (status != core::code::SUCCESS) {
-    core::Logger::err("mgmt::vulkan::Manager::create_image",
-                      "failed vmaCreateImage");
-    return core::code::ERROR;
-  }
-  VkImageAspectFlags aspectFlag = VK_IMAGE_ASPECT_COLOR_BIT;
-  if (format == VK_FORMAT_D32_SFLOAT) {
-    aspectFlag = VK_IMAGE_ASPECT_DEPTH_BIT;
-  }
-  VkImageViewCreateInfo view_info =
-    info::imageview_create_info(format, new_img.image, aspectFlag);
-  view_info.subresourceRange.levelCount = img_info.mipLevels;
-  status =
-    check(vkCreateImageView(device_, &view_info, nullptr, &new_img.view));
-  if (status != core::code::SUCCESS) {
-    core::Logger::err("mgmt::vulkan::Manager::create_image",
-                      "failed vkCreateImageView");
-    return core::code::ERROR;
-  }
-  return new_img;
-}
-
+/*
 core::Result<mgmt::vulkan::image::AllocatedImage, core::code>
 mgmt::vulkan::Manager::create_image(void* data,
-                                    VkExtent3D size,
+                                    VkExtent3D extent,
                                     VkFormat format,
                                     VkImageUsageFlags usage,
                                     bool mipmapped)
@@ -132,3 +80,4 @@ mgmt::vulkan::Manager::destroy_image(const image::AllocatedImage& img)
   vmaDestroyImage(allocator_, img.image, img.allocation);
   return core::code::SUCCESS;
 }
+ */

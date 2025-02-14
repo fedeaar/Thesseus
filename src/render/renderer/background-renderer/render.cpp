@@ -5,7 +5,7 @@
 //
 
 core::code
-render::BackgroundRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
+render::BackgroundRenderer::init(mgmt::vulkan::Swapchain& swapchain)
 {
   if (initialized) {
     return core::code::SUCCESS;
@@ -83,7 +83,7 @@ render::BackgroundRenderer::~BackgroundRenderer()
 //
 
 void
-render::BackgroundRenderer::draw(mgmt::vulkan::swapchain::Swapchain& swapchain)
+render::BackgroundRenderer::draw(mgmt::vulkan::Swapchain& swapchain)
 {
   auto cmd = swapchain.get_current_cmd_buffer();
   auto& effect = effects_[current_effect_];

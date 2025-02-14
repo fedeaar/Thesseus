@@ -57,8 +57,8 @@ build/build.sh -t -r
 4. each folder should ideally be considered its own module. It should:
 
     - have its own CMakeLists.txt
-    - have its own include.h (for outwards includes)
-    - have an equally named header file for base dependencies of its files and subfolders (for inner includes)
+    - have its own include.h (for external use)
+    - have an equally named header file for base dependencies of its files and subfolders (for internal use)
 
 5. prefer importing include.h files over inner headers between modules.
 

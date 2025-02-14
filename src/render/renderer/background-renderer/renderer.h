@@ -27,13 +27,13 @@ public:
   std::vector<ComputeEffect> effects_;
   u32 current_effect_ = 0;
 
-  core::code init(mgmt::vulkan::swapchain::Swapchain& swapchain);
+  core::code init(mgmt::vulkan::Swapchain& swapchain);
   BackgroundRenderer(mgmt::vulkan::Manager* vk_mgr);
 
   core::code destroy();
   ~BackgroundRenderer();
 
-  void draw(mgmt::vulkan::swapchain::Swapchain& swapchain);
+  void draw(mgmt::vulkan::Swapchain& swapchain);
 };
 
 } // namespace render

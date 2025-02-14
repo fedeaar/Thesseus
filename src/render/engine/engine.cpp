@@ -7,55 +7,57 @@
 core::code
 render::Engine::init()
 {
-  if (initialized == core::status::INIT) {
+  if (state.initialized == core::status::INIT) {
     return core::code::SUCCESS;
   }
-  if (initialized == core::status::ERROR) {
+  if (state.initialized == core::status::ERROR) {
     return core::code::ERROR;
   }
-  if (window_mgr_.init() != core::code::SUCCESS) {
+  if (state.window_mgr.init() != core::code::SUCCESS) {
     core::Logger::err("render::Engine::init",
                       "window mgr could not be created");
     return core::code::ERROR;
   }
-  if (vk_mgr_.init() != core::code::SUCCESS) {
+  if (state.vk_mgr.init() != core::code::SUCCESS) {
     core::Logger::err("render::Engine::init", "vk mgr could not be created");
     return core::code::ERROR;
   }
-  auto swapchain_result = vk_mgr_.create_swapchain();
+  auto swapchain_result = state.vk_mgr.create_swapchain();
   if (!swapchain_result.has_value()) {
     core::Logger::err("render::Engine::init", "swapchain could not be created");
     return core::code::ERROR;
   }
-  swapchain_ = swapchain_result.value();
-  auto status = background_renderer_.init(swapchain_);
+  state.swapchain = swapchain_result.value();
+  auto status = background_renderer_.init(state.swapchain);
   if (status != core::code::SUCCESS) {
     core::Logger::err("render::Engine::init",
                       "swap renderer could not be created");
     return core::code::ERROR;
   }
-  status = asset_renderer_.init(swapchain_);
+  status = asset_renderer_.init(state.swapchain);
   if (status != core::code::SUCCESS) {
     core::Logger::err("render::Engine::init",
                       "triangle mesh renderer could not be created");
     return core::code::ERROR;
   }
-  status = imgui_renderer_.init(swapchain_);
+  status = imgui_renderer_.init(state.swapchain);
   if (status != core::code::SUCCESS) {
     core::Logger::err("render::Engine::init",
                       "imgui renderer could not be created");
     return core::code::ERROR;
   }
-  initialized = core::status::INIT;
+  state.initialized = core::status::INIT;
   return core::code::SUCCESS;
 }
 
 render::Engine::Engine(render::Engine::Params& params)
-  : window_mgr_{ params.screen_width, params.screen_height, params.name }
-  , vk_mgr_{ &window_mgr_ }
-  , background_renderer_{ &vk_mgr_ }
-  , asset_renderer_{ &vk_mgr_ }
-  , imgui_renderer_{ &vk_mgr_, &window_mgr_ }
+  : state{ .window_mgr{ params.screen_width,
+                        params.screen_height,
+                        params.name },
+           .vk_mgr{ &state.window_mgr } }
+  , background_renderer_{ &state.vk_mgr }
+  , asset_renderer_{ &state.vk_mgr }
+  , imgui_renderer_{ &state.vk_mgr, &state.window_mgr }
 {
 }
 
@@ -66,17 +68,17 @@ render::Engine::Engine(render::Engine::Params& params)
 core::code
 render::Engine::destroy()
 {
-  if (initialized == core::status::NOT_INIT) {
+  if (state.initialized == core::status::NOT_INIT) {
     return core::code::SUCCESS;
   }
-  if (initialized == core::status::ERROR) {
+  if (state.initialized == core::status::ERROR) {
     return core::code::ERROR;
   }
   auto imgui_renderer_status = imgui_renderer_.destroy();
   auto asset_renderer_status = asset_renderer_.destroy();
   auto background_renderer_status = background_renderer_.destroy();
-  auto vk_mgr_status = vk_mgr_.destroy();
-  auto window_mgr_status = window_mgr_.destroy();
+  auto vk_mgr_status = state.vk_mgr.destroy();
+  auto window_mgr_status = state.window_mgr.destroy();
   bool fail = false;
   if (imgui_renderer_status != core::code::SUCCESS) {
     core::Logger::err("render::Engine::destroy",
@@ -104,16 +106,16 @@ render::Engine::destroy()
     fail = true;
   }
   if (fail) {
-    initialized = core::status::ERROR;
+    state.initialized = core::status::ERROR;
     return core::code::ERROR;
   }
-  initialized = core::status::NOT_INIT;
+  state.initialized = core::status::NOT_INIT;
   return core::code::SUCCESS;
 }
 
 render::Engine::~Engine()
 {
-  if (initialized != core::status::NOT_INIT) {
+  if (state.initialized != core::status::NOT_INIT) {
     auto status = destroy();
     if (status != core::code::SUCCESS) {
       core::Logger::err("render::Engine::~Engine",
@@ -131,61 +133,27 @@ void
 render::Engine::render(Camera& camera)
 {
   // we assume we are init
-  vk_mgr_.swapchain_begin_commands(swapchain_);
+  state.vk_mgr.swapchain_begin_commands(state.swapchain);
   // draw
-  swapchain_.draw_img_transition(VK_IMAGE_LAYOUT_UNDEFINED,
-                                 VK_IMAGE_LAYOUT_GENERAL);
-  background_renderer_.draw(swapchain_);
-  swapchain_.draw_img_transition(VK_IMAGE_LAYOUT_GENERAL,
-                                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-  swapchain_.depth_img_transition(VK_IMAGE_LAYOUT_UNDEFINED,
-                                  VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
-  asset_renderer_.draw(swapchain_, camera);
-  swapchain_.draw_img_transition(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                                 VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-  swapchain_.current_img_transition(VK_IMAGE_LAYOUT_UNDEFINED,
-                                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-  mgmt::vulkan::image::copy_image(swapchain_.get_current_cmd_buffer(),
-                                  swapchain_.draw_img.image,
-                                  swapchain_.get_current_image(),
-                                  swapchain_.draw_extent,
-                                  swapchain_.extent);
-  imgui_renderer_.draw(swapchain_);
-  swapchain_.current_img_transition(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                                    VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-  vk_mgr_.swapchain_end_commands(swapchain_);
-}
-
-//
-// get
-//
-
-f32
-render::Engine::get_aspect_ratio()
-{
-  return window_mgr_.aspect_ratio;
-};
-
-f32&
-render::Engine::get_render_scale()
-{
-  return swapchain_.render_scale;
-}
-
-mgmt::WindowManager*
-render::Engine::get_window_mgr()
-{
-  return &window_mgr_;
-};
-
-//
-// other
-//
-
-void
-render::Engine::maybe_resize_swapchain()
-{
-  if (vk_mgr_.resize_requested) { // move
-    vk_mgr_.resize_swapchain(swapchain_);
-  }
+  state.swapchain.draw_img_transition(VK_IMAGE_LAYOUT_UNDEFINED,
+                                      VK_IMAGE_LAYOUT_GENERAL);
+  background_renderer_.draw(state.swapchain);
+  state.swapchain.draw_img_transition(VK_IMAGE_LAYOUT_GENERAL,
+                                      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+  state.swapchain.depth_img_transition(
+    VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+  asset_renderer_.draw(state.swapchain, camera);
+  state.swapchain.draw_img_transition(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                      VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+  state.swapchain.current_img_transition(VK_IMAGE_LAYOUT_UNDEFINED,
+                                         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+  mgmt::vulkan::image::copy_image(state.swapchain.get_current_cmd_buffer(),
+                                  state.swapchain.draw_img.image,
+                                  state.swapchain.get_current_image(),
+                                  state.swapchain.draw_extent,
+                                  state.swapchain.extent);
+  imgui_renderer_.draw(state.swapchain);
+  state.swapchain.current_img_transition(
+    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+  state.vk_mgr.swapchain_end_commands(state.swapchain);
 }

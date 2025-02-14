@@ -9,7 +9,7 @@
 //
 
 core::code
-render::ImguiRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
+render::ImguiRenderer::init(mgmt::vulkan::Swapchain& swapchain)
 {
   if (initialized == core::status::INIT) {
     return core::code::SUCCESS;
@@ -84,7 +84,7 @@ render::ImguiRenderer::init(mgmt::vulkan::swapchain::Swapchain& swapchain)
 }
 
 render::ImguiRenderer::ImguiRenderer(mgmt::vulkan::Manager* vk_mgr,
-                                     mgmt::WindowManager* window_mgr)
+                                     mgmt::window::Manager* window_mgr)
   : render::Renderer{ vk_mgr }
   , window_mgr_{ window_mgr } {};
 
@@ -115,7 +115,7 @@ render::ImguiRenderer::~ImguiRenderer()
 //
 
 void
-render::ImguiRenderer::draw(mgmt::vulkan::swapchain::Swapchain& swapchain)
+render::ImguiRenderer::draw(mgmt::vulkan::Swapchain& swapchain)
 {
   // we assume we are init
   auto cmd = swapchain.get_current_cmd_buffer();

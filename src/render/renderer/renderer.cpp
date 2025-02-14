@@ -22,7 +22,7 @@ render::Renderer::destroy()
 render::Renderer::~Renderer() {};
 
 void
-render::Renderer::draw(mgmt::vulkan::swapchain::Swapchain& swapchain)
+render::Renderer::draw(mgmt::vulkan::Swapchain& swapchain)
 {
   core::Logger::err("render::Renderer::draw", "base renderer is abstract");
 };

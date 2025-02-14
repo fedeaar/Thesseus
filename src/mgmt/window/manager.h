@@ -8,31 +8,37 @@
 
 namespace mgmt {
 
-class WindowManager
+namespace window {
+
+class Manager
 {
 public:
-  bool initialized = false;
-  u32 width;
-  u32 height;
-  f32 aspect_ratio;
-  std::string const& window_name;
+  struct State
+  {
+    core::status status = core::status::NOT_INIT;
+    VkExtent2D extent;
+    f32 aspect_ratio;
+
+    std::string window_name;
+  } state;
 
 private:
   SDL_Window* window_ = nullptr;
-  VkExtent2D extent_;
 
 public:
-  WindowManager(u32 width, u32 height, std::string const& window_name);
-  ~WindowManager();
-
   core::code init();
+  Manager(u32 width, u32 height, std::string const& window_name);
+
   core::code destroy();
+  ~Manager();
 
   SDL_Window* get_window();
-  VkExtent2D& get_extent();
-
+  State& get_state();
   core::Result<char const* const*, core::code> get_required_extensions(
     u32& count);
+
   core::code build_surface(VkInstance& instance, VkSurfaceKHR* surface);
 };
+
+} // namespace window
 } // namespace mgmt
