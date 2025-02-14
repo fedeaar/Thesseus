@@ -211,10 +211,7 @@ mgmt::vulkan::Manager::destroy()
   return core::code::SUCCESS;
 };
 
-mgmt::vulkan::Manager::~Manager()
-{
-  destroy();
-};
+mgmt::vulkan::Manager::~Manager() {};
 
 //
 // get
