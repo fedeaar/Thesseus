@@ -24,7 +24,7 @@ render::BackgroundRenderer::init(mgmt::vulkan::Swapchain& swapchain)
   layout_info.pushConstantRangeCount = 1;
   // gradient init
   auto gradient_pipe_result = vk_mgr_->create_compute_pipeline(
-    swapchain, layout_info, "./shaders/gradient-color.comp.spv");
+    layout_info, "./shaders/gradient-color.comp.spv");
   if (!gradient_pipe_result.has_value()) {
     core::Logger::err("render::BackgroundRenderer::init",
                       "failed to create gradient pipeline");
@@ -37,8 +37,8 @@ render::BackgroundRenderer::init(mgmt::vulkan::Swapchain& swapchain)
   };
   effects_.push_back(gradient);
   // sky renderer init
-  auto sky_pipeline_result = vk_mgr_->create_compute_pipeline(
-    swapchain, layout_info, "./shaders/sky.comp.spv");
+  auto sky_pipeline_result =
+    vk_mgr_->create_compute_pipeline(layout_info, "./shaders/sky.comp.spv");
   if (!sky_pipeline_result.has_value()) {
     core::Logger::err("render::BackgroundRenderer::init",
                       "failed to create sky pipeline");

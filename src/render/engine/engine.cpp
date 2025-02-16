@@ -22,12 +22,10 @@ render::Engine::init()
     core::Logger::err("render::Engine::init", "vk mgr could not be created");
     return core::code::ERROR;
   }
-  auto swapchain_result = state.vk_mgr.create_swapchain();
-  if (!swapchain_result.has_value()) {
+  if (state.swapchain.init() != core::code::SUCCESS) {
     core::Logger::err("render::Engine::init", "swapchain could not be created");
     return core::code::ERROR;
   }
-  state.swapchain = swapchain_result.value();
   auto status = background_renderer_.init(state.swapchain);
   if (status != core::code::SUCCESS) {
     core::Logger::err("render::Engine::init",
@@ -54,7 +52,8 @@ render::Engine::Engine(render::Engine::Params& params)
   : state{ .window_mgr{ params.screen_width,
                         params.screen_height,
                         params.name },
-           .vk_mgr{ &state.window_mgr } }
+           .vk_mgr{ &state.window_mgr },
+           .swapchain{ &state.vk_mgr } }
   , background_renderer_{ &state.vk_mgr }
   , asset_renderer_{ &state.vk_mgr }
   , imgui_renderer_{ &state.vk_mgr, &state.window_mgr }
@@ -133,7 +132,7 @@ void
 render::Engine::render(Camera& camera)
 {
   // we assume we are init
-  state.vk_mgr.swapchain_begin_commands(state.swapchain);
+  state.swapchain.begin_commands();
   // draw
   state.swapchain.draw_img_transition(VK_IMAGE_LAYOUT_UNDEFINED,
                                       VK_IMAGE_LAYOUT_GENERAL);
@@ -155,5 +154,5 @@ render::Engine::render(Camera& camera)
   imgui_renderer_.draw(state.swapchain);
   state.swapchain.current_img_transition(
     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-  state.vk_mgr.swapchain_end_commands(state.swapchain);
+  state.swapchain.end_commands();
 }

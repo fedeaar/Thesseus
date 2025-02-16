@@ -20,7 +20,7 @@ int
 main(int argc, char* args[])
 {
   render::Engine engine{ global };
-  Camera camera{ engine.get_aspect_ratio() };
+  Camera camera{ engine.state.window_mgr.state.aspect_ratio };
   EventLoop main{ &engine, &camera };
   if (main.run() != core::code::SUCCESS) {
     return 1;

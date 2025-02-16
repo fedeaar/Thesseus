@@ -84,6 +84,20 @@ mgmt::window::Manager::get_window()
   return window_;
 }
 
+core::code
+mgmt::window::Manager::get_extent(VkExtent2D& extent)
+{
+  if (state.status != core::status::INIT) {
+    core::Logger::err("mgmt::window::Manager::get_extent",
+                      "called before initialization");
+    return core::code::NOT_INIT;
+  }
+  int w, h; // move
+  SDL_GetWindowSize(window_, &w, &h);
+  extent = { (u32)w, (u32)h };
+  return core::code::SUCCESS;
+}
+
 mgmt::window::Manager::State&
 mgmt::window::Manager::get_state()
 {

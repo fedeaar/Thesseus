@@ -12,7 +12,7 @@ InputHandler::init()
   } else {
     SDL_ShowCursor();
   }
-  SDL_SetWindowRelativeMouseMode(engine_->get_window_mgr()->get_window(),
+  SDL_SetWindowRelativeMouseMode(engine_->state.window_mgr.get_window(),
                                  mouse_lock_);
   return core::code::SUCCESS;
 }

@@ -15,7 +15,6 @@ class Manager
 {
 public:
   core::status initialized = core::status::NOT_INIT;
-  bool resize_requested = false; // TODO: move to swapchain
 
 private:
   DestructorQueue del_queue_{};
@@ -65,7 +64,9 @@ public:
                               VkSwapchainKHR& swapchain,
                               std::vector<VkImage>& imgs,
                               std::vector<VkImageView>& imgs_views);
-
+  core::code destroy_swapchain(VkSwapchainKHR& swapchain,
+                               std::vector<VkImage>& imgs,
+                               std::vector<VkImageView>& imgs_views);
   // buffers
   core::Result<buffer::AllocatedBuffer, core::code>
   create_buffer(size_t size, VkBufferUsageFlags flags, VmaMemoryUsage usage);
@@ -76,16 +77,8 @@ public:
   core::Result<std::vector<std::shared_ptr<mesh::MeshAsset>>, core::code>
   load_gltf_meshes(char* path);
 
-  // swapchain
-  core::Result<Swapchain, core::code> create_swapchain();
-  core::code _destroy_swapchain(Swapchain& swapchain);
-  core::code resize_swapchain(Swapchain& swapchain);
-  core::code swapchain_begin_commands(Swapchain& swapchain);
-  core::code swapchain_end_commands(Swapchain& swapchain);
-
   // pipelines
   core::Result<pipeline::Pipeline, core::code> create_compute_pipeline(
-    Swapchain& swapchain,
     VkPipelineLayoutCreateInfo& layout_info,
     char* shader_path);
   core::Result<pipeline::Pipeline, core::code> create_gfx_pipeline(
@@ -103,6 +96,12 @@ public:
                           VkImageUsageFlags usage,
                           bool mipmapped,
                           image::AllocatedImage& image);
+  core::code create_image(void* data,
+                          VkExtent3D extent,
+                          VkFormat format,
+                          VkImageUsageFlags usage,
+                          bool mipmapped,
+                          image::AllocatedImage& image);
   core::Result<image::AllocatedImage, core::code> create_image(
     void* data,
     VkExtent3D size,
@@ -115,6 +114,7 @@ public:
   core::code create_fence(VkFenceCreateInfo& info, VkFence& fence);
   core::code create_semaphore(VkSemaphoreCreateInfo& info,
                               VkSemaphore& semaphore);
+  core::code await(u32 count, VkFence* fences, bool wait_all, u32 timeout);
 
   // command
   core::code create_command_buffers(VkCommandPoolCreateInfo& info,

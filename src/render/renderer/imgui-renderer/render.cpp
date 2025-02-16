@@ -63,7 +63,7 @@ render::ImguiRenderer::init(mgmt::vulkan::Swapchain& swapchain)
   };
   init_info.PipelineRenderingCreateInfo.colorAttachmentCount = 1;
   init_info.PipelineRenderingCreateInfo.pColorAttachmentFormats =
-    &swapchain.image_fmt;
+    &swapchain.surface_fmt.format;
   init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
   if (!ImGui_ImplVulkan_Init(&init_info)) {
     core::Logger::err("render::ImguiRenderer::init",

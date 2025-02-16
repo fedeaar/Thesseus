@@ -71,37 +71,37 @@ render::AssetRenderer::init(mgmt::vulkan::Swapchain& swapchain)
       .value(); // TODO: check ok and maybe abstract this
                 // default imgs
   u32 white = glm::packUnorm4x8(glm::vec4(1, 1, 1, 1));
-  auto img_result = vk_mgr_->create_image((void*)&white,
-                                          VkExtent3D{ 1, 1, 1 },
-                                          VK_FORMAT_R8G8B8A8_UNORM,
-                                          VK_IMAGE_USAGE_SAMPLED_BIT);
-  if (!img_result.has_value()) {
+  if (vk_mgr_->create_image((void*)&white,
+                            VkExtent3D{ 1, 1, 1 },
+                            VK_FORMAT_R8G8B8A8_UNORM,
+                            VK_IMAGE_USAGE_SAMPLED_BIT,
+                            false,
+                            white_img_) != core::code::SUCCESS) {
     core::Logger::err("render::AssetRenderer::init",
                       "could not load white img");
     return core::code::ERROR;
   }
-  white_img_ = img_result.value();
   u32 gray = glm::packUnorm4x8(glm::vec4(0.66f, 0.66f, 0.66f, 1));
-  img_result = vk_mgr_->create_image((void*)&gray,
-                                     VkExtent3D{ 1, 1, 1 },
-                                     VK_FORMAT_R8G8B8A8_UNORM,
-                                     VK_IMAGE_USAGE_SAMPLED_BIT);
-  if (!img_result.has_value()) {
+  if (vk_mgr_->create_image((void*)&gray,
+                            VkExtent3D{ 1, 1, 1 },
+                            VK_FORMAT_R8G8B8A8_UNORM,
+                            VK_IMAGE_USAGE_SAMPLED_BIT,
+                            false,
+                            gray_img_) != core::code::SUCCESS) {
     core::Logger::err("render::AssetRenderer::init", "could not load gray img");
     return core::code::ERROR;
   }
-  gray_img_ = img_result.value();
   u32 black = glm::packUnorm4x8(glm::vec4(0, 0, 0, 0));
-  img_result = vk_mgr_->create_image((void*)&black,
-                                     VkExtent3D{ 1, 1, 1 },
-                                     VK_FORMAT_R8G8B8A8_UNORM,
-                                     VK_IMAGE_USAGE_SAMPLED_BIT);
-  if (!img_result.has_value()) {
+  if (vk_mgr_->create_image((void*)&black,
+                            VkExtent3D{ 1, 1, 1 },
+                            VK_FORMAT_R8G8B8A8_UNORM,
+                            VK_IMAGE_USAGE_SAMPLED_BIT,
+                            false,
+                            black_img_) != core::code::SUCCESS) {
     core::Logger::err("render::AssetRenderer::init",
                       "could not load black img");
     return core::code::ERROR;
   }
-  black_img_ = img_result.value();
   u32 magenta = glm::packUnorm4x8(glm::vec4(1, 0, 1, 1));
   std::array<u32, 16 * 16> pixels;
   for (int x = 0; x < 16; x++) {
@@ -109,16 +109,16 @@ render::AssetRenderer::init(mgmt::vulkan::Swapchain& swapchain)
       pixels[y * 16 + x] = ((x % 2) ^ (y % 2)) ? magenta : black;
     }
   }
-  img_result = vk_mgr_->create_image(pixels.data(),
-                                     VkExtent3D{ 16, 16, 1 },
-                                     VK_FORMAT_R8G8B8A8_UNORM,
-                                     VK_IMAGE_USAGE_SAMPLED_BIT);
-  if (!img_result.has_value()) {
+  if (vk_mgr_->create_image(pixels.data(),
+                            VkExtent3D{ 16, 16, 1 },
+                            VK_FORMAT_R8G8B8A8_UNORM,
+                            VK_IMAGE_USAGE_SAMPLED_BIT,
+                            false,
+                            error_checker_img_) != core::code::SUCCESS) {
     core::Logger::err("render::AssetRenderer::init",
                       "could not load checker img");
     return core::code::ERROR;
   }
-  error_checker_img_ = img_result.value();
   // create default samplers
   VkSamplerCreateInfo sampl = { .sType =
                                   VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };

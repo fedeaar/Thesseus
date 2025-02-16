@@ -33,6 +33,7 @@ public:
   ~Manager();
 
   SDL_Window* get_window();
+  core::code get_extent(VkExtent2D& extent);
   State& get_state();
   core::Result<char const* const*, core::code> get_required_extensions(
     u32& count);

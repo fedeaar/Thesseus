@@ -297,7 +297,7 @@ mgmt::vulkan::Manager::create_swapchain(VkSurfaceFormatKHR surface_fmt,
                       "window_mgr is not initialized");
     return core::code::ERROR;
   }
-  auto extent = window_mgr_->state.extent;
+  window_mgr_->get_extent(extent);
   vkb::SwapchainBuilder swapchain_builder{ gpu_, device_, surface_ };
   auto vkb_swapchain_result =
     swapchain_builder.set_desired_format(surface_fmt)
@@ -332,15 +332,22 @@ mgmt::vulkan::Manager::create_swapchain(VkSurfaceFormatKHR surface_fmt,
     return core::code::ERROR;
   }
   imgs_views = vkb_swapchain_img_views_result.value();
-  del_queue_.push([=]() mutable {
-    vkDestroySwapchainKHR(device_, swapchain, nullptr);
-    for (auto& img_view : imgs_views) {
-      vkDestroyImageView(device_, img_view, nullptr);
-    }
-    for (auto& img : imgs) {
-      vkDestroyImage(device_, img, nullptr);
-    }
-  });
+  return core::code::SUCCESS;
+}
+
+core::code
+mgmt::vulkan::Manager::destroy_swapchain(VkSwapchainKHR& swapchain,
+                                         std::vector<VkImage>& imgs,
+                                         std::vector<VkImageView>& imgs_views)
+{
+  device_wait_idle();
+  vkDestroySwapchainKHR(device_, swapchain, nullptr);
+  for (auto& img_view : imgs_views) {
+    vkDestroyImageView(device_, img_view, nullptr);
+  }
+  for (auto& img : imgs) {
+    vkDestroyImage(device_, img, nullptr);
+  }
   return core::code::SUCCESS;
 }
 
@@ -399,6 +406,82 @@ mgmt::vulkan::Manager::create_image(VkExtent3D extent,
   return core::code::SUCCESS;
 }
 
+core::code
+mgmt::vulkan::Manager::create_image(void* data,
+                                    VkExtent3D extent,
+                                    VkFormat format,
+                                    VkImageUsageFlags usage,
+                                    bool mipmapped,
+                                    image::AllocatedImage& image)
+{
+  u32 data_size = extent.depth * extent.width * extent.height * 4; // FIXME
+  auto buff_result = create_buffer(
+    data_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+  if (!buff_result.has_value()) {
+    core::Logger::err("mgmt::vulkan::Manager::create_image",
+                      "create_buffer failed");
+    return core::code::ERROR;
+  }
+  buffer::AllocatedBuffer upload_buff = buff_result.value();
+  memcpy(upload_buff.info.pMappedData, data, data_size);
+  if (create_image(extent,
+                   format,
+                   usage | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+                     VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+                   mipmapped,
+                   image) != core::code::SUCCESS) {
+    core::Logger::err("mgmt::vulkan::Manager::create_image",
+                      "create_image overload failed");
+    return core::code::ERROR;
+  }
+  auto status = imm_submit([&](VkCommandBuffer cmd) {
+    image::transition_image(cmd,
+                            image.image,
+                            VK_IMAGE_LAYOUT_UNDEFINED,
+                            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    VkBufferImageCopy cpy_region = {};
+    cpy_region.bufferOffset = 0;
+    cpy_region.bufferRowLength = 0;
+    cpy_region.bufferImageHeight = 0;
+    cpy_region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    cpy_region.imageSubresource.mipLevel = 0;
+    cpy_region.imageSubresource.baseArrayLayer = 0;
+    cpy_region.imageSubresource.layerCount = 1;
+    cpy_region.imageExtent = extent;
+    vkCmdCopyBufferToImage(cmd,
+                           upload_buff.buffer,
+                           image.image,
+                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                           1,
+                           &cpy_region);
+    image::transition_image(cmd,
+                            image.image,
+                            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  });
+  if (status != core::code::SUCCESS) {
+    // TODO: destroy buffer nevertheless
+    core::Logger::err("mgmt::vulkan::Manager::create_image",
+                      "images setup overload failed");
+    return core::code::ERROR;
+  }
+  status = destroy_buffer(upload_buff);
+  if (status != core::code::SUCCESS) {
+    core::Logger::err("mgmt::vulkan::Manager::create_image",
+                      "destroy_buffer failed");
+    return core::code::ERROR;
+  }
+  return core::code::SUCCESS;
+}
+
+core::code
+mgmt::vulkan::Manager::destroy_image(const image::AllocatedImage& img)
+{
+  vkDestroyImageView(device_, img.view, nullptr);
+  vmaDestroyImage(allocator_, img.image, img.allocation);
+  return core::code::SUCCESS;
+}
+
 //
 // sync
 //
@@ -429,6 +512,15 @@ mgmt::vulkan::Manager::create_semaphore(VkSemaphoreCreateInfo& info,
   del_queue_.push(
     [=]() mutable { vkDestroySemaphore(device_, semaphore, nullptr); });
   return core::code::SUCCESS;
+}
+
+core::code
+mgmt::vulkan::Manager::await(u32 count,
+                             VkFence* fences,
+                             bool wait_all,
+                             u32 timeout)
+{
+  return check(vkWaitForFences(device_, 1, fences, wait_all, timeout));
 }
 
 //
@@ -554,4 +646,10 @@ VmaAllocator const&
 mgmt::vulkan::Manager::get_allocator()
 {
   return allocator_;
+}
+
+u32
+mgmt::vulkan::Manager::get_graphics_queue_family()
+{
+  return graphics_queue_family_;
 }

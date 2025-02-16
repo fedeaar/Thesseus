@@ -6,7 +6,6 @@
 
 core::Result<mgmt::vulkan::pipeline::Pipeline, core::code>
 mgmt::vulkan::Manager::create_compute_pipeline(
-  Swapchain& swapchain,
   VkPipelineLayoutCreateInfo& layout_info,
   char* shader_path)
 {

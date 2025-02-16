@@ -22,7 +22,6 @@ public:
     mgmt::vulkan::Swapchain swapchain;
   } state;
 
-private:
   BackgroundRenderer background_renderer_;
   AssetRenderer asset_renderer_;
   ImguiRenderer imgui_renderer_;
@@ -35,11 +34,6 @@ public:
   ~Engine();
 
   void render(Camera& camera);
-
-  f32 get_aspect_ratio();
-  f32& get_render_scale();
-  mgmt::window::Manager* get_window_mgr();
-  void maybe_resize_swapchain();
 };
 
 } // namespace render

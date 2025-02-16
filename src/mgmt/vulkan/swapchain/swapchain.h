@@ -27,7 +27,9 @@ public:
 
 private:
   DestructorQueue del_queue_{};
+  vulkan::Manager* vk_mgr_;
 
+public:
   VkExtent2D extent;
   VkSurfaceFormatKHR surface_fmt;
   VkSwapchainKHR swapchain;
@@ -46,10 +48,11 @@ private:
   u32 frame = 0;
   u32 current_img_idx = 0;
   f32 render_scale = 1.f;
+  bool resize_requested = false;
 
 public:
-  core::code init(vulkan::Manager& vk_mgr);
-  Swapchain();
+  core::code init();
+  Swapchain(vulkan::Manager* vk_mgr);
 
   core::code destroy();
   ~Swapchain();
@@ -59,12 +62,17 @@ public:
   VkImageView& get_current_image_view();
   VkCommandBuffer& get_current_cmd_buffer();
 
+  core::code begin_commands();
+  core::code end_commands();
+
   core::code draw_img_transition(VkImageLayout current, VkImageLayout next);
   core::code depth_img_transition(VkImageLayout current, VkImageLayout next);
   core::code current_img_transition(VkImageLayout current, VkImageLayout next);
 
+  core::code resize_extent();
+
 private:
-  core::code create_frames(vulkan::Manager& vk_mgr);
+  core::code create_frames();
 };
 
 } // namespace vulkan
