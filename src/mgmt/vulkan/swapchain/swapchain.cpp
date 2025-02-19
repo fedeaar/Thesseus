@@ -57,7 +57,7 @@ mgmt::vulkan::Swapchain::create_frames()
 core::code
 mgmt::vulkan::Swapchain::init()
 {
-  if (initialized == core::status::NOT_INIT) {
+  if (initialized != core::status::NOT_INIT) {
     core::Logger::err("mgmt::vulkan::Swapchain::init",
                       "called before initialization");
     return core::code::NOT_INIT;
@@ -94,7 +94,7 @@ mgmt::vulkan::Swapchain::init()
                             VK_FORMAT_D32_SFLOAT,
                             VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
                             false,
-                            draw_img) != core::code::SUCCESS) {
+                            depth_img) != core::code::SUCCESS) {
     initialized = core::status::ERROR;
     return core::code::ERROR;
   }
@@ -184,6 +184,16 @@ mgmt::vulkan::Swapchain::current_img_transition(VkImageLayout current,
 {
   return image::transition_image(
     get_current_cmd_buffer(), get_current_image(), current, next);
+}
+
+core::code
+mgmt::vulkan::Swapchain::copy_draw_to_current()
+{
+  return image::copy_image(get_current_cmd_buffer(),
+                           draw_img.image,
+                           get_current_image(),
+                           draw_extent,
+                           extent);
 }
 
 //

@@ -179,27 +179,26 @@ mgmt::vulkan::Manager::init_imm_submit()
 {
   VkFenceCreateInfo fence_info =
     info::fence_create_info(VK_FENCE_CREATE_SIGNALED_BIT);
-  auto status =
-    check(vkCreateFence(device_, &fence_info, nullptr, &imm_submit_.fence));
-  if (status != core::code::SUCCESS) {
+  if (check(vkCreateFence(device_, &fence_info, nullptr, &imm_submit_.fence)) !=
+      core::code::SUCCESS) {
     core::Logger::err("mgmt::vulkan::Manager::init_imm_submit",
                       "could not create imm fence");
     return core::code::ERROR;
   }
   VkCommandPoolCreateInfo pool_info = info::command_pool_create_info(
     graphics_queue_family_, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
-  status = check(vkCreateCommandPool(
-    device_, &pool_info, nullptr, &imm_submit_.command_pool));
-  if (status != core::code::SUCCESS) {
+  if (check(vkCreateCommandPool(
+        device_, &pool_info, nullptr, &imm_submit_.command_pool)) !=
+      core::code::SUCCESS) {
     core::Logger::err("mgmt::vulkan::Manager::init_imm_submit",
                       "could not create imm command pool");
     return core::code::ERROR;
   }
   VkCommandBufferAllocateInfo cmd_info =
     info::command_buffer_allocate_info(imm_submit_.command_pool, 1);
-  status = check(
-    vkAllocateCommandBuffers(device_, &cmd_info, &imm_submit_.command_buffer));
-  if (status != core::code::SUCCESS) {
+  if (check(vkAllocateCommandBuffers(
+        device_, &cmd_info, &imm_submit_.command_buffer)) !=
+      core::code::SUCCESS) {
     core::Logger::err("mgmt::vulkan::Manager::init_imm_submit",
                       "could not alloc imm buffer");
     return core::code::ERROR;
@@ -208,6 +207,7 @@ mgmt::vulkan::Manager::init_imm_submit()
     vkDestroyCommandPool(device_, imm_submit_.command_pool, nullptr);
     vkDestroyFence(device_, imm_submit_.fence, nullptr);
   });
+  return core::code::SUCCESS;
 }
 
 core::code
@@ -599,6 +599,7 @@ mgmt::vulkan::Manager::update_descriptor_set(descriptor::Writer& writer,
                                              VkDescriptorSet& descriptor_set)
 {
   writer.update_set(device_, descriptor_set);
+  return core::code::SUCCESS;
 }
 
 //
@@ -646,6 +647,12 @@ VmaAllocator const&
 mgmt::vulkan::Manager::get_allocator()
 {
   return allocator_;
+}
+
+VkSurfaceKHR const&
+mgmt::vulkan::Manager::get_surface()
+{
+  return surface_;
 }
 
 u32

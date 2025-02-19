@@ -49,7 +49,8 @@ render::Engine::init()
 }
 
 render::Engine::Engine(render::Engine::Params& params)
-  : state{ .window_mgr{ params.screen_width,
+  : state{ .initialized = core::status::NOT_INIT,
+           .window_mgr{ params.screen_width,
                         params.screen_height,
                         params.name },
            .vk_mgr{ &state.window_mgr },
@@ -146,11 +147,7 @@ render::Engine::render(Camera& camera)
                                       VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
   state.swapchain.current_img_transition(VK_IMAGE_LAYOUT_UNDEFINED,
                                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-  mgmt::vulkan::image::copy_image(state.swapchain.get_current_cmd_buffer(),
-                                  state.swapchain.draw_img.image,
-                                  state.swapchain.get_current_image(),
-                                  state.swapchain.draw_extent,
-                                  state.swapchain.extent);
+  state.swapchain.copy_draw_to_current();
   imgui_renderer_.draw(state.swapchain);
   state.swapchain.current_img_transition(
     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
