@@ -344,9 +344,6 @@ mgmt::vulkan::Manager::destroy_swapchain(VkSwapchainKHR& swapchain,
   for (auto& img_view : imgs_views) {
     vkDestroyImageView(device_, img_view, nullptr);
   }
-  for (auto& img : imgs) {
-    vkDestroyImage(device_, img, nullptr);
-  }
   vkDestroySwapchainKHR(device_, swapchain, nullptr);
   return core::code::SUCCESS;
 }
