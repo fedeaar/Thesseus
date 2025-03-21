@@ -599,6 +599,417 @@ mgmt::vulkan::Manager::update_descriptor_set(descriptor::Writer& writer,
   return core::code::SUCCESS;
 }
 
+core::Result<VkDescriptorPool, core::code>
+mgmt::vulkan::Manager::create_descriptor_pool(
+  VkDescriptorPoolCreateInfo pool_info)
+{
+  if (initialized == core::status::NOT_INIT) {
+    core::Logger::err("mgmt::vulkan::Manager::create_descriptor_pool",
+                      "manager not initialized");
+    return core::code::NOT_INIT;
+  }
+  if (initialized == core::status::ERROR) {
+    core::Logger::err("mgmt::vulkan::Manager::create_descriptor_pool",
+                      "manager is in "
+                      "error state");
+    return core::code::IN_ERROR_STATE;
+  }
+  VkDescriptorPool pool;
+  auto status =
+    check(vkCreateDescriptorPool(device_, &pool_info, nullptr, &pool));
+  if (status != core::code::SUCCESS) {
+    core::Logger::err("mgmt::vulkan::Manager::create_descriptor_pool",
+                      "vkCreateDescriptorPool error");
+    return status;
+  }
+  del_queue_.push([=]() mutable { destroy_descriptor_pool(pool); });
+  return pool;
+}
+
+core::code
+mgmt::vulkan::Manager::destroy_descriptor_pool(VkDescriptorPool& pool)
+{
+  device_wait_idle();
+  vkDestroyDescriptorPool(device_, pool, nullptr);
+}
+
+//
+// buffer
+//
+
+core::Result<mgmt::vulkan::buffer::AllocatedBuffer, core::code>
+mgmt::vulkan::Manager::create_buffer(size_t size,
+                                     VkBufferUsageFlags flags,
+                                     VmaMemoryUsage usage)
+{
+  VkBufferCreateInfo buffer_info = { .sType =
+                                       VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+  buffer_info.pNext = nullptr;
+  buffer_info.size = size;
+  buffer_info.usage = flags;
+  VmaAllocationCreateInfo alloc_info = {};
+  alloc_info.usage = usage;
+  alloc_info.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+  buffer::AllocatedBuffer buffer;
+  auto status = check(vmaCreateBuffer(allocator_,
+                                      &buffer_info,
+                                      &alloc_info,
+                                      &buffer.buffer,
+                                      &buffer.allocation,
+                                      &buffer.info));
+  if (status != core::code::SUCCESS) {
+    core::Logger::err("mgmt::vulkan::Manager::create_buffer",
+                      "vmaCreateBuffer error");
+    return core::code::ERROR;
+  }
+  return buffer;
+}
+
+core::code
+mgmt::vulkan::Manager::destroy_buffer(
+  mgmt::vulkan::buffer::AllocatedBuffer const& buffer)
+{
+  vmaDestroyBuffer(allocator_, buffer.buffer, buffer.allocation);
+  return core::code::SUCCESS;
+}
+
+//
+// pipeline
+//
+
+core::Result<mgmt::vulkan::pipeline::Pipeline, core::code>
+mgmt::vulkan::Manager::create_compute_pipeline(
+  VkPipelineLayoutCreateInfo& layout_info,
+  char* shader_path)
+{
+  if (initialized == core::status::NOT_INIT) {
+    core::Logger::err("mgmt::vulkan::Manager::create_compute_pipeline",
+                      "manager not initialized");
+    return core::code::NOT_INIT;
+  }
+  if (initialized == core::status::ERROR) {
+    core::Logger::err("mgmt::vulkan::Manager::create_compute_pipeline",
+                      "manager is in error state");
+    return core::code::IN_ERROR_STATE;
+  }
+  pipeline::Pipeline pipeline;
+  // create layout
+  auto status = check(
+    vkCreatePipelineLayout(device_, &layout_info, nullptr, &pipeline.layout));
+  auto load_shader_result = pipeline::load_shader_module(shader_path, device_);
+  if (!load_shader_result.has_value()) {
+    core::Logger::err("mgmt::vulkan::Manager::create_compute_pipeline",
+                      "error when building the compute shader");
+    return core::code::ERROR;
+  }
+  VkShaderModule shader = load_shader_result.value();
+  // create pipeline
+  VkPipelineShaderStageCreateInfo stage_info{};
+  stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+  stage_info.pNext = nullptr;
+  stage_info.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+  stage_info.module = shader;
+  stage_info.pName = "main";
+  VkComputePipelineCreateInfo create_info{};
+  create_info.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+  create_info.pNext = nullptr;
+  create_info.layout = pipeline.layout;
+  create_info.stage = stage_info;
+  status = check(vkCreateComputePipelines(
+    device_, VK_NULL_HANDLE, 1, &create_info, nullptr, &pipeline.pipeline));
+  if (status != core::code::SUCCESS) {
+    core::Logger::err("mgmt::vulkan::Manager::create_compute_pipeline",
+                      "error when creating compute pipeline");
+    return status;
+  }
+  // set destroyer
+  vkDestroyShaderModule(device_, shader, nullptr);
+  del_queue_.push(
+    [=]() { // TODO@engine: no need to keep pipeline existing here ?
+      vkDeviceWaitIdle(device_);
+      vkDestroyPipelineLayout(device_, pipeline.layout, nullptr);
+      vkDestroyPipeline(device_, pipeline.pipeline, nullptr);
+    });
+  return pipeline;
+}
+
+core::Result<mgmt::vulkan::pipeline::Pipeline, core::code>
+mgmt::vulkan::Manager::create_gfx_pipeline(
+  VkPipelineLayoutCreateInfo& layout_info,
+  pipeline::Builder builder,
+  char* vs_path,
+  char* fs_path)
+{
+  if (initialized != core::status::INIT) {
+    core::Logger::err("mgmt::vulkan::Manager::create_gfx_pipeline",
+                      "Manager not initialized");
+    return core::code::NOT_INIT;
+  }
+  pipeline::Pipeline pipeline;
+  auto vs_result = mgmt::vulkan::pipeline::load_shader_module(vs_path, device_);
+  if (!vs_result.has_value()) {
+    core::Logger::err("mgmt::vulkan::Manager::create_gfx_pipeline",
+                      "error when building the vertex shader");
+    return core::code::ERROR;
+  }
+  auto vs = vs_result.value();
+  auto fs_result = mgmt::vulkan::pipeline::load_shader_module(fs_path, device_);
+  if (!fs_result.has_value()) {
+    core::Logger::err("mgmt::vulkan::Manager::create_gfx_pipeline",
+                      "error when building the fragment shader");
+    return core::code::ERROR;
+  }
+  auto fs = fs_result.value();
+  auto status = check(
+    vkCreatePipelineLayout(device_, &layout_info, nullptr, &pipeline.layout));
+  if (status != core::code::SUCCESS) {
+    core::Logger::err("mgmt::vulkan::Manager::create_gfx_pipeline",
+                      "error when building the pipeline layout");
+    return core::code::ERROR;
+  }
+  builder.set_layout(pipeline.layout);
+  builder.set_shaders(vs, fs);
+  auto pipeline_result = builder.build_pipeline(device_);
+  if (!pipeline_result.has_value()) {
+    core::Logger::err("mgmt::vulkan::Manager::create_gfx_pipeline",
+                      "error when building the pipeline");
+    return core::code::ERROR;
+  }
+  pipeline.pipeline = pipeline_result.value();
+  // set destroyer
+  vkDestroyShaderModule(device_, fs, nullptr);
+  vkDestroyShaderModule(device_, vs, nullptr);
+  del_queue_.push(
+    [=]() { // TODO@engine: no need to keep pipeline existing here ?
+      vkDeviceWaitIdle(device_);
+      vkDestroyPipelineLayout(device_, pipeline.layout, nullptr);
+      vkDestroyPipeline(device_, pipeline.pipeline, nullptr);
+    });
+  return pipeline;
+}
+
+//
+// mesh
+//
+
+core::Result<mgmt::vulkan::mesh::GPUMeshBuffers, core::code>
+mgmt::vulkan::Manager::upload_mesh(std::span<u32> indices,
+                                   std::span<mesh::Vertex> vertices)
+{
+  const size_t vb_s = vertices.size() * sizeof(mesh::Vertex);
+  const size_t ib_s = indices.size() * sizeof(u32);
+  mesh::GPUMeshBuffers mesh;
+  auto vertex_buff_result = create_buffer(
+    vb_s,
+    VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+      VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+    VMA_MEMORY_USAGE_GPU_ONLY);
+  if (!vertex_buff_result.has_value()) {
+    core::Logger::err("mgmt::vulkan::Manager::upload_mesh",
+                      "could not create vertex buffer");
+    return core::code::ERROR;
+  }
+  mesh.vertex_buff = vertex_buff_result.value();
+  VkBufferDeviceAddressInfo addr_info = {
+    .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,
+    .buffer = mesh.vertex_buff.buffer
+  };
+  mesh.vertex_buff_addr = vkGetBufferDeviceAddress(device_, &addr_info);
+  auto index_buff_result = create_buffer(ib_s,
+                                         VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
+                                           VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                                         VMA_MEMORY_USAGE_GPU_ONLY);
+  if (!index_buff_result.has_value()) {
+    core::Logger::err("mgmt::vulkan::Manager::upload_mesh",
+                      "could not create index buffer");
+    return core::code::ERROR;
+  }
+  mesh.index_buff = index_buff_result.value();
+  auto staging_result = create_buffer(
+    vb_s + ib_s, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+  if (!index_buff_result.has_value()) {
+    core::Logger::err("mgmt::vulkan::Manager::upload_mesh",
+                      "could not create staging buffer");
+    return core::code::ERROR;
+  }
+  auto staging = staging_result.value();
+  void* data;
+  vmaMapMemory(allocator_, staging.allocation, &data);
+  memcpy(data, vertices.data(), vb_s);
+  memcpy((char*)data + vb_s, indices.data(), ib_s);
+  vmaUnmapMemory(allocator_, staging.allocation);
+  imm_submit([&](VkCommandBuffer cmd) {
+    VkBufferCopy vertex_copy{ 0 };
+    vertex_copy.dstOffset = 0;
+    vertex_copy.srcOffset = 0;
+    vertex_copy.size = vb_s;
+    vkCmdCopyBuffer(
+      cmd, staging.buffer, mesh.vertex_buff.buffer, 1, &vertex_copy);
+    VkBufferCopy index_copy{ 0 };
+    index_copy.dstOffset = 0;
+    index_copy.srcOffset = vb_s;
+    index_copy.size = ib_s;
+    vkCmdCopyBuffer(
+      cmd, staging.buffer, mesh.index_buff.buffer, 1, &index_copy);
+  });
+  destroy_buffer(staging);
+  return mesh;
+};
+
+core::Result<std::vector<std::shared_ptr<mgmt::vulkan::mesh::MeshAsset>>,
+             core::code>
+mgmt::vulkan::Manager::load_gltf_meshes(char* path)
+{
+  fastgltf::Asset asset;
+  if (core::io::gltf::load(path, &asset) != core::code::SUCCESS) {
+    core::Logger::err("mgmt::vulkan::Manager::load_gltf_meshes",
+                      "could not load gltf asset");
+    return core::code::ERROR;
+  }
+  std::vector<std::shared_ptr<mesh::MeshAsset>> meshes;
+  std::vector<u32> indices;
+  std::vector<mesh::Vertex> vertices;
+  for (auto& gltf_mesh : asset.meshes) {
+    mesh::MeshAsset new_mesh;
+    new_mesh.name = gltf_mesh.name;
+    for (auto&& it : gltf_mesh.primitives) {
+      mesh::GeoSurface new_surface;
+      new_surface.start_idx = (u32)indices.size();
+      size_t initial_vtx = vertices.size();
+
+      // load indices
+      if (!it.indicesAccessor.has_value()) {
+        // todo: better handling
+        core::Logger::err("mgmt::vulkan::Manager::load_gltf_meshes",
+                          "invalid gltf file");
+        return core::code::ERROR;
+      }
+      auto& idx_acc = asset.accessors[it.indicesAccessor.value()];
+      new_surface.count = (u32)idx_acc.count;
+      indices.reserve(indices.size() + idx_acc.count);
+      fastgltf::iterateAccessor<u32>(
+        asset, idx_acc, [&](u32 idx) { indices.push_back(idx + initial_vtx); });
+      // load vertex positions
+      auto pos = it.findAttribute("POSITION");
+      if (pos == it.attributes.end()) {
+        // todo: better handling
+        core::Logger::err("mgmt::vulkan::Manager::load_gltf_meshes",
+                          "invalid gltf file");
+        return core::code::ERROR;
+      }
+      auto& pos_acc = asset.accessors[pos->accessorIndex];
+      if (!pos_acc.bufferViewIndex.has_value()) {
+        continue;
+      }
+      vertices.resize(vertices.size() + pos_acc.count);
+      fastgltf::iterateAccessorWithIndex<v3f>(
+        asset, pos_acc, [&](v3f v, size_t index) {
+          mesh::Vertex vtx;
+          vtx.position = v;
+          vtx.normal = { 1, 0, 0 };
+          vtx.color = v4f{ 1.f };
+          vtx.uv_x = 0;
+          vtx.uv_y = 0;
+          vertices[initial_vtx + index] = vtx;
+        });
+      // load vertex normals
+      auto normals = it.findAttribute("NORMAL");
+      if (normals != it.attributes.end()) {
+        auto& normals_acc = asset.accessors[normals->accessorIndex];
+        fastgltf::iterateAccessorWithIndex<v3f>(
+          asset, normals_acc, [&](v3f v, size_t index) {
+            vertices[initial_vtx + index].normal = v;
+          });
+      }
+      // load UVs
+      auto uv = it.findAttribute("TEXCOORD_0");
+      if (uv != it.attributes.end()) {
+        auto& uv_acc = asset.accessors[uv->accessorIndex];
+        fastgltf::iterateAccessorWithIndex<v2f>(
+          asset, uv_acc, [&](v2f v, size_t index) {
+            vertices[initial_vtx + index].uv_x = v.x;
+            vertices[initial_vtx + index].uv_y = v.y;
+          });
+      }
+      // load vertex colors
+      auto colors = it.findAttribute("COLOR_0");
+      if (colors != it.attributes.end()) {
+        auto& colors_acc = asset.accessors[colors->accessorIndex];
+        fastgltf::iterateAccessorWithIndex<v4f>(
+          asset, colors_acc, [&](v4f v, size_t index) {
+            vertices[initial_vtx + index].color = v;
+          });
+      }
+      new_mesh.surfaces.push_back(new_surface);
+    }
+    // display the vertex normals
+    constexpr bool override_colors = true;
+    if (override_colors) {
+      for (mesh::Vertex& vtx : vertices) {
+        vtx.color = glm::vec4(vtx.normal, 1.f);
+      }
+    }
+    auto upload_result = upload_mesh(indices, vertices);
+    if (!upload_result.has_value()) {
+      core::Logger::err("mgmt::vulkan::Manager::load_gltf_meshes",
+                        "could not load gltf asset to gpu");
+      return core::code::ERROR;
+    }
+    new_mesh.mesh_buffers = upload_result.value();
+    meshes.emplace_back(std::make_shared<mesh::MeshAsset>(std::move(new_mesh)));
+    vertices.clear();
+    indices.clear();
+  }
+  return meshes;
+}
+
+//
+// immediate submit
+//
+
+core::code
+mgmt::vulkan::Manager::imm_submit(
+  std::function<void(VkCommandBuffer cmd)>&& function)
+{
+  auto status = check(vkResetFences(device_, 1, &imm_submit_.fence));
+  if (status != core::code::SUCCESS) { // todo@engine: add err logs
+    return core::code::ERROR;
+  }
+  status = check(vkResetCommandBuffer(imm_submit_.command_buffer, 0));
+  if (status != core::code::SUCCESS) {
+    return core::code::ERROR;
+  }
+  VkCommandBuffer cmd = imm_submit_.command_buffer;
+  VkCommandBufferBeginInfo cmdBeginInfo = info::command_buffer_begin_info(
+    VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+  status = check(vkBeginCommandBuffer(cmd, &cmdBeginInfo));
+  if (status != core::code::SUCCESS) {
+    return core::code::ERROR;
+  }
+  function(cmd);
+  status = check(vkEndCommandBuffer(cmd));
+  if (status != core::code::SUCCESS) {
+    return core::code::ERROR;
+  }
+  VkCommandBufferSubmitInfo cmdinfo = info::command_buffer_submit_info(cmd);
+  VkSubmitInfo2 submit = info::submit_info(&cmdinfo, nullptr, nullptr);
+  status =
+    check(vkQueueSubmit2(graphics_queue_, 1, &submit, imm_submit_.fence));
+  if (status != core::code::SUCCESS) {
+    return core::code::ERROR;
+  }
+  status =
+    check(vkWaitForFences(device_,
+                          1,
+                          &imm_submit_.fence,
+                          true,
+                          9999999999)); // todo@mgr: use background thread
+  if (status != core::code::SUCCESS) {
+    return core::code::ERROR;
+  }
+  return core::code::SUCCESS;
+}
+
 //
 // dev
 //
