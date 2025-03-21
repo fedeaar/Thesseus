@@ -77,6 +77,7 @@ render::Engine::destroy()
   auto imgui_renderer_status = imgui_renderer_.destroy();
   auto asset_renderer_status = asset_renderer_.destroy();
   auto background_renderer_status = background_renderer_.destroy();
+  auto swapchain_status = state.swapchain.destroy();
   auto vk_mgr_status = state.vk_mgr.destroy();
   auto window_mgr_status = state.window_mgr.destroy();
   bool fail = false;
@@ -93,6 +94,10 @@ render::Engine::destroy()
   if (background_renderer_status != core::code::SUCCESS) {
     core::Logger::err("render::Engine::destroy",
                       "failed to destroy background renderer");
+    fail = true;
+  }
+  if (swapchain_status != core::code::SUCCESS) {
+    core::Logger::err("render::Engine::destroy", "failed to destroy swapchain");
     fail = true;
   }
   if (vk_mgr_status != core::code::SUCCESS) {

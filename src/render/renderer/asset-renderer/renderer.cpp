@@ -136,10 +136,6 @@ render::AssetRenderer::init(mgmt::vulkan::Swapchain& swapchain)
   del_queue_.push([=]() {
     vkDestroySampler(vk_mgr_->get_dev(), default_linear_sampler_, nullptr);
     vkDestroySampler(vk_mgr_->get_dev(), default_nearest_sampler_, nullptr);
-    vk_mgr_->destroy_image(white_img_);
-    vk_mgr_->destroy_image(gray_img_);
-    vk_mgr_->destroy_image(black_img_);
-    vk_mgr_->destroy_image(error_checker_img_);
     vkDestroyDescriptorSetLayout(vk_mgr_->get_dev(), scene_layout_, nullptr);
     vkDestroyDescriptorSetLayout(
       vk_mgr_->get_dev(), single_img_layout_, nullptr);

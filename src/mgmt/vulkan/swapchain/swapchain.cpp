@@ -315,6 +315,9 @@ core::code
 mgmt::vulkan::Swapchain::resize_extent()
 {
   // we assume init
+  if (!resize_requested) {
+    return core::code::SUCCESS;
+  }
   if (vk_mgr_->destroy_swapchain(swapchain, imgs, imgs_views) !=
       core::code::SUCCESS) {
     return core::code::ERROR;
