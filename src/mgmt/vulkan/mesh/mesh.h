@@ -3,6 +3,7 @@
 #include "../buffer/buffer.h"
 #include "../info/info.h"
 #include "../manager.h"
+#include "../material/material.h"
 
 #include <memory>
 
@@ -24,6 +25,7 @@ struct GeoSurface
 {
   u32 start_idx;
   u32 count;
+  std::shared_ptr<material::Material> material;
 };
 
 struct GPUMeshBuffers

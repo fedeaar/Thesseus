@@ -45,7 +45,7 @@ struct Writer
 struct PoolSizeRatio
 {
   VkDescriptorType type;
-  float ratio;
+  f32 ratio;
 };
 
 struct StaticAllocator

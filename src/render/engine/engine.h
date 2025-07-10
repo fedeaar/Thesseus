@@ -25,6 +25,7 @@ public:
   BackgroundRenderer background_renderer_;
   AssetRenderer asset_renderer_;
   ImguiRenderer imgui_renderer_;
+  GLTF_MetallicRoughnessRenderer metallic_roughness_renderer_;
 
 public:
   core::code init();

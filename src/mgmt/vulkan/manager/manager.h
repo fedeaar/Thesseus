@@ -29,6 +29,7 @@ private:
   // alloc
   VmaAllocator allocator_;
   descriptor::StaticAllocator descriptor_allocator_;
+  descriptor::DynamicAllocator global_dynamic_descriptor_allocator_;
   // graphics queue
   VkQueue graphics_queue_;
   u32 graphics_queue_family_;
@@ -56,6 +57,7 @@ public:
   VkQueue const& get_graphics_queue();
   VmaAllocator const& get_allocator();
   VkSurfaceKHR const& get_surface();
+  descriptor::DynamicAllocator& get_global_descriptor_allocator();
   u32 get_graphics_queue_family();
 
   // swapchain

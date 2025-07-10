@@ -10,7 +10,6 @@ class AssetRenderer : Renderer
 public:
   bool initialized = false;
 
-private:
   DestructorQueue del_queue_;
   mgmt::vulkan::pipeline::Pipeline pipeline_;
   std::vector<std::shared_ptr<mgmt::vulkan::mesh::MeshAsset>> meshes_;

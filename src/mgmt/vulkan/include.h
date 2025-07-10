@@ -6,6 +6,7 @@
 #include "info/info.h"
 #include "manager.h"
 #include "manager/manager.h"
+#include "material/material.h"
 #include "mesh/mesh.h"
 #include "pipeline/pipeline.h"
 #include "swapchain/swapchain.h"

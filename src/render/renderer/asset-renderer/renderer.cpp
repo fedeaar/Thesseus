@@ -19,6 +19,7 @@ render::AssetRenderer::init(mgmt::vulkan::Swapchain& swapchain)
     layout_builder.build(vk_mgr_->get_dev(), VK_SHADER_STAGE_FRAGMENT_BIT);
   if (!result.has_value()) {
     // TODO
+    core::Logger::err("init", "failed!");
     return core::code::ERROR;
   }
   single_img_layout_ = result.value();
@@ -43,7 +44,7 @@ render::AssetRenderer::init(mgmt::vulkan::Swapchain& swapchain)
   builder.enable_depthtest(true, VK_COMPARE_OP_LESS_OR_EQUAL);
   builder.set_color_attachment_format(swapchain.draw_img.format);
   builder.set_depth_format(swapchain.depth_img.format);
-  // pipeline initc
+  // pipeline init
   auto pipeline_result =
     vk_mgr_->create_gfx_pipeline(layout_info,
                                  builder,
@@ -69,7 +70,7 @@ render::AssetRenderer::init(mgmt::vulkan::Swapchain& swapchain)
       .build(vk_mgr_->get_dev(),
              VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
       .value(); // TODO: check ok and maybe abstract this
-                // default imgs
+  // default imgs
   u32 white = glm::packUnorm4x8(glm::vec4(1, 1, 1, 1));
   if (vk_mgr_->create_image((void*)&white,
                             VkExtent3D{ 1, 1, 1 },
@@ -134,11 +135,11 @@ render::AssetRenderer::init(mgmt::vulkan::Swapchain& swapchain)
 
   // delete the rectangle data on engine shutdown
   del_queue_.push([=]() {
-    vkDestroySampler(vk_mgr_->get_dev(), default_linear_sampler_, nullptr);
-    vkDestroySampler(vk_mgr_->get_dev(), default_nearest_sampler_, nullptr);
-    vkDestroyDescriptorSetLayout(vk_mgr_->get_dev(), scene_layout_, nullptr);
-    vkDestroyDescriptorSetLayout(
-      vk_mgr_->get_dev(), single_img_layout_, nullptr);
+    auto dev = vk_mgr_->get_dev();
+    vkDestroySampler(dev, default_linear_sampler_, nullptr);
+    vkDestroySampler(dev, default_nearest_sampler_, nullptr);
+    vkDestroyDescriptorSetLayout(dev, scene_layout_, nullptr);
+    vkDestroyDescriptorSetLayout(dev, single_img_layout_, nullptr);
     for (auto& mesh : meshes_) {
       vk_mgr_->destroy_buffer(mesh->mesh_buffers.index_buff);
       vk_mgr_->destroy_buffer(mesh->mesh_buffers.vertex_buff);

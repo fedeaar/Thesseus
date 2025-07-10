@@ -170,8 +170,16 @@ mgmt::vulkan::Manager::init_descriptors()
   auto result = descriptor_allocator_.init_pool(device_, 10, sizes);
   if (result == core::code::SUCCESS) {
     del_queue_.push([&]() { descriptor_allocator_.destroy_pool(device_); });
+  } else {
+    return result;
   }
-  return result;
+  descriptor::PoolSizeRatio dyn_sizes[2] = {
+    { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1 },
+    { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 }
+  };
+  global_dynamic_descriptor_allocator_.init(
+    device_, 10, dyn_sizes); // TODO: errors
+  return core::code::SUCCESS;
 }
 
 core::code
@@ -745,7 +753,6 @@ mgmt::vulkan::Manager::create_gfx_pipeline(
                       "Manager not initialized");
     return core::code::NOT_INIT;
   }
-  pipeline::Pipeline pipeline;
   auto vs_result = mgmt::vulkan::pipeline::load_shader_module(vs_path, device_);
   if (!vs_result.has_value()) {
     core::Logger::err("mgmt::vulkan::Manager::create_gfx_pipeline",
@@ -760,6 +767,7 @@ mgmt::vulkan::Manager::create_gfx_pipeline(
     return core::code::ERROR;
   }
   auto fs = fs_result.value();
+  pipeline::Pipeline pipeline;
   auto status = check(
     vkCreatePipelineLayout(device_, &layout_info, nullptr, &pipeline.layout));
   if (status != core::code::SUCCESS) {
@@ -1061,6 +1069,12 @@ VkSurfaceKHR const&
 mgmt::vulkan::Manager::get_surface()
 {
   return surface_;
+}
+
+mgmt::vulkan::descriptor::DynamicAllocator&
+mgmt::vulkan::Manager::get_global_descriptor_allocator()
+{
+  return global_dynamic_descriptor_allocator_;
 }
 
 u32
