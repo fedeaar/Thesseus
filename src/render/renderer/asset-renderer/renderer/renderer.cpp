@@ -12,7 +12,7 @@ load_shaders(VkDevice& dev, VkShaderModule& vs, VkShaderModule& fs)
   auto vs_result =
     mgmt::vulkan::pipeline::load_shader_module("./shaders/mesh.vert.spv", dev);
   if (!vs_result.has_value()) {
-    core::Logger::err("mgmt::vulkan::Manager::create_gfx_pipeline",
+    core::Logger::err("mgmt::vulkan::pipeline::load_shader_module",
                       "error when building the vertex shader");
     return core::code::ERROR;
   }
@@ -20,7 +20,7 @@ load_shaders(VkDevice& dev, VkShaderModule& vs, VkShaderModule& fs)
   auto fs_result =
     mgmt::vulkan::pipeline::load_shader_module("./shaders/mesh.frag.spv", dev);
   if (!fs_result.has_value()) {
-    core::Logger::err("mgmt::vulkan::Manager::create_gfx_pipeline",
+    core::Logger::err("mgmt::vulkan::pipeline::load_shader_module",
                       "error when building the fragment shader");
     return core::code::ERROR;
   }
@@ -258,12 +258,12 @@ render::AssetRenderer::init_scene()
     loaded_nodes_[m->name] = std::move(new_node);
   }
   loaded_nodes_["Suzanne"]->Draw(glm::mat4{ 1.f }, main_draw_ctx_);
-  glm::mat4 transform = m4f{ 1.0f };
-  for (int x = -3; x < 3; x++) {
-    glm::mat4 scale = glm::scale(transform, glm::vec3{ 0.2 });
-    glm::mat4 translation = glm::translate(transform, glm::vec3{ x, 1, 0 });
-    loaded_nodes_["Cube"]->Draw(translation * scale, main_draw_ctx_);
-  }
+  // glm::mat4 transform = m4f{ 1.0f };
+  // for (int x = -3; x < 3; x++) {
+  //   glm::mat4 scale = glm::scale(transform, glm::vec3{ 0.2 });
+  //   glm::mat4 translation = glm::translate(transform, glm::vec3{ x, 1, 0 });
+  //   loaded_nodes_["Cube"]->Draw(translation * scale, main_draw_ctx_);
+  // }
   return core::code::SUCCESS;
 }
 
@@ -365,7 +365,7 @@ render::AssetRenderer::write_material(
 //
 
 void
-render::AssetRenderer::draw(mgmt::vulkan::Swapchain& swapchain)
+render::AssetRenderer::draw(mgmt::vulkan::Swapchain& swapchain, Camera& camera)
 {
   auto cmd = swapchain.get_current_cmd_buffer();
   auto& current_frame = swapchain.get_current_frame();
@@ -376,9 +376,9 @@ render::AssetRenderer::draw(mgmt::vulkan::Swapchain& swapchain)
   auto render_info = mgmt::vulkan::info::rendering_info(
     swapchain.draw_extent, &color_attachment, &depth_attachment);
   vkCmdBeginRendering(cmd, &render_info);
-  // opaque
   vkCmdBindPipeline(
     cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, opaque_pipeline_.pipe);
+  // opaque
   auto scene_buffer = vk_mgr_
                         ->create_buffer(sizeof(GPUSceneData),
                                         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
@@ -400,15 +400,17 @@ render::AssetRenderer::draw(mgmt::vulkan::Swapchain& swapchain)
                       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
   writer.update_set(vk_mgr_->get_dev(), global_descriptor_set);
   asset::mesh::GPUMeshPushConstants push_constants;
+  vkCmdBindPipeline(
+    cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, opaque_pipeline_.pipe);
+  vkCmdBindDescriptorSets(cmd,
+                          VK_PIPELINE_BIND_POINT_GRAPHICS,
+                          opaque_pipeline_.layout,
+                          0,
+                          1,
+                          &global_descriptor_set,
+                          0,
+                          nullptr);
   for (const render::asset::Object& draw : main_draw_ctx_.opaque_surfaces) {
-    vkCmdBindDescriptorSets(cmd,
-                            VK_PIPELINE_BIND_POINT_GRAPHICS,
-                            opaque_pipeline_.layout,
-                            0,
-                            1,
-                            &global_descriptor_set,
-                            0,
-                            nullptr);
     vkCmdBindDescriptorSets(cmd,
                             VK_PIPELINE_BIND_POINT_GRAPHICS,
                             opaque_pipeline_.layout,
@@ -417,6 +419,7 @@ render::AssetRenderer::draw(mgmt::vulkan::Swapchain& swapchain)
                             &draw.material->material_set,
                             0,
                             nullptr);
+    vkCmdBindIndexBuffer(cmd, draw.idx_buff, 0, VK_INDEX_TYPE_UINT32);
     push_constants.world_matrix = draw.transform;
     push_constants.vertex_buff_addr = draw.vertex_buff_addr;
     vkCmdPushConstants(cmd,
@@ -425,7 +428,6 @@ render::AssetRenderer::draw(mgmt::vulkan::Swapchain& swapchain)
                        0,
                        sizeof(asset::mesh::GPUMeshPushConstants),
                        &push_constants);
-    vkCmdBindIndexBuffer(cmd, draw.idx_buff, 0, VK_INDEX_TYPE_UINT32);
     vkCmdDrawIndexed(cmd, draw.idx_count, 1, draw.start_idx, 0, 0);
   }
   vkCmdEndRendering(cmd);

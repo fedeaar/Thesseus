@@ -68,7 +68,7 @@ public:
   core::code destroy();
   ~AssetRenderer();
 
-  void draw(mgmt::vulkan::Swapchain& swapchain);
+  void draw(mgmt::vulkan::Swapchain& swapchain, Camera& camera);
   void update_scene(mgmt::vulkan::Swapchain& swapchain, Camera& camera);
   asset::material::Instance write_material(
     asset::material::Type pass,

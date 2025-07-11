@@ -24,6 +24,13 @@ mgmt::vulkan::Manager::init_instance(vkb::Instance& vkb_instance)
   auto system_info = system_info_result.value();
   // get required extensions
   std::vector<const char*> extensions;
+  if (!system_info.is_extension_available(VK_EXT_DEBUG_REPORT_EXTENSION_NAME)) {
+    core::Logger::err("mgmt::vulkan::Manager::init_instance",
+                      "required extension not available: {}",
+                      VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+    return core::code::ERROR;
+  }
+  extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
   u32 extensions_count;
   auto extension_ptr = SDL_Vulkan_GetInstanceExtensions(&extensions_count);
   if (extension_ptr == NULL) {
@@ -32,13 +39,6 @@ mgmt::vulkan::Manager::init_instance(vkb::Instance& vkb_instance)
                       SDL_GetError());
     return core::code::ERROR;
   }
-  if (!system_info.is_extension_available(VK_EXT_DEBUG_REPORT_EXTENSION_NAME)) {
-    core::Logger::err("mgmt::vulkan::Manager::init_instance",
-                      "required extension not available: {}",
-                      VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-    return core::code::ERROR;
-  }
-  extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
   for (int i = 0; i < extensions_count; ++i) {
     if (!system_info.is_extension_available(extension_ptr[i])) {
       core::Logger::err("mgmt::vulkan::Manager::init_instance",
@@ -56,6 +56,10 @@ mgmt::vulkan::Manager::init_instance(vkb::Instance& vkb_instance)
       .use_default_debug_messenger()   // TODO: debug only
       .require_api_version(1, 3, 0)
       .enable_extensions(extensions)
+      .add_validation_feature_enable(
+        VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT)
+      .add_debug_messenger_severity(
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
       .build();
   if (!instance_result.has_value()) {
     core::Logger::err("mgmt::vulkan::Manager::init_instance",
