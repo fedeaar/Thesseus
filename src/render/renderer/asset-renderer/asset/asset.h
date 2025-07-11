@@ -1,15 +1,18 @@
 #pragma once
 
-#include "../render.h"
+#include "../material/material.h"
+#include "../mesh/mesh.h"
+#include "../renderer.h"
 
 namespace render {
+namespace asset {
 
 struct Object
 {
   u32 idx_count;
   u32 start_idx;
   VkBuffer idx_buff;
-  mgmt::vulkan::material::Instance* material;
+  material::Instance* material;
   m4f transform;
   VkDeviceAddress vertex_buff_addr;
 };
@@ -21,7 +24,7 @@ struct DrawContext
 
 class IRenderable
 {
-  virtual void Draw(const m4f& topMatrix, DrawContext& ctx) = 0;
+  virtual void Draw(const m4f& top, DrawContext& ctx) = 0;
 };
 
 struct Node : public IRenderable
@@ -31,36 +34,36 @@ struct Node : public IRenderable
   m4f local_tf;
   m4f world_tf;
 
-  void refresh_transform(const m4f& parentMatrix)
+  void refresh_transform(const m4f& parent)
   {
-    world_tf = parentMatrix * local_tf;
+    world_tf = parent * local_tf;
     for (auto c : children) {
       c->refresh_transform(world_tf);
     }
   }
 
-  virtual void Draw(const m4f& topMatrix, DrawContext& ctx)
+  virtual void Draw(const m4f& top, DrawContext& ctx)
   {
     // draw children
     for (auto& c : children) {
-      c->Draw(topMatrix, ctx);
+      c->Draw(top, ctx);
     }
   }
 };
 
 struct MeshNode : public Node
 {
-  std::shared_ptr<mgmt::vulkan::mesh::MeshAsset> mesh;
+  std::shared_ptr<mesh::Mesh> mesh;
   virtual void Draw(const m4f& top, DrawContext& ctx) override
   {
-    m4f nodeMatrix = top * world_tf;
+    m4f node_matrix = top * world_tf;
     for (auto& s : mesh->surfaces) {
       Object def;
       def.idx_count = s.count;
       def.start_idx = s.start_idx;
       def.idx_buff = mesh->mesh_buffers.index_buff.buffer;
       def.material = &s.material->data;
-      def.transform = nodeMatrix;
+      def.transform = node_matrix;
       def.vertex_buff_addr = mesh->mesh_buffers.vertex_buff_addr;
       ctx.opaque_surfaces.push_back(def);
     }
@@ -68,4 +71,5 @@ struct MeshNode : public Node
   }
 };
 
+} // namespace asset
 } // namespace render

@@ -35,13 +35,7 @@ render::Engine::init()
   status = asset_renderer_.init(state.swapchain);
   if (status != core::code::SUCCESS) {
     core::Logger::err("render::Engine::init",
-                      "triangle mesh renderer could not be created");
-    return core::code::ERROR;
-  }
-  status = metallic_roughness_renderer_.init(state.swapchain, asset_renderer_);
-  if (status != core::code::SUCCESS) {
-    core::Logger::err("render::Engine::init",
-                      "metallic roughness renderer could not be created");
+                      "asset renderer could not be created");
     return core::code::ERROR;
   }
   status = imgui_renderer_.init(state.swapchain);
@@ -63,7 +57,6 @@ render::Engine::Engine(render::Engine::Params& params)
            .swapchain{ &state.vk_mgr } }
   , background_renderer_{ &state.vk_mgr }
   , asset_renderer_{ &state.vk_mgr }
-  , metallic_roughness_renderer_{ &state.vk_mgr }
   , imgui_renderer_{ &state.vk_mgr, &state.window_mgr }
 {
 }
@@ -82,7 +75,6 @@ render::Engine::destroy()
     return core::code::ERROR;
   }
   auto imgui_renderer_status = imgui_renderer_.destroy();
-  auto metallic_roughness_status = metallic_roughness_renderer_.destroy();
   auto asset_renderer_status = asset_renderer_.destroy();
   auto background_renderer_status = background_renderer_.destroy();
   auto swapchain_status = state.swapchain.destroy();
@@ -92,11 +84,6 @@ render::Engine::destroy()
   if (imgui_renderer_status != core::code::SUCCESS) {
     core::Logger::err("render::Engine::destroy",
                       "failed to destroy imgui renderer");
-    fail = true;
-  }
-  if (metallic_roughness_status != core::code::SUCCESS) {
-    core::Logger::err("render::Engine::destroy",
-                      "failed to destroy metallic roughness renderer");
     fail = true;
   }
   if (asset_renderer_status != core::code::SUCCESS) {
@@ -160,9 +147,9 @@ render::Engine::render(Camera& camera)
                                       VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
   state.swapchain.depth_img_transition(
     VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
-  asset_renderer_.draw(state.swapchain, camera);
-  metallic_roughness_renderer_.update_scene();
-  metallic_roughness_renderer_.draw(state.swapchain, camera);
+  asset_renderer_.update_scene(state.swapchain, camera);
+  state.swapchain.set_viewport_and_sissor();
+  asset_renderer_.draw(state.swapchain);
   state.swapchain.draw_img_transition(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                                       VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
   state.swapchain.current_img_transition(VK_IMAGE_LAYOUT_UNDEFINED,

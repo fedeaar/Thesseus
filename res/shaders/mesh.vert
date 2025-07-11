@@ -31,11 +31,8 @@ layout (push_constant) uniform constants
 void main() 
 {
 	Vertex v = PushConstants.vertex_buff.vertices[gl_VertexIndex];
-	
 	vec4 position = vec4(v.position, 1.0f);
-
 	gl_Position =  sceneData.viewproj * PushConstants.render_matrix * position;
-
 	out_norm = (PushConstants.render_matrix * vec4(v.normal, 0.f)).xyz;
 	out_color = v.color.xyz * materialData.color_factors.xyz;	
 	out_uv.x = v.uv_x;

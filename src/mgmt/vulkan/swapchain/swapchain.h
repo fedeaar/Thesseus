@@ -69,6 +69,7 @@ public:
   core::code depth_img_transition(VkImageLayout current, VkImageLayout next);
   core::code current_img_transition(VkImageLayout current, VkImageLayout next);
   core::code copy_draw_to_current();
+  core::code set_viewport_and_sissor();
 
   core::code resize_extent();
 

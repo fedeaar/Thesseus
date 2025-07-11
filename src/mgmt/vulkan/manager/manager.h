@@ -5,7 +5,6 @@
 #include "../image/image.h"
 #include "../info/info.h"
 #include "../manager.h"
-#include "../mesh/mesh.h"
 #include "../pipeline/pipeline.h"
 
 namespace mgmt {
@@ -73,11 +72,6 @@ public:
   core::Result<buffer::AllocatedBuffer, core::code>
   create_buffer(size_t size, VkBufferUsageFlags flags, VmaMemoryUsage usage);
   core::code destroy_buffer(buffer::AllocatedBuffer const& buffer);
-  core::Result<mesh::GPUMeshBuffers, core::code> upload_mesh(
-    std::span<u32> indices,
-    std::span<mesh::Vertex> vertices);
-  core::Result<std::vector<std::shared_ptr<mesh::MeshAsset>>, core::code>
-  load_gltf_meshes(char* path);
 
   // pipelines
   core::Result<pipeline::Pipeline, core::code> create_compute_pipeline(

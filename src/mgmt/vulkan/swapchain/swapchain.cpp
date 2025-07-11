@@ -208,13 +208,13 @@ mgmt::vulkan::Swapchain::begin_commands()
     min(extent.width, draw_img.extent_2d.width) * render_scale;
   draw_extent.height =
     min(extent.height, draw_img.extent_2d.height) * render_scale;
-  auto current_frame = get_current_frame();
+  auto& current_frame = get_current_frame();
   auto device = vk_mgr_->get_dev();
   // wait and prepare for next render
   if (vk_mgr_->await(
         1, &current_frame.render_fence, true, 1000000000 /* 1s */) !=
       core::code::SUCCESS) {
-    core::Logger::log("mgmt::vulkan::Swapchain::begin_commands",
+    core::Logger::err("mgmt::vulkan::Swapchain::begin_commands",
                       "failed awaiting render fence");
     return core::code::ERROR;
   }
@@ -261,13 +261,13 @@ mgmt::vulkan::Swapchain::begin_commands()
 core::code
 mgmt::vulkan::Swapchain::end_commands()
 {
-  auto cmd = get_current_cmd_buffer();
-  auto graphics_queue = vk_mgr_->get_graphics_queue();
+  auto& cmd = get_current_cmd_buffer();
+  auto& graphics_queue = vk_mgr_->get_graphics_queue();
   auto status = check(vkEndCommandBuffer(cmd));
   if (status != core::code::SUCCESS) {
     return core::code::ERROR; // todo@mgmt: log error msg
   }
-  auto current_frame = get_current_frame();
+  auto& current_frame = get_current_frame();
   // prepare the submission to the queue
   VkCommandBufferSubmitInfo cmd_submit_info =
     info::command_buffer_submit_info(cmd);
@@ -305,6 +305,26 @@ mgmt::vulkan::Swapchain::end_commands()
   }
   // success
   return core::code::SUCCESS;
+}
+
+core::code
+mgmt::vulkan::Swapchain::set_viewport_and_sissor()
+{
+  auto& cmd = get_current_cmd_buffer();
+  VkViewport viewport = {};
+  viewport.x = 0;
+  viewport.y = 0;
+  viewport.width = draw_extent.width;
+  viewport.height = draw_extent.height;
+  viewport.minDepth = 0.f;
+  viewport.maxDepth = 1.f;
+  vkCmdSetViewport(cmd, 0, 1, &viewport);
+  VkRect2D scissor = {};
+  scissor.offset.x = 0;
+  scissor.offset.y = 0;
+  scissor.extent.width = viewport.width;
+  scissor.extent.height = viewport.height;
+  vkCmdSetScissor(cmd, 0, 1, &scissor);
 }
 
 //

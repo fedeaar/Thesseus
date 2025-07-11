@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../object/include.h"
 #include "../render.h"
 
 namespace render {

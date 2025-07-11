@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../manager.h"
+#include "../renderer.h"
 
-namespace mgmt {
-namespace vulkan {
+namespace render {
+namespace asset {
 
 namespace material {
 
@@ -22,9 +22,9 @@ struct Pipeline
 
 struct Instance
 {
+  Type type;
   Pipeline* pipe;
   VkDescriptorSet material_set;
-  Type type;
 };
 
 struct Material
@@ -36,5 +36,5 @@ struct Material
 
 } // namespace material
 
-} // namespace vulkan
-} // namespace mgmt
+} // namespace asset
+} // namespace render
