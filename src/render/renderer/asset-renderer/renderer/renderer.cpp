@@ -91,13 +91,13 @@ render::AssetRenderer::init_pipelines(mgmt::vulkan::Swapchain& swapchain)
   pipeline_builder.set_cull_mode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
   pipeline_builder.set_multisampling_none();
   pipeline_builder.disable_blending();
-  pipeline_builder.enable_depthtest(true, VK_COMPARE_OP_GREATER_OR_EQUAL);
+  pipeline_builder.enable_depthtest(true, VK_COMPARE_OP_LESS_OR_EQUAL);
   pipeline_builder.set_color_attachment_format(swapchain.draw_img.format);
   pipeline_builder.set_depth_format(swapchain.depth_img.format);
   opaque_pipeline_.pipe =
     pipeline_builder.build_pipeline(dev).value(); // TODO: check errors
   pipeline_builder.enable_blending_additive();
-  pipeline_builder.enable_depthtest(false, VK_COMPARE_OP_GREATER_OR_EQUAL);
+  pipeline_builder.enable_depthtest(false, VK_COMPARE_OP_LESS_OR_EQUAL);
   transparent_pipeline_.pipe =
     pipeline_builder.build_pipeline(dev).value(); // TODO: check errors
   vkDestroyShaderModule(dev, fs, nullptr);
@@ -121,7 +121,8 @@ render::AssetRenderer::init_meshes()
   auto meshes_result =
     asset::mesh::load_gltf_meshes(*vk_mgr_, "./res/meshes/basicmesh.glb");
   if (!meshes_result.has_value()) {
-    core::Logger::err("render::AssetRenderer::init", "could not load meshes");
+    core::Logger::err("render::AssetRenderer::init_meshes",
+                      "could not load meshes");
     return core::code::ERROR;
   }
   meshes_ = meshes_result.value();
@@ -214,22 +215,24 @@ render::AssetRenderer::init_constants()
 {
   // default material textures
   MaterialResources resources;
-  resources.color_img = white_img_;
-  resources.color_sampler = default_linear_sampler_;
-  resources.metal_img = white_img_;
-  resources.metal_sampler = default_linear_sampler_;
+  resources.color_img = error_checker_img_;
+  resources.color_sampler = default_nearest_sampler_;
+  resources.metal_img = error_checker_img_;
+  resources.metal_sampler = default_nearest_sampler_;
   mgmt::vulkan::buffer::AllocatedBuffer constants =
     vk_mgr_
       ->create_buffer(sizeof(GPUMaterialConstants),
                       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                       VMA_MEMORY_USAGE_CPU_TO_GPU)
       .value(); // TODO: error handling
-  GPUMaterialConstants* scene_uniform_data;
-  vmaMapMemory(vk_mgr_->get_allocator(),
-               constants.allocation,
-               (void**)&scene_uniform_data);
-  scene_uniform_data->color_factors = glm::vec4{ 1, 1, 1, 1 };
-  scene_uniform_data->metal_rough_factors = glm::vec4{ 1, 0.5, 0, 0 };
+  GPUMaterialConstants scene_uniform_data;
+  scene_uniform_data.color_factors = v4f{ 1, 1, 1, 1 };
+  scene_uniform_data.metal_rough_factors = v4f{ 1, 0.5, 0, 0 };
+  void* p_scene_uniform_data;
+  vmaMapMemory(
+    vk_mgr_->get_allocator(), constants.allocation, &p_scene_uniform_data);
+  memcpy(
+    p_scene_uniform_data, &scene_uniform_data, sizeof(GPUMaterialConstants));
   vmaUnmapMemory(vk_mgr_->get_allocator(), constants.allocation);
   resources.data_buff = constants.buffer;
   resources.data_buff_offset = 0;
@@ -249,21 +252,21 @@ render::AssetRenderer::init_scene()
     std::shared_ptr<asset::MeshNode> new_node =
       std::make_shared<asset::MeshNode>();
     new_node->mesh = m;
-    new_node->local_tf = glm::mat4{ 1.f };
-    new_node->world_tf = glm::mat4{ 1.f };
+    new_node->local_tf = m4f{ 1.f };
+    new_node->world_tf = m4f{ 1.f };
     for (auto& s : new_node->mesh->surfaces) {
       s.material =
         std::make_shared<asset::material::Material>(default_material_data_);
     }
     loaded_nodes_[m->name] = std::move(new_node);
   }
-  loaded_nodes_["Suzanne"]->Draw(glm::mat4{ 1.f }, main_draw_ctx_);
-  // glm::mat4 transform = m4f{ 1.0f };
-  // for (int x = -3; x < 3; x++) {
-  //   glm::mat4 scale = glm::scale(transform, glm::vec3{ 0.2 });
-  //   glm::mat4 translation = glm::translate(transform, glm::vec3{ x, 1, 0 });
-  //   loaded_nodes_["Cube"]->Draw(translation * scale, main_draw_ctx_);
-  // }
+  loaded_nodes_["Suzanne"]->Draw(m4f{ 1.f }, main_draw_ctx_);
+  m4f transform = m4f{ 1.0f };
+  for (int x = -3; x < 3; x++) {
+    m4f scale = glm::scale(transform, v3f{ 0.2 });
+    m4f translation = glm::translate(transform, v3f{ x, 1, 0 });
+    loaded_nodes_["Cube"]->Draw(translation * scale, main_draw_ctx_);
+  }
   return core::code::SUCCESS;
 }
 
@@ -376,8 +379,7 @@ render::AssetRenderer::draw(mgmt::vulkan::Swapchain& swapchain, Camera& camera)
   auto render_info = mgmt::vulkan::info::rendering_info(
     swapchain.draw_extent, &color_attachment, &depth_attachment);
   vkCmdBeginRendering(cmd, &render_info);
-  vkCmdBindPipeline(
-    cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, opaque_pipeline_.pipe);
+  swapchain.set_viewport_and_sissor();
   // opaque
   auto scene_buffer = vk_mgr_
                         ->create_buffer(sizeof(GPUSceneData),

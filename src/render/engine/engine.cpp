@@ -148,7 +148,6 @@ render::Engine::render(Camera& camera)
   state.swapchain.depth_img_transition(
     VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
   asset_renderer_.update_scene(state.swapchain, camera);
-  state.swapchain.set_viewport_and_sissor();
   asset_renderer_.draw(state.swapchain, camera);
   state.swapchain.draw_img_transition(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                                       VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
