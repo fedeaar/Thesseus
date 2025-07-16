@@ -22,20 +22,69 @@ core::io::gltf::load(std::filesystem::path path, fastgltf::Asset* asset_ptr)
                            fastgltf::Options::LoadExternalBuffers |
                            fastgltf::Options::LoadExternalImages |
                            fastgltf::Options::GenerateMeshIndices;
-  auto file = fastgltf::MappedGltfFile::FromPath(path);
-  if (!bool(file)) {
-    Logger::err("core::io::gltf::load",
-                "failed to open glTF file: {}",
-                fastgltf::getErrorMessage(file.error()));
-    return core::code::ERROR;
+  fastgltf::GltfDataBuffer data;
+  data.FromPath(path);
+  auto type = fastgltf::determineGltfFileType(data);
+  if (type == fastgltf::GltfType::glTF) {
+    auto asset = parser.loadGltf(data, path.parent_path(), options);
+    if (asset.error() != fastgltf::Error::None) {
+      Logger::err("core::io::gltf::load",
+                  "Failed to load glTF: {}",
+                  fastgltf::getErrorMessage(asset.error()));
+      return core::code::ERROR;
+    }
+    *asset_ptr = std::move(asset.get());
+    return core::code::SUCCESS;
   }
-  auto asset = parser.loadGltf(file.get(), path.parent_path(), options);
-  if (asset.error() != fastgltf::Error::None) {
-    Logger::err("core::io::gltf::load",
-                "Failed to load glTF: {}",
-                fastgltf::getErrorMessage(asset.error()));
-    return core::code::ERROR;
+  if (type == fastgltf::GltfType::GLB) {
+    auto asset = parser.loadGltfBinary(data, path.parent_path(), options);
+    if (asset.error() != fastgltf::Error::None) {
+      Logger::err("core::io::gltf::load",
+                  "Failed to load glTF: {}",
+                  fastgltf::getErrorMessage(asset.error()));
+      return core::code::ERROR;
+    }
+    *asset_ptr = std::move(asset.get());
+    return core::code::SUCCESS;
   }
-  *asset_ptr = std::move(asset.get());
-  return core::code::SUCCESS;
+  Logger::err("core::io::gltf::load", "failed to determine glTF container");
+  return core::code::ERROR;
+}
+
+//
+// vulkan
+//
+
+VkFilter
+core::io::gltf::to_vulkan_filter(fastgltf::Filter filter)
+{
+  switch (filter) {
+    // nearest
+    case fastgltf::Filter::Nearest:
+    case fastgltf::Filter::NearestMipMapNearest:
+    case fastgltf::Filter::NearestMipMapLinear:
+      return VK_FILTER_NEAREST;
+    // linear
+    case fastgltf::Filter::Linear:
+    case fastgltf::Filter::LinearMipMapNearest:
+    case fastgltf::Filter::LinearMipMapLinear:
+    default:
+      return VK_FILTER_LINEAR;
+  }
+}
+
+VkSamplerMipmapMode
+core::io::gltf::to_vulkan_mipmap_mode(fastgltf::Filter filter)
+{
+  switch (filter) {
+    // nearest
+    case fastgltf::Filter::NearestMipMapNearest:
+    case fastgltf::Filter::LinearMipMapNearest:
+      return VK_SAMPLER_MIPMAP_MODE_NEAREST;
+    // linear
+    case fastgltf::Filter::NearestMipMapLinear:
+    case fastgltf::Filter::LinearMipMapLinear:
+    default:
+      return VK_SAMPLER_MIPMAP_MODE_LINEAR;
+  }
 }

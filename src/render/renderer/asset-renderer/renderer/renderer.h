@@ -26,38 +26,16 @@ private:
   VkDescriptorSetLayout scene_layout_;
   mgmt::vulkan::buffer::AllocatedBuffer scene_buffer_;
   mgmt::vulkan::descriptor::Writer writer_;
-  // materials
-  struct GPUMaterialConstants
-  {
-    v4f color_factors;
-    v4f metal_rough_factors;
-    // padding
-    v4f extra[14];
-  };
-  struct MaterialResources
-  {
-    mgmt::vulkan::image::AllocatedImage color_img;
-    mgmt::vulkan::image::AllocatedImage metal_img;
-    VkSampler color_sampler;
-    VkSampler metal_sampler;
-    VkBuffer data_buff;
-    u32 data_buff_offset;
-  };
-  asset::material::Pipeline opaque_pipeline_;
-  asset::material::Pipeline transparent_pipeline_;
-  VkDescriptorSetLayout material_layout_;
+  // pipelines
+  asset::material::MaterialPipelines material_pipes_;
   // data
   std::vector<std::shared_ptr<asset::mesh::Mesh>> meshes_;
   std::unordered_map<std::string, std::shared_ptr<render::asset::Node>>
     loaded_nodes_;
   render::asset::DrawContext main_draw_ctx_;
-  mgmt::vulkan::image::AllocatedImage white_img_;
-  mgmt::vulkan::image::AllocatedImage black_img_;
-  mgmt::vulkan::image::AllocatedImage gray_img_;
-  mgmt::vulkan::image::AllocatedImage error_checker_img_;
-  VkSampler default_linear_sampler_;
-  VkSampler default_nearest_sampler_;
-  asset::material::Instance default_material_data_;
+  std::unordered_map<std::string, std::shared_ptr<asset::LoadedGLTF>>
+    loaded_scenes_;
+  asset::DefaultResources default_res_;
   // mgmt
   DestructorQueue del_queue_;
 
@@ -70,16 +48,11 @@ public:
 
   void draw(mgmt::vulkan::Swapchain& swapchain, Camera& camera);
   void update_scene(mgmt::vulkan::Swapchain& swapchain, Camera& camera);
-  asset::material::Instance write_material(
-    asset::material::Type pass,
-    const MaterialResources& resources,
-    mgmt::vulkan::descriptor::DynamicAllocator& descriptor_allocator);
 
 private:
   core::code init_pipelines(mgmt::vulkan::Swapchain& swapchain);
   core::code init_meshes();
   core::code init_default_data();
-  core::code init_constants();
   core::code init_scene();
 };
 

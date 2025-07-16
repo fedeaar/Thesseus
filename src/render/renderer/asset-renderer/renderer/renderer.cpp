@@ -53,12 +53,12 @@ render::AssetRenderer::init_pipelines(mgmt::vulkan::Swapchain& swapchain)
     1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
   material_layout_builder.add_binding(
     2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-  material_layout_ =
+  material_pipes_.layout =
     material_layout_builder
       .build(dev, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
       .value(); // TODO: check ok and maybe abstract this
   // descriptor set
-  VkDescriptorSetLayout layouts[] = { scene_layout_, material_layout_ };
+  VkDescriptorSetLayout layouts[] = { scene_layout_, material_pipes_.layout };
   // range
   VkPushConstantRange range{};
   range.offset = 0;
@@ -80,8 +80,8 @@ render::AssetRenderer::init_pipelines(mgmt::vulkan::Swapchain& swapchain)
                       "error when building the pipeline layout");
     return core::code::ERROR;
   }
-  opaque_pipeline_.layout = pipeline_layout;
-  transparent_pipeline_.layout = pipeline_layout;
+  material_pipes_.opaque_pipeline.layout = pipeline_layout;
+  material_pipes_.transparent_pipeline.layout = pipeline_layout;
   // pipeline
   mgmt::vulkan::pipeline::Builder pipeline_builder;
   pipeline_builder.set_layout(pipeline_layout);
@@ -94,21 +94,21 @@ render::AssetRenderer::init_pipelines(mgmt::vulkan::Swapchain& swapchain)
   pipeline_builder.enable_depthtest(true, VK_COMPARE_OP_LESS_OR_EQUAL);
   pipeline_builder.set_color_attachment_format(swapchain.draw_img.format);
   pipeline_builder.set_depth_format(swapchain.depth_img.format);
-  opaque_pipeline_.pipe =
+  material_pipes_.opaque_pipeline.pipe =
     pipeline_builder.build_pipeline(dev).value(); // TODO: check errors
   pipeline_builder.enable_blending_additive();
   pipeline_builder.enable_depthtest(false, VK_COMPARE_OP_LESS_OR_EQUAL);
-  transparent_pipeline_.pipe =
+  material_pipes_.transparent_pipeline.pipe =
     pipeline_builder.build_pipeline(dev).value(); // TODO: check errors
   vkDestroyShaderModule(dev, fs, nullptr);
   vkDestroyShaderModule(dev, vs, nullptr);
   // del
   del_queue_.push([=]() {
     auto dev = vk_mgr_->get_dev();
-    vkDestroyPipeline(dev, transparent_pipeline_.pipe, nullptr);
-    vkDestroyPipeline(dev, opaque_pipeline_.pipe, nullptr);
+    vkDestroyPipeline(dev, material_pipes_.transparent_pipeline.pipe, nullptr);
+    vkDestroyPipeline(dev, material_pipes_.opaque_pipeline.pipe, nullptr);
     vkDestroyPipelineLayout(dev, pipeline_layout, nullptr);
-    vkDestroyDescriptorSetLayout(dev, material_layout_, nullptr);
+    vkDestroyDescriptorSetLayout(dev, material_pipes_.layout, nullptr);
     vkDestroyDescriptorSetLayout(dev, scene_layout_, nullptr);
   });
   return core::code::SUCCESS;
@@ -117,15 +117,24 @@ render::AssetRenderer::init_pipelines(mgmt::vulkan::Swapchain& swapchain)
 core::code
 render::AssetRenderer::init_meshes()
 {
-  // init mesh
-  auto meshes_result =
-    asset::mesh::load_gltf_meshes(*vk_mgr_, "./res/meshes/basicmesh.glb");
-  if (!meshes_result.has_value()) {
-    core::Logger::err("render::AssetRenderer::init_meshes",
-                      "could not load meshes");
-    return core::code::ERROR;
-  }
-  meshes_ = meshes_result.value();
+  // // init mesh
+  // auto meshes_result =
+  //   asset::mesh::load_gltf_meshes(*vk_mgr_, "./res/meshes/basicmesh.glb");
+  // if (!meshes_result.has_value()) {
+  //   core::Logger::err("render::AssetRenderer::init_meshes",
+  //                     "could not load meshes");
+  //   return core::code::ERROR;
+  // }
+  // meshes_ = meshes_result.value();
+  std::shared_ptr<asset::LoadedGLTF> scene_nodes =
+    std::make_shared<asset::LoadedGLTF>();
+  render::asset::load_gltf_asset(*vk_mgr_,
+                                 "./res/meshes/structure.glb",
+                                 default_res_,
+                                 writer_,
+                                 material_pipes_,
+                                 scene_nodes); // TODO errr handling
+  loaded_scenes_["structure"] = scene_nodes;
   // del
   del_queue_.push([=]() {
     auto dev = vk_mgr_->get_dev();
@@ -140,133 +149,32 @@ render::AssetRenderer::init_meshes()
 core::code
 render::AssetRenderer::init_default_data()
 {
-  // default imgs
-  u32 white = glm::packUnorm4x8(glm::vec4(1, 1, 1, 1));
-  if (vk_mgr_->create_image((void*)&white,
-                            VkExtent3D{ 1, 1, 1 },
-                            VK_FORMAT_R8G8B8A8_UNORM,
-                            VK_IMAGE_USAGE_SAMPLED_BIT,
-                            false,
-                            white_img_) != core::code::SUCCESS) {
-    core::Logger::err("render::AssetRenderer::init",
-                      "could not load white img");
-    return core::code::ERROR;
-  }
-  u32 gray = glm::packUnorm4x8(glm::vec4(0.66f, 0.66f, 0.66f, 1));
-  if (vk_mgr_->create_image((void*)&gray,
-                            VkExtent3D{ 1, 1, 1 },
-                            VK_FORMAT_R8G8B8A8_UNORM,
-                            VK_IMAGE_USAGE_SAMPLED_BIT,
-                            false,
-                            gray_img_) != core::code::SUCCESS) {
-    core::Logger::err("render::AssetRenderer::init", "could not load gray img");
-    return core::code::ERROR;
-  }
-  u32 black = glm::packUnorm4x8(glm::vec4(0, 0, 0, 0));
-  if (vk_mgr_->create_image((void*)&black,
-                            VkExtent3D{ 1, 1, 1 },
-                            VK_FORMAT_R8G8B8A8_UNORM,
-                            VK_IMAGE_USAGE_SAMPLED_BIT,
-                            false,
-                            black_img_) != core::code::SUCCESS) {
-    core::Logger::err("render::AssetRenderer::init",
-                      "could not load black img");
-    return core::code::ERROR;
-  }
-  u32 magenta = glm::packUnorm4x8(glm::vec4(1, 0, 1, 1));
-  std::array<u32, 16 * 16> pixels;
-  for (int x = 0; x < 16; x++) {
-    for (int y = 0; y < 16; y++) {
-      pixels[y * 16 + x] = ((x % 2) ^ (y % 2)) ? magenta : black;
-    }
-  }
-  if (vk_mgr_->create_image(pixels.data(),
-                            VkExtent3D{ 16, 16, 1 },
-                            VK_FORMAT_R8G8B8A8_UNORM,
-                            VK_IMAGE_USAGE_SAMPLED_BIT,
-                            false,
-                            error_checker_img_) != core::code::SUCCESS) {
-    core::Logger::err("render::AssetRenderer::init",
-                      "could not load checker img");
-    return core::code::ERROR;
-  }
-  // default samplers
-  VkSamplerCreateInfo sampl = { .sType =
-                                  VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
-  sampl.magFilter = VK_FILTER_NEAREST;
-  sampl.minFilter = VK_FILTER_NEAREST;
-  vkCreateSampler(
-    vk_mgr_->get_dev(), &sampl, nullptr, &default_nearest_sampler_);
-  sampl.magFilter = VK_FILTER_LINEAR;
-  sampl.minFilter = VK_FILTER_LINEAR;
-  vkCreateSampler(
-    vk_mgr_->get_dev(), &sampl, nullptr, &default_linear_sampler_);
-  // del
-  del_queue_.push([=]() {
-    auto dev = vk_mgr_->get_dev();
-    vkDestroySampler(dev, default_linear_sampler_, nullptr);
-    vkDestroySampler(dev, default_nearest_sampler_, nullptr);
-  });
-  return core::code::SUCCESS;
-}
-
-core::code
-render::AssetRenderer::init_constants()
-{
-  // default material textures
-  MaterialResources resources;
-  resources.color_img = error_checker_img_;
-  resources.color_sampler = default_nearest_sampler_;
-  resources.metal_img = error_checker_img_;
-  resources.metal_sampler = default_nearest_sampler_;
-  mgmt::vulkan::buffer::AllocatedBuffer constants =
-    vk_mgr_
-      ->create_buffer(sizeof(GPUMaterialConstants),
-                      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                      VMA_MEMORY_USAGE_CPU_TO_GPU)
-      .value(); // TODO: error handling
-  GPUMaterialConstants scene_uniform_data;
-  scene_uniform_data.color_factors = v4f{ 1, 1, 1, 1 };
-  scene_uniform_data.metal_rough_factors = v4f{ 1, 0.5, 0, 0 };
-  void* p_scene_uniform_data;
-  vmaMapMemory(
-    vk_mgr_->get_allocator(), constants.allocation, &p_scene_uniform_data);
-  memcpy(
-    p_scene_uniform_data, &scene_uniform_data, sizeof(GPUMaterialConstants));
-  vmaUnmapMemory(vk_mgr_->get_allocator(), constants.allocation);
-  resources.data_buff = constants.buffer;
-  resources.data_buff_offset = 0;
-  default_material_data_ =
-    write_material(asset::material::Type::opaque,
-                   resources,
-                   vk_mgr_->get_global_descriptor_allocator());
-  // del
-  del_queue_.push([=, this]() { vk_mgr_->destroy_buffer(constants); });
-  return core::code::SUCCESS;
+  return default_res_.init(writer_, material_pipes_);
 }
 
 core::code
 render::AssetRenderer::init_scene()
 {
-  for (auto& m : meshes_) {
-    std::shared_ptr<asset::MeshNode> new_node =
-      std::make_shared<asset::MeshNode>();
-    new_node->mesh = m;
-    new_node->local_tf = m4f{ 1.f };
-    new_node->world_tf = m4f{ 1.f };
-    for (auto& s : new_node->mesh->surfaces) {
-      s.material =
-        std::make_shared<asset::material::Material>(default_material_data_);
-    }
-    loaded_nodes_[m->name] = std::move(new_node);
-  }
-  loaded_nodes_["Suzanne"]->Draw(m4f{ 1.f }, main_draw_ctx_);
-  m4f transform = m4f{ 1.0f };
-  for (int x = -3; x < 3; x++) {
-    m4f scale = glm::scale(transform, v3f{ 0.2 });
-    m4f translation = glm::translate(transform, v3f{ x, 1, 0 });
-    loaded_nodes_["Cube"]->Draw(translation * scale, main_draw_ctx_);
-  }
+  // for (auto& m : meshes_) {
+  //   std::shared_ptr<asset::MeshNode> new_node =
+  //     std::make_shared<asset::MeshNode>();
+  //   new_node->mesh = m;
+  //   new_node->local_tf = m4f{ 1.f };
+  //   new_node->world_tf = m4f{ 1.f };
+  //   for (auto& s : new_node->mesh->surfaces) {
+  //     s.material = std::make_shared<asset::material::Material>(
+  //       default_res_.default_material_data);
+  //   }
+  //   loaded_nodes_[m->name] = std::move(new_node);
+  // }
+  // loaded_nodes_["Suzanne"]->Draw(m4f{ 1.f }, main_draw_ctx_);
+  // m4f transform = m4f{ 1.0f };
+  // for (int x = -3; x < 3; x++) {
+  //   m4f scale = glm::scale(transform, v3f{ 0.2 });
+  //   m4f translation = glm::translate(transform, v3f{ x, 1, 0 });
+  //   loaded_nodes_["Cube"]->Draw(translation * scale, main_draw_ctx_);
+  // }
+  loaded_scenes_["structure"]->Draw(glm::mat4{ 1.f }, main_draw_ctx_);
   return core::code::SUCCESS;
 }
 
@@ -288,10 +196,6 @@ render::AssetRenderer::init(mgmt::vulkan::Swapchain& swapchain)
   if (result != core::code::SUCCESS) {
     return result;
   }
-  result = init_constants();
-  if (result != core::code::SUCCESS) {
-    return result;
-  }
   result = init_scene();
   if (result != core::code::SUCCESS) {
     return result;
@@ -302,7 +206,8 @@ render::AssetRenderer::init(mgmt::vulkan::Swapchain& swapchain)
 }
 
 render::AssetRenderer::AssetRenderer(mgmt::vulkan::Manager* vk_mgr)
-  : render::Renderer{ vk_mgr } {};
+  : render::Renderer{ vk_mgr }
+  , default_res_{ vk_mgr } {};
 
 //
 // destructor
@@ -312,6 +217,8 @@ core::code
 render::AssetRenderer::destroy()
 {
   // todo@engine: handle pipes?
+  vk_mgr_->device_wait_idle();
+  loaded_scenes_.clear();
   del_queue_.flush();
   initialized = false;
   return core::code::SUCCESS;
@@ -322,45 +229,6 @@ render::AssetRenderer::~AssetRenderer()
   if (initialized) {
     destroy();
   }
-}
-
-//
-// write material
-//
-
-render::asset::material::Instance
-render::AssetRenderer::write_material(
-  asset::material::Type pass,
-  const MaterialResources& resources,
-  mgmt::vulkan::descriptor::DynamicAllocator& descriptor_allocator)
-{
-  auto dev = vk_mgr_->get_dev();
-  asset::material::Instance data;
-  data.type = pass;
-  if (pass == asset::material::Type::transparent) {
-    data.pipe = &transparent_pipeline_;
-  } else {
-    data.pipe = &opaque_pipeline_;
-  }
-  data.material_set = descriptor_allocator.allocate(dev, material_layout_);
-  writer_.clear();
-  writer_.write_buffer(0,
-                       resources.data_buff,
-                       sizeof(GPUMaterialConstants),
-                       resources.data_buff_offset,
-                       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-  writer_.write_image(1,
-                      resources.color_img.view,
-                      resources.color_sampler,
-                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                      VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-  writer_.write_image(2,
-                      resources.metal_img.view,
-                      resources.metal_sampler,
-                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                      VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-  writer_.update_set(dev, data.material_set);
-  return data;
 }
 
 //
@@ -402,20 +270,21 @@ render::AssetRenderer::draw(mgmt::vulkan::Swapchain& swapchain, Camera& camera)
                       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
   writer.update_set(vk_mgr_->get_dev(), global_descriptor_set);
   asset::mesh::GPUMeshPushConstants push_constants;
-  vkCmdBindPipeline(
-    cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, opaque_pipeline_.pipe);
-  vkCmdBindDescriptorSets(cmd,
-                          VK_PIPELINE_BIND_POINT_GRAPHICS,
-                          opaque_pipeline_.layout,
-                          0,
-                          1,
-                          &global_descriptor_set,
-                          0,
-                          nullptr);
+
   for (const render::asset::Object& draw : main_draw_ctx_.opaque_surfaces) {
+    vkCmdBindPipeline(
+      cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, draw.material->pipe->pipe);
     vkCmdBindDescriptorSets(cmd,
                             VK_PIPELINE_BIND_POINT_GRAPHICS,
-                            opaque_pipeline_.layout,
+                            draw.material->pipe->layout,
+                            0,
+                            1,
+                            &global_descriptor_set,
+                            0,
+                            nullptr);
+    vkCmdBindDescriptorSets(cmd,
+                            VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            draw.material->pipe->layout,
                             1,
                             1,
                             &draw.material->material_set,
@@ -425,7 +294,7 @@ render::AssetRenderer::draw(mgmt::vulkan::Swapchain& swapchain, Camera& camera)
     push_constants.world_matrix = draw.transform;
     push_constants.vertex_buff_addr = draw.vertex_buff_addr;
     vkCmdPushConstants(cmd,
-                       opaque_pipeline_.layout,
+                       draw.material->pipe->layout,
                        VK_SHADER_STAGE_VERTEX_BIT,
                        0,
                        sizeof(asset::mesh::GPUMeshPushConstants),

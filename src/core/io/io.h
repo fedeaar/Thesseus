@@ -7,6 +7,7 @@
 
 #include <fastgltf/glm_element_traits.hpp>
 #include <fastgltf/tools.hpp>
+#include <vulkan/vulkan.h>
 
 #include <filesystem>
 #include <fstream>
@@ -38,6 +39,11 @@ namespace gltf {
 
 core::code
 load(std::filesystem::path path, fastgltf::Asset* asset_ptr);
+
+VkFilter
+to_vulkan_filter(fastgltf::Filter filter);
+VkSamplerMipmapMode
+to_vulkan_mipmap_mode(fastgltf::Filter filter);
 }
 
 } // namespace io
