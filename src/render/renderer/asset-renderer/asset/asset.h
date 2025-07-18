@@ -45,6 +45,7 @@ struct Object
 struct DrawContext
 {
   std::vector<Object> opaque_surfaces;
+  std::vector<Object> transparent_surfaces;
 };
 
 class IRenderable
@@ -81,13 +82,20 @@ struct LoadedGLTF : public IRenderable
   mgmt::vulkan::descriptor::DynamicAllocator descriptor_pool;
   mgmt::vulkan::buffer::AllocatedBuffer material_data_buff;
   mgmt::vulkan::Manager* vk_mgr;
+  DestructorQueue del_queue_;
 
   ~LoadedGLTF() { clearAll(); };
   virtual void Draw(const m4f& topMatrix, DrawContext& ctx) override;
 
 private:
-  void clearAll() {};
+  void clearAll();
 };
+
+core::code
+load_image(mgmt::vulkan::Manager& vk_mgr,
+           fastgltf::Asset& asset,
+           fastgltf::Image& image,
+           mgmt::vulkan::image::AllocatedImage& alloc);
 
 core::code
 load_gltf_asset(mgmt::vulkan::Manager& vk_mgr,

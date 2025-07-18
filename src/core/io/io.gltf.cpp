@@ -3,13 +3,23 @@
 #include <fastgltf/core.hpp>
 #include <fastgltf/types.hpp>
 
-core::code
-core::io::gltf::load(std::filesystem::path path, fastgltf::Asset* asset_ptr)
+#include <filesystem>
+#include <sys/stat.h>
+
+bool
+checkFileExists(const char* filepath)
 {
+  struct stat buffer;
+  return (stat(filepath, &buffer) == 0);
+}
+
+core::code
+core::io::gltf::load(char* const file, fastgltf::Asset* asset_ptr)
+{
+  std::filesystem::path path = file;
   if (!std::filesystem::exists(path)) {
-    Logger::err("core::io::gltf::load",
-                "gltf load error: failed to find {}",
-                path.c_str());
+    Logger::err(
+      "core::io::gltf::load", "gltf load error: failed to find {}", file);
     return core::code::ERROR;
   }
   static constexpr auto ext = fastgltf::Extensions::KHR_mesh_quantization |
@@ -22,33 +32,22 @@ core::io::gltf::load(std::filesystem::path path, fastgltf::Asset* asset_ptr)
                            fastgltf::Options::LoadExternalBuffers |
                            fastgltf::Options::LoadExternalImages |
                            fastgltf::Options::GenerateMeshIndices;
-  fastgltf::GltfDataBuffer data;
-  data.FromPath(path);
-  auto type = fastgltf::determineGltfFileType(data);
-  if (type == fastgltf::GltfType::glTF) {
-    auto asset = parser.loadGltf(data, path.parent_path(), options);
-    if (asset.error() != fastgltf::Error::None) {
-      Logger::err("core::io::gltf::load",
-                  "Failed to load glTF: {}",
-                  fastgltf::getErrorMessage(asset.error()));
-      return core::code::ERROR;
-    }
-    *asset_ptr = std::move(asset.get());
-    return core::code::SUCCESS;
+  auto data = fastgltf::GltfDataBuffer::FromPath(path);
+  if (data.error() != fastgltf::Error::None) {
+    Logger::err("core::io::gltf::load",
+                "Failed to load glTF: {}",
+                fastgltf::getErrorMessage(data.error()));
+    return core::code::ERROR;
   }
-  if (type == fastgltf::GltfType::GLB) {
-    auto asset = parser.loadGltfBinary(data, path.parent_path(), options);
-    if (asset.error() != fastgltf::Error::None) {
-      Logger::err("core::io::gltf::load",
-                  "Failed to load glTF: {}",
-                  fastgltf::getErrorMessage(asset.error()));
-      return core::code::ERROR;
-    }
-    *asset_ptr = std::move(asset.get());
-    return core::code::SUCCESS;
+  auto asset = parser.loadGltf(data.get(), path.parent_path(), options);
+  if (asset.error() != fastgltf::Error::None) {
+    Logger::err("core::io::gltf::load",
+                "Failed to load glTF: {}",
+                fastgltf::getErrorMessage(asset.error()));
+    return core::code::ERROR;
   }
-  Logger::err("core::io::gltf::load", "failed to determine glTF container");
-  return core::code::ERROR;
+  *asset_ptr = std::move(asset.get());
+  return core::code::SUCCESS;
 }
 
 //

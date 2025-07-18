@@ -30,6 +30,9 @@ namespace image {
 u8*
 raw(std::string const& path, i32* width, i32* height, i32* comp, i32 req_comp);
 
+u8*
+raw(u8* data, u32 length, i32* width, i32* height, i32* comp, i32 req_comp);
+
 void
 free(u8* image);
 
@@ -38,7 +41,7 @@ free(u8* image);
 namespace gltf {
 
 core::code
-load(std::filesystem::path path, fastgltf::Asset* asset_ptr);
+load(char* const file, fastgltf::Asset* asset_ptr);
 
 VkFilter
 to_vulkan_filter(fastgltf::Filter filter);

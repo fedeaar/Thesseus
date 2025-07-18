@@ -186,6 +186,111 @@ render::asset::MeshNode::Draw(const m4f& top, render::asset::DrawContext& ctx)
 //
 
 core::code
+render::asset::load_image(mgmt::vulkan::Manager& vk_mgr,
+                          fastgltf::Asset& asset,
+                          fastgltf::Image& image,
+                          mgmt::vulkan::image::AllocatedImage& alloc)
+{
+  bool set = false;
+  int width, height, nrChannels;
+  std::visit(
+    fastgltf::visitor{
+      [&](auto& arg) {},
+      [&](fastgltf::sources::URI& filePath) {
+        assert(filePath.fileByteOffset ==
+               0); // We don't support offsets with stbi.
+        assert(filePath.uri.isLocalPath()); // We're only capable of loading
+                                            // local files.
+
+        const std::string path(filePath.uri.path().begin(),
+                               filePath.uri.path().end()); // Thanks C++.
+        unsigned char* data =
+          core::io::image::raw(path.c_str(), &width, &height, &nrChannels, 4);
+        if (data) {
+          VkExtent3D imagesize;
+          imagesize.width = width;
+          imagesize.height = height;
+          imagesize.depth = 1;
+          auto status = vk_mgr.create_image(data,
+                                            imagesize,
+                                            VK_FORMAT_R8G8B8A8_UNORM,
+                                            VK_IMAGE_USAGE_SAMPLED_BIT,
+                                            false,
+                                            alloc);
+          set = status == core::code::SUCCESS;
+          core::io::image::free(data);
+        }
+      },
+      [&](fastgltf::sources::Vector& vector) {
+        unsigned char* data =
+          core::io::image::raw((u8*)vector.bytes.data(),
+                               static_cast<int>(vector.bytes.size()),
+                               &width,
+                               &height,
+                               &nrChannels,
+                               4);
+        if (data) {
+          VkExtent3D imagesize;
+          imagesize.width = width;
+          imagesize.height = height;
+          imagesize.depth = 1;
+          auto status = vk_mgr.create_image(data,
+                                            imagesize,
+                                            VK_FORMAT_R8G8B8A8_UNORM,
+                                            VK_IMAGE_USAGE_SAMPLED_BIT,
+                                            false,
+                                            alloc);
+          set = status == core::code::SUCCESS;
+          core::io::image::free(data);
+        }
+      },
+      [&](fastgltf::sources::BufferView& view) {
+        auto& bufferView = asset.bufferViews[view.bufferViewIndex];
+        auto& buffer = asset.buffers[bufferView.bufferIndex];
+
+        std::visit(fastgltf::visitor{
+                     // We only care about VectorWithMime here, because we
+                     // specify LoadExternalBuffers, meaning all buffers
+                     // are already loaded into a vector.
+                     [](auto& arg) {},
+                     [&](fastgltf::sources::Vector& vector) {
+                       unsigned char* data = core::io::image::raw(
+                         (u8*)vector.bytes.data() + bufferView.byteOffset,
+                         static_cast<int>(bufferView.byteLength),
+                         &width,
+                         &height,
+                         &nrChannels,
+                         4);
+                       if (data) {
+                         VkExtent3D imagesize;
+                         imagesize.width = width;
+                         imagesize.height = height;
+                         imagesize.depth = 1;
+                         auto status =
+                           vk_mgr.create_image(data,
+                                               imagesize,
+                                               VK_FORMAT_R8G8B8A8_UNORM,
+                                               VK_IMAGE_USAGE_SAMPLED_BIT,
+                                               false,
+                                               alloc);
+                         set = status == core::code::SUCCESS;
+                         core::io::image::free(data);
+                       }
+                     } },
+                   buffer.data);
+      },
+    },
+    image.data);
+  // if any of the attempts to load the data failed, we havent written the image
+  // so handle is null
+  if (!set || alloc.image == VK_NULL_HANDLE) {
+    return core::code::ERROR;
+  } else {
+    return core::code::SUCCESS;
+  }
+}
+
+core::code
 render::asset::load_gltf_asset(
   mgmt::vulkan::Manager& vk_mgr,
   char* path,
@@ -236,7 +341,19 @@ render::asset::load_gltf_asset(
   std::vector<std::shared_ptr<render::asset::material::Material>> materials;
   // load all textures
   for (fastgltf::Image& image : gltf.images) {
-    images.push_back(default_res.error_checker_img);
+    mgmt::vulkan::image::AllocatedImage img;
+    auto status = load_image(vk_mgr, gltf, image, img);
+    if (status != core::code::ERROR) {
+      images.push_back(img);
+      file.images[image.name.c_str()] = img;
+    } else {
+      // we failed to load, so lets give the slot a default white texture to not
+      // completely break loading
+      images.push_back(default_res.error_checker_img);
+      core::Logger::log("render::asset::load_gltf_asset",
+                        "failed to load gltf texture {}",
+                        image.name);
+    }
   }
   // create buffer to hold the material data
   file.material_data_buff =
@@ -443,6 +560,15 @@ render::asset::load_gltf_asset(
       node->refresh_transform(glm::mat4{ 1.f });
     }
   }
+  scene->del_queue_.push([=, &vk_mgr, &default_res]() {
+    for (auto& [k, v] : scene->images) {
+      if (v.image == default_res.error_checker_img.image) {
+        // dont destroy the default images
+        continue;
+      }
+      vk_mgr.destroy_image(v);
+    }
+  });
   return core::code::SUCCESS;
 };
 
@@ -454,3 +580,18 @@ render::asset::LoadedGLTF::Draw(const glm::mat4& topMatrix, DrawContext& ctx)
     n->Draw(topMatrix, ctx);
   }
 };
+
+void
+render::asset::LoadedGLTF::clearAll()
+{
+  VkDevice dev = vk_mgr->get_dev();
+  descriptor_pool.destroy_pools(dev);
+  vk_mgr->destroy_buffer(material_data_buff);
+  for (auto& [k, v] : meshes) {
+    vk_mgr->destroy_buffer(v->mesh_buffers.index_buff);
+    vk_mgr->destroy_buffer(v->mesh_buffers.vertex_buff);
+  }
+  for (auto& sampler : samplers) {
+    vkDestroySampler(dev, sampler, nullptr);
+  }
+}

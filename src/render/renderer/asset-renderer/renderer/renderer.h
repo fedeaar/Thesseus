@@ -51,8 +51,8 @@ public:
 
 private:
   core::code init_pipelines(mgmt::vulkan::Swapchain& swapchain);
-  core::code init_meshes();
   core::code init_default_data();
+  core::code init_meshes();
   core::code init_scene();
 };
 

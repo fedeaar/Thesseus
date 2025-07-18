@@ -188,11 +188,11 @@ render::AssetRenderer::init(mgmt::vulkan::Swapchain& swapchain)
   if (result != core::code::SUCCESS) {
     return result;
   }
-  result = init_meshes();
+  result = init_default_data();
   if (result != core::code::SUCCESS) {
     return result;
   }
-  result = init_default_data();
+  result = init_meshes();
   if (result != core::code::SUCCESS) {
     return result;
   }
@@ -272,6 +272,38 @@ render::AssetRenderer::draw(mgmt::vulkan::Swapchain& swapchain, Camera& camera)
   asset::mesh::GPUMeshPushConstants push_constants;
 
   for (const render::asset::Object& draw : main_draw_ctx_.opaque_surfaces) {
+    vkCmdBindPipeline(
+      cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, draw.material->pipe->pipe);
+    vkCmdBindDescriptorSets(cmd,
+                            VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            draw.material->pipe->layout,
+                            0,
+                            1,
+                            &global_descriptor_set,
+                            0,
+                            nullptr);
+    vkCmdBindDescriptorSets(cmd,
+                            VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            draw.material->pipe->layout,
+                            1,
+                            1,
+                            &draw.material->material_set,
+                            0,
+                            nullptr);
+    vkCmdBindIndexBuffer(cmd, draw.idx_buff, 0, VK_INDEX_TYPE_UINT32);
+    push_constants.world_matrix = draw.transform;
+    push_constants.vertex_buff_addr = draw.vertex_buff_addr;
+    vkCmdPushConstants(cmd,
+                       draw.material->pipe->layout,
+                       VK_SHADER_STAGE_VERTEX_BIT,
+                       0,
+                       sizeof(asset::mesh::GPUMeshPushConstants),
+                       &push_constants);
+    vkCmdDrawIndexed(cmd, draw.idx_count, 1, draw.start_idx, 0, 0);
+  }
+
+  for (const render::asset::Object& draw :
+       main_draw_ctx_.transparent_surfaces) {
     vkCmdBindPipeline(
       cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, draw.material->pipe->pipe);
     vkCmdBindDescriptorSets(cmd,

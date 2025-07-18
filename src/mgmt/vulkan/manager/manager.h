@@ -98,12 +98,6 @@ public:
                           VkImageUsageFlags usage,
                           bool mipmapped,
                           image::AllocatedImage& image);
-  core::Result<image::AllocatedImage, core::code> create_image(
-    void* data,
-    VkExtent3D size,
-    VkFormat format,
-    VkImageUsageFlags usage,
-    bool mipmapped = false);
   core::code destroy_image(const image::AllocatedImage& img);
 
   // sync
