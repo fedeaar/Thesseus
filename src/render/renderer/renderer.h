@@ -7,7 +7,7 @@ namespace render {
 class Renderer
 {
 public:
-  core::status initialized = core::status::NOT_INIT;
+  core::status initialized = core::status::NOT_INITIALIZED;
 
 protected:
   mgmt::vulkan::Manager* vk_mgr_;

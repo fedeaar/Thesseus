@@ -15,7 +15,7 @@ class Manager
 public:
   struct State
   {
-    core::status status = core::status::NOT_INIT;
+    core::status status = core::status::NOT_INITIALIZED;
     VkExtent2D extent;
     f32 aspect_ratio;
 

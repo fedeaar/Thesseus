@@ -227,14 +227,14 @@ mgmt::vulkan::Manager::init_imm_submit()
 core::code
 mgmt::vulkan::Manager::init()
 {
-  if (initialized == core::status::INIT) {
+  if (initialized == core::status::INITIALIZED) {
     return core::code::SUCCESS;
   }
   if (initialized == core::status::ERROR) {
     core::Logger::wrn("mgmt::vulkan::Manager::init", "in error state");
     return core::code::IN_ERROR_STATE;
   }
-  if (window_mgr_->state.status != core::status::INIT) {
+  if (window_mgr_->state.status != core::status::INITIALIZED) {
     core::Logger::err("mgmt::vulkan::Manager::init",
                       "window_mgr is not initialized");
     return core::code::ERROR;
@@ -263,7 +263,7 @@ mgmt::vulkan::Manager::init()
     return core::code::ERROR;
   }
   // success
-  initialized = core::status::INIT;
+  initialized = core::status::INITIALIZED;
   return core::code::SUCCESS;
 }
 
@@ -277,20 +277,20 @@ mgmt::vulkan::Manager::Manager(window::Manager* window_mgr)
 core::code
 mgmt::vulkan::Manager::destroy()
 {
-  if (initialized == core::status::NOT_INIT) {
+  if (initialized == core::status::NOT_INITIALIZED) {
     core::Logger::err("mgmt::vulkan::Manager::destroy",
                       "called before initialization");
     return core::code::SUCCESS;
   }
   device_wait_idle();
   del_queue_.flush();
-  initialized = core::status::NOT_INIT;
+  initialized = core::status::NOT_INITIALIZED;
   return core::code::SUCCESS;
 };
 
 mgmt::vulkan::Manager::~Manager()
 {
-  if (initialized == core::status::INIT) {
+  if (initialized == core::status::INITIALIZED) {
     destroy();
   }
 };
@@ -306,7 +306,7 @@ mgmt::vulkan::Manager::create_swapchain(VkSurfaceFormatKHR surface_fmt,
                                         std::vector<VkImage>& imgs,
                                         std::vector<VkImageView>& imgs_views)
 {
-  if (window_mgr_->state.status != core::status::INIT) {
+  if (window_mgr_->state.status != core::status::INITIALIZED) {
     core::Logger::err("mgmt::vulkan::Manager::create_swapchain",
                       "window_mgr is not initialized");
     return core::code::ERROR;
@@ -617,10 +617,10 @@ core::Result<VkDescriptorPool, core::code>
 mgmt::vulkan::Manager::create_descriptor_pool(
   VkDescriptorPoolCreateInfo pool_info)
 {
-  if (initialized == core::status::NOT_INIT) {
+  if (initialized == core::status::NOT_INITIALIZED) {
     core::Logger::err("mgmt::vulkan::Manager::create_descriptor_pool",
                       "manager not initialized");
-    return core::code::NOT_INIT;
+    return core::code::NOT_INITIALIZED;
   }
   if (initialized == core::status::ERROR) {
     core::Logger::err("mgmt::vulkan::Manager::create_descriptor_pool",
@@ -696,10 +696,10 @@ mgmt::vulkan::Manager::create_compute_pipeline(
   VkPipelineLayoutCreateInfo& layout_info,
   char* shader_path)
 {
-  if (initialized == core::status::NOT_INIT) {
+  if (initialized == core::status::NOT_INITIALIZED) {
     core::Logger::err("mgmt::vulkan::Manager::create_compute_pipeline",
                       "manager not initialized");
-    return core::code::NOT_INIT;
+    return core::code::NOT_INITIALIZED;
   }
   if (initialized == core::status::ERROR) {
     core::Logger::err("mgmt::vulkan::Manager::create_compute_pipeline",
@@ -754,10 +754,10 @@ mgmt::vulkan::Manager::create_gfx_pipeline(
   char* vs_path,
   char* fs_path)
 {
-  if (initialized != core::status::INIT) {
+  if (initialized != core::status::INITIALIZED) {
     core::Logger::err("mgmt::vulkan::Manager::create_gfx_pipeline",
                       "Manager not initialized");
-    return core::code::NOT_INIT;
+    return core::code::NOT_INITIALIZED;
   }
   auto vs_result = mgmt::vulkan::pipeline::load_shader_module(vs_path, device_);
   if (!vs_result.has_value()) {
@@ -856,8 +856,8 @@ mgmt::vulkan::Manager::imm_submit(
 core::code
 mgmt::vulkan::Manager::device_wait_idle()
 {
-  if (initialized != core::status::INIT) {
-    return core::code::NOT_INIT;
+  if (initialized != core::status::INITIALIZED) {
+    return core::code::NOT_INITIALIZED;
   }
   return check(vkDeviceWaitIdle(device_));
 }

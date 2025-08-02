@@ -13,7 +13,7 @@ namespace vulkan {
 class Manager
 {
 public:
-  core::status initialized = core::status::NOT_INIT;
+  core::status initialized = core::status::NOT_INITIALIZED;
 
 private:
   DestructorQueue del_queue_{};

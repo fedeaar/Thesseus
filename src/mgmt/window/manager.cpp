@@ -7,7 +7,7 @@
 core::code
 mgmt::window::Manager::init()
 {
-  if (state.status == core::status::INIT) {
+  if (state.status == core::status::INITIALIZED) {
     return core::code::SUCCESS;
   }
   if (state.status == core::status::ERROR) {
@@ -36,7 +36,7 @@ mgmt::window::Manager::init()
     return core::code::ERROR;
   }
   // success
-  state.status = core::status::INIT;
+  state.status = core::status::INITIALIZED;
   return core::code::SUCCESS;
 }
 
@@ -54,7 +54,7 @@ mgmt::window::Manager::Manager(u32 width,
 core::code
 mgmt::window::Manager::destroy()
 {
-  if (state.status == core::status::NOT_INIT) {
+  if (state.status == core::status::NOT_INITIALIZED) {
     core::Logger::wrn("mgmt::window::Manager::destroy",
                       "destroy called before initialization");
     return core::code::SUCCESS;
@@ -63,13 +63,13 @@ mgmt::window::Manager::destroy()
   SDL_DestroyWindow(window_);
   window_ = nullptr;
   // success
-  state.status = core::status::NOT_INIT;
+  state.status = core::status::NOT_INITIALIZED;
   return core::code::SUCCESS;
 }
 
 mgmt::window::Manager::~Manager()
 {
-  if (state.status != core::status::NOT_INIT) {
+  if (state.status != core::status::NOT_INITIALIZED) {
     destroy();
   }
 };
@@ -87,10 +87,10 @@ mgmt::window::Manager::get_window()
 core::code
 mgmt::window::Manager::get_extent(VkExtent2D& extent)
 {
-  if (state.status != core::status::INIT) {
+  if (state.status != core::status::INITIALIZED) {
     core::Logger::err("mgmt::window::Manager::get_extent",
                       "called before initialization");
-    return core::code::NOT_INIT;
+    return core::code::NOT_INITIALIZED;
   }
   int w, h; // move
   SDL_GetWindowSize(window_, &w, &h);
@@ -107,10 +107,10 @@ mgmt::window::Manager::get_state()
 core::Result<char const* const*, core::code>
 mgmt::window::Manager::get_required_extensions(u32& count)
 {
-  if (state.status != core::status::INIT) {
+  if (state.status != core::status::INITIALIZED) {
     core::Logger::err("mgmt::window::Manager::get_required_extensions",
                       "called before initialization");
-    return core::code::NOT_INIT;
+    return core::code::NOT_INITIALIZED;
   }
   auto extensions = SDL_Vulkan_GetInstanceExtensions(&count);
   if (extensions == NULL) {
@@ -130,10 +130,10 @@ core::code
 mgmt::window::Manager::build_surface(VkInstance& instance,
                                      VkSurfaceKHR* surface)
 {
-  if (state.status != core::status::INIT) {
+  if (state.status != core::status::INITIALIZED) {
     core::Logger::err("mgmt::window::Manager::build_surface",
                       "called before initialization");
-    return core::code::NOT_INIT;
+    return core::code::NOT_INITIALIZED;
   }
   // create surface
   if (!SDL_Vulkan_CreateSurface(window_, instance, nullptr, surface)) {

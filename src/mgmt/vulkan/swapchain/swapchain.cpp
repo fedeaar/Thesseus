@@ -57,10 +57,10 @@ mgmt::vulkan::Swapchain::create_frames()
 core::code
 mgmt::vulkan::Swapchain::init()
 {
-  if (initialized != core::status::NOT_INIT) {
+  if (initialized != core::status::NOT_INITIALIZED) {
     core::Logger::err("mgmt::vulkan::Swapchain::init",
                       "called before initialization");
-    return core::code::NOT_INIT;
+    return core::code::NOT_INITIALIZED;
   }
   if (initialized == core::status::ERROR) {
     core::Logger::err("mgmt::vulkan::Swapchain::init", "in error state");
@@ -126,7 +126,7 @@ mgmt::vulkan::Swapchain::init()
     return core::code::ERROR;
   }
   // success
-  initialized = core::status::INIT;
+  initialized = core::status::INITIALIZED;
   return core::code::SUCCESS;
 }
 
@@ -140,20 +140,20 @@ mgmt::vulkan::Swapchain::Swapchain(vulkan::Manager* vk_mgr)
 core::code
 mgmt::vulkan::Swapchain::destroy()
 {
-  if (initialized == core::status::NOT_INIT) {
+  if (initialized == core::status::NOT_INITIALIZED) {
     core::Logger::err("mgmt::vulkan::Manager::destroy",
                       "called before initialization");
     return core::code::SUCCESS;
   }
   del_queue_.flush();
   vk_mgr_->destroy_swapchain(swapchain, imgs, imgs_views);
-  initialized = core::status::NOT_INIT;
+  initialized = core::status::NOT_INITIALIZED;
   return core::code::SUCCESS;
 }
 
 mgmt::vulkan::Swapchain::~Swapchain()
 {
-  if (initialized == core::status::INIT) {
+  if (initialized == core::status::INITIALIZED) {
     destroy();
   }
 }
@@ -205,9 +205,9 @@ mgmt::vulkan::Swapchain::begin_commands()
 {
   // we assume we are init
   draw_extent.width =
-    min(extent.width, draw_img.extent_2d.width) * render_scale;
+    core::min(extent.width, draw_img.extent_2d.width) * render_scale;
   draw_extent.height =
-    min(extent.height, draw_img.extent_2d.height) * render_scale;
+    core::min(extent.height, draw_img.extent_2d.height) * render_scale;
   auto& current_frame = get_current_frame();
   auto device = vk_mgr_->get_dev();
   // wait and prepare for next render

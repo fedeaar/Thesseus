@@ -36,9 +36,9 @@ struct Object
 {
   u32 idx_count;
   u32 start_idx;
-  VkBuffer idx_buff;
   material::Instance* material;
   m4f transform;
+  VkBuffer idx_buff;
   VkDeviceAddress vertex_buff_addr;
 };
 
@@ -72,6 +72,7 @@ struct MeshNode : public Node
 
 struct LoadedGLTF : public IRenderable
 {
+  bool initialized = false;
   std::unordered_map<std::string, std::shared_ptr<mesh::Mesh>> meshes;
   std::unordered_map<std::string, std::shared_ptr<Node>> nodes;
   std::unordered_map<std::string, mgmt::vulkan::image::AllocatedImage> images;
@@ -84,26 +85,16 @@ struct LoadedGLTF : public IRenderable
   mgmt::vulkan::Manager* vk_mgr;
   DestructorQueue del_queue_;
 
-  ~LoadedGLTF() { clearAll(); };
+  ~LoadedGLTF()
+  {
+    if (initialized) {
+      clearAll();
+    }
+  };
   virtual void Draw(const m4f& topMatrix, DrawContext& ctx) override;
 
-private:
   void clearAll();
 };
-
-core::code
-load_image(mgmt::vulkan::Manager& vk_mgr,
-           fastgltf::Asset& asset,
-           fastgltf::Image& image,
-           mgmt::vulkan::image::AllocatedImage& alloc);
-
-core::code
-load_gltf_asset(mgmt::vulkan::Manager& vk_mgr,
-                char* path,
-                render::asset::DefaultResources& default_res,
-                mgmt::vulkan::descriptor::Writer& writer,
-                render::asset::material::MaterialPipelines& material_pipes,
-                std::shared_ptr<LoadedGLTF>& scene);
 
 } // namespace asset
 } // namespace render

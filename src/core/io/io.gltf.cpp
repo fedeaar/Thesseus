@@ -29,9 +29,7 @@ core::io::gltf::load(char* const file, fastgltf::Asset* asset_ptr)
   constexpr auto options = fastgltf::Options::DontRequireValidAssetMember |
                            fastgltf::Options::AllowDouble |
                            fastgltf::Options::LoadGLBBuffers |
-                           fastgltf::Options::LoadExternalBuffers |
-                           fastgltf::Options::LoadExternalImages |
-                           fastgltf::Options::GenerateMeshIndices;
+                           fastgltf::Options::LoadExternalBuffers;
   auto data = fastgltf::GltfDataBuffer::FromPath(path);
   if (data.error() != fastgltf::Error::None) {
     Logger::err("core::io::gltf::load",

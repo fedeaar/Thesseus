@@ -10,10 +10,8 @@ layout (set = 0, binding = 0) uniform SceneData {
 } sceneData;
 
 layout (set = 1, binding = 0) uniform GLTFMaterialData {   
-
 	vec4 color_factors;
 	vec4 metal_rough_factors;
-	
 } materialData;
 
 layout (set = 1, binding = 1) uniform sampler2D color_tex;

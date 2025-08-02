@@ -16,15 +16,15 @@ public:
 
   struct State
   {
-    core::status initialized = core::status::NOT_INIT;
+    core::status initialized = core::status::NOT_INITIALIZED;
     mgmt::window::Manager window_mgr;
     mgmt::vulkan::Manager vk_mgr;
     mgmt::vulkan::Swapchain swapchain;
+    // renderers
+    BackgroundRenderer bg_renderer;
+    AssetRenderer mesh_renderer;
+    ImguiRenderer imgui_renderer;
   } state;
-
-  BackgroundRenderer background_renderer_;
-  AssetRenderer asset_renderer_;
-  ImguiRenderer imgui_renderer_;
 
 public:
   core::code init();

@@ -2,6 +2,7 @@
 
 #include "destructor-queue.h"
 #include "enum.h"
+#include "function-name.h"
 #include "inline.hpp"
 #include "io/io.h"
 #include "logger.hpp"

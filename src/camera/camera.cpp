@@ -74,7 +74,7 @@ Camera::rotate(Camera::Rotation type, f32 angle)
       yaw_ += angle * sensitivity_;
       break;
     case PITCH:
-      pitch_ = clamp(pitch_ + angle * sensitivity_, -90.f, 90.f);
+      pitch_ = core::clamp(pitch_ + angle * sensitivity_, -90.f, 90.f);
       break;
   }
   front_ = _direction(yaw_, pitch_);

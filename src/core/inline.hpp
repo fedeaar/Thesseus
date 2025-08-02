@@ -1,5 +1,7 @@
 #pragma once
 
+namespace core {
+
 template<typename T>
 inline static T
 min(T a, T b)
@@ -20,3 +22,5 @@ clamp(T v, T a, T b)
 {
   return min(max(v, a), b);
 }
+
+} // namespace core

@@ -11,7 +11,7 @@
 core::code
 render::ImguiRenderer::init(mgmt::vulkan::Swapchain& swapchain)
 {
-  if (initialized == core::status::INIT) {
+  if (initialized == core::status::INITIALIZED) {
     return core::code::SUCCESS;
   }
   if (initialized == core::status::ERROR) {
@@ -79,7 +79,7 @@ render::ImguiRenderer::init(mgmt::vulkan::Swapchain& swapchain)
     return core::code::ERROR;
   }
   // success
-  initialized = core::status::INIT;
+  initialized = core::status::INITIALIZED;
   return core::code::SUCCESS;
 }
 
@@ -95,13 +95,13 @@ render::ImguiRenderer::ImguiRenderer(mgmt::vulkan::Manager* vk_mgr,
 core::code
 render::ImguiRenderer::destroy()
 {
-  if (initialized == core::status::NOT_INIT) {
+  if (initialized == core::status::NOT_INITIALIZED) {
     return core::code::SUCCESS;
   }
   vk_mgr_->device_wait_idle();
   ImGui_ImplVulkan_Shutdown();
   // vk_mgr_->destroy_descriptor_pool(imgui_pool_);
-  initialized = core::status::NOT_INIT;
+  initialized = core::status::NOT_INITIALIZED;
   return core::code::SUCCESS;
 }
 

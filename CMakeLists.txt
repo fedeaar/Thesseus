@@ -34,12 +34,10 @@ include(CompileShaders)
 #
 
 # clear
-# TODO@cmake: this does not seem to be working
-file(REMOVE_RECURSE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+file(REMOVE_RECURSE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/)
 file(COPY res DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 # find sources 
-# TODO@cmake use subdirectories
 file(GLOB_RECURSE SOURCES_MAIN src/*.cpp src/*.h)
 
 # flags

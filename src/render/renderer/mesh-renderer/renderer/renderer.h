@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../asset/asset.h"
+#include "../gltf/gltf.h"
 #include "../material/material.h"
 #include "../mesh/mesh.h"
 #include "../renderer.h"
@@ -16,12 +17,12 @@ private:
   // scene
   struct GPUSceneData
   {
-    glm::mat4 view;
-    glm::mat4 proj;
-    glm::mat4 viewproj;
-    glm::vec4 ambient;
-    glm::vec4 sun_dir;
-    glm::vec4 sun_color;
+    m4f view;
+    m4f proj;
+    m4f viewproj;
+    v4f ambient;
+    v4f sun_dir;
+    v4f sun_color;
   } scene_;
   VkDescriptorSetLayout scene_layout_;
   mgmt::vulkan::buffer::AllocatedBuffer scene_buffer_;

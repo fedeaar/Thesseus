@@ -128,21 +128,15 @@ render::AssetRenderer::init_meshes()
   // meshes_ = meshes_result.value();
   std::shared_ptr<asset::LoadedGLTF> scene_nodes =
     std::make_shared<asset::LoadedGLTF>();
-  render::asset::load_gltf_asset(*vk_mgr_,
-                                 "./res/meshes/structure.glb",
-                                 default_res_,
-                                 writer_,
-                                 material_pipes_,
-                                 scene_nodes); // TODO errr handling
+  render::gltf::load_gltf("./res/meshes/structure.glb",
+                          *vk_mgr_,
+                          default_res_,
+                          writer_,
+                          material_pipes_,
+                          scene_nodes); // TODO errr handling
   loaded_scenes_["structure"] = scene_nodes;
   // del
-  del_queue_.push([=]() {
-    auto dev = vk_mgr_->get_dev();
-    for (auto& mesh : meshes_) {
-      vk_mgr_->destroy_buffer(mesh->mesh_buffers.index_buff);
-      vk_mgr_->destroy_buffer(mesh->mesh_buffers.vertex_buff);
-    }
-  });
+  del_queue_.push([=]() { loaded_scenes_["structure"]->clearAll(); });
   return core::code::SUCCESS;
 }
 
@@ -218,7 +212,7 @@ render::AssetRenderer::destroy()
 {
   // todo@engine: handle pipes?
   vk_mgr_->device_wait_idle();
-  loaded_scenes_.clear();
+  default_res_.destroy();
   del_queue_.flush();
   initialized = false;
   return core::code::SUCCESS;
@@ -343,6 +337,7 @@ render::AssetRenderer::update_scene(mgmt::vulkan::Swapchain& swapchain,
   scene_.view = camera.view_matrix();
   // camera projection
   scene_.proj = camera.proj_matrix();
+  scene_.proj[1][1] *= -1;
   scene_.viewproj = scene_.proj * scene_.view;
   // some default lighting parameters
   scene_.ambient = glm::vec4(.1f);

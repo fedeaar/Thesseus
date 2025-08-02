@@ -50,18 +50,32 @@ build/build.sh -t -r
 
 1. use kebabcase for folders and files.
 
-2. use snakecase for namespaces, enums and variables.
+2. use camelcase for namespaces, enums and variables. But
+
+    i. prefix function variables with `(i|o|m)(p|r)?`. Where `i` stands for input, `o` for output, `m` for modified, `p` for pointer and `r` for reference. Input variables should preceed modifiable variables, and both should preceed output variables.
+
+    ii. suffix class private variables with `_`.
 
 3. use pascalcase for classes and structs. 
 
-4. each folder should ideally be considered its own module. It should:
+4. use snakecase for functions.
 
-    - have its own CMakeLists.txt
-    - have its own include.h (for external use)
-    - have an equally named header file for base dependencies of its files and subfolders (for internal use)
+5. each folder should ideally be considered its own module. It should:
 
-5. prefer importing include.h files over inner headers between modules.
+    i. have its own CMakeLists.txt
 
-6. prefer the `core` enums for return codes and state codes, as well as the `core` types.
+    ii. have its own include.h (for external use)
+    
+    iii. have an equally named header file for base dependencies of its files and subfolders (for internal use)
 
-7. prefer core::Logger over other logging mechanisms.
+6. prefer importing include.h files over inner headers between modules.
+
+7. prefer the `core` enums for return codes and state codes, as well as the `core` types.
+
+8. prefer core::Logger over other logging mechanisms. 
+
+    i. Use FUNCTION_NAME for the where argument.
+
+9. avoid `using` directives in header files.
+
+10. prefer returning `core::code`s and using parameters for output values.
