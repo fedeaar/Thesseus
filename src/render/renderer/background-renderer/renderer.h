@@ -7,33 +7,32 @@ namespace render {
 class BackgroundRenderer : Renderer
 {
 public:
-  struct ComputePushConstants
+  struct GPUPushConstants
   {
-    glm::vec4 data1;
-    glm::vec4 data2;
-    glm::vec4 data3;
-    glm::vec4 data4;
+    v4f data1;
+    v4f data2;
+    v4f data3;
+    v4f data4;
   };
   struct ComputeEffect
   {
     const char* name;
-
     mgmt::vulkan::pipeline::Pipeline pipeline;
-    ComputePushConstants data;
+    GPUPushConstants data;
   };
-
-  bool initialized = false;
-
+  // state
+  core::status initialized = core::status::NOT_INITIALIZED;
   std::vector<ComputeEffect> effects_;
   u32 current_effect_ = 0;
 
-  core::code init(mgmt::vulkan::Swapchain& swapchain);
-  BackgroundRenderer(mgmt::vulkan::Manager* vk_mgr);
+  core::code init();
+  BackgroundRenderer(mgmt::vulkan::Swapchain* mp_swapchain,
+                     mgmt::vulkan::Manager* mp_vkMgr);
 
   core::code destroy();
   ~BackgroundRenderer();
 
-  void draw(mgmt::vulkan::Swapchain& swapchain);
+  void draw();
 };
 
 } // namespace render

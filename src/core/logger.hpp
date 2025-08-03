@@ -57,3 +57,7 @@ public:
 };
 
 } // namespace core
+
+#define LOG(...) core::Logger::log(FUNCTION_NAME, __VA_ARGS__);
+#define WRN(...) core::Logger::log(FUNCTION_NAME, __VA_ARGS__);
+#define ERR(...) core::Logger::err(FUNCTION_NAME, __VA_ARGS__);

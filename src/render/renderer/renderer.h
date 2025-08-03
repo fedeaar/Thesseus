@@ -10,16 +10,18 @@ public:
   core::status initialized = core::status::NOT_INITIALIZED;
 
 protected:
-  mgmt::vulkan::Manager* vk_mgr_;
+  mgmt::vulkan::Manager* p_vkMgr_;
+  mgmt::vulkan::Swapchain* p_swapchain_;
 
 public:
   core::code init();
-  Renderer(mgmt::vulkan::Manager* vk_mgr);
+  Renderer(mgmt::vulkan::Manager* mp_vkMgr,
+           mgmt::vulkan::Swapchain* mp_swapchain);
 
   core::code destroy();
   ~Renderer();
 
-  void draw(mgmt::vulkan::Swapchain& swapchain);
+  void draw();
 };
 
 } // namespace render

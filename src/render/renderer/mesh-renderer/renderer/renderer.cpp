@@ -12,16 +12,14 @@ load_shaders(VkDevice& dev, VkShaderModule& vs, VkShaderModule& fs)
   auto vs_result =
     mgmt::vulkan::pipeline::load_shader_module("./shaders/mesh.vert.spv", dev);
   if (!vs_result.has_value()) {
-    core::Logger::err("mgmt::vulkan::pipeline::load_shader_module",
-                      "error when building the vertex shader");
+    ERR("error building the vertex shader");
     return core::code::ERROR;
   }
   vs = vs_result.value();
   auto fs_result =
     mgmt::vulkan::pipeline::load_shader_module("./shaders/mesh.frag.spv", dev);
   if (!fs_result.has_value()) {
-    core::Logger::err("mgmt::vulkan::pipeline::load_shader_module",
-                      "error when building the fragment shader");
+    ERR("error building the fragment shader");
     return core::code::ERROR;
   }
   fs = fs_result.value();
@@ -29,9 +27,10 @@ load_shaders(VkDevice& dev, VkShaderModule& vs, VkShaderModule& fs)
 }
 
 core::code
-render::AssetRenderer::init_pipelines(mgmt::vulkan::Swapchain& swapchain)
+render::AssetRenderer::init_pipelines()
 {
-  VkDevice dev = vk_mgr_->get_dev();
+  VkDevice dev = p_vkMgr_->get_dev();
+  mgmt::vulkan::Swapchain& swapchain = *p_swapchain_;
   // load shaders
   VkShaderModule fs, vs;
   core::code status = load_shaders(dev, vs, fs);
@@ -39,10 +38,10 @@ render::AssetRenderer::init_pipelines(mgmt::vulkan::Swapchain& swapchain)
     return status;
   }
   // scene layout
-  mgmt::vulkan::descriptor::LayoutBuilder scene_layout_builder;
-  scene_layout_builder.add_binding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+  mgmt::vulkan::descriptor::LayoutBuilder sceneLayoutBuilder;
+  sceneLayoutBuilder.add_binding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
   scene_layout_ =
-    scene_layout_builder
+    sceneLayoutBuilder
       .build(dev,
              VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
       .value(); // TODO: check ok and maybe abstract this
@@ -76,8 +75,7 @@ render::AssetRenderer::init_pipelines(mgmt::vulkan::Swapchain& swapchain)
   status = mgmt::vulkan::check(
     vkCreatePipelineLayout(dev, &mesh_layout_info, nullptr, &pipeline_layout));
   if (status != core::code::SUCCESS) {
-    core::Logger::err("render::AssetRenderer::init_pipelines",
-                      "error when building the pipeline layout");
+    ERR("error when building the pipeline layout");
     return core::code::ERROR;
   }
   material_pipes_.opaque_pipeline.layout = pipeline_layout;
@@ -104,7 +102,7 @@ render::AssetRenderer::init_pipelines(mgmt::vulkan::Swapchain& swapchain)
   vkDestroyShaderModule(dev, vs, nullptr);
   // del
   del_queue_.push([=]() {
-    auto dev = vk_mgr_->get_dev();
+    auto dev = p_vkMgr_->get_dev();
     vkDestroyPipeline(dev, material_pipes_.transparent_pipeline.pipe, nullptr);
     vkDestroyPipeline(dev, material_pipes_.opaque_pipeline.pipe, nullptr);
     vkDestroyPipelineLayout(dev, pipeline_layout, nullptr);
@@ -129,7 +127,7 @@ render::AssetRenderer::init_meshes()
   std::shared_ptr<asset::LoadedGLTF> scene_nodes =
     std::make_shared<asset::LoadedGLTF>();
   render::gltf::load_gltf("./res/meshes/structure.glb",
-                          *vk_mgr_,
+                          *p_vkMgr_,
                           default_res_,
                           writer_,
                           material_pipes_,
@@ -173,12 +171,15 @@ render::AssetRenderer::init_scene()
 }
 
 core::code
-render::AssetRenderer::init(mgmt::vulkan::Swapchain& swapchain)
+render::AssetRenderer::init()
 {
-  if (initialized) {
+  if (initialized == core::status::INITIALIZED) {
     return core::code::SUCCESS;
   }
-  auto result = init_pipelines(swapchain);
+  if (initialized == core::status::ERROR) {
+    return core::code::ERROR;
+  }
+  auto result = init_pipelines();
   if (result != core::code::SUCCESS) {
     return result;
   }
@@ -195,13 +196,14 @@ render::AssetRenderer::init(mgmt::vulkan::Swapchain& swapchain)
     return result;
   }
   // success
-  initialized = true;
+  initialized = core::status::INITIALIZED;
   return core::code::SUCCESS;
 }
 
-render::AssetRenderer::AssetRenderer(mgmt::vulkan::Manager* vk_mgr)
-  : render::Renderer{ vk_mgr }
-  , default_res_{ vk_mgr } {};
+render::AssetRenderer::AssetRenderer(mgmt::vulkan::Swapchain* mp_swapchain,
+                                     mgmt::vulkan::Manager* mp_vkMgr)
+  : render::Renderer{ mp_vkMgr, mp_swapchain }
+  , default_res_{ mp_vkMgr } {};
 
 //
 // destructor
@@ -211,16 +213,16 @@ core::code
 render::AssetRenderer::destroy()
 {
   // todo@engine: handle pipes?
-  vk_mgr_->device_wait_idle();
+  p_vkMgr_->device_wait_idle();
   default_res_.destroy();
   del_queue_.flush();
-  initialized = false;
+  initialized = core::status::NOT_INITIALIZED;
   return core::code::SUCCESS;
 }
 
 render::AssetRenderer::~AssetRenderer()
 {
-  if (initialized) {
+  if (initialized == core::status::INITIALIZED) {
     destroy();
   }
 }
@@ -230,8 +232,9 @@ render::AssetRenderer::~AssetRenderer()
 //
 
 void
-render::AssetRenderer::draw(mgmt::vulkan::Swapchain& swapchain, Camera& camera)
+render::AssetRenderer::draw(Camera& camera)
 {
+  mgmt::vulkan::Swapchain& swapchain = *p_swapchain_;
   auto cmd = swapchain.get_current_cmd_buffer();
   auto& current_frame = swapchain.get_current_frame();
   auto color_attachment = mgmt::vulkan::info::color_attachment_info(
@@ -243,26 +246,27 @@ render::AssetRenderer::draw(mgmt::vulkan::Swapchain& swapchain, Camera& camera)
   vkCmdBeginRendering(cmd, &render_info);
   swapchain.set_viewport_and_sissor();
   // opaque
-  auto scene_buffer = vk_mgr_
+  auto scene_buffer = p_vkMgr_
                         ->create_buffer(sizeof(GPUSceneData),
                                         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                         VMA_MEMORY_USAGE_CPU_TO_GPU)
                         .value(); // TODO
   current_frame.del_queue.push(   // super inefficient
-    [=, this]() { vk_mgr_->destroy_buffer(scene_buffer); });
+    [=, this]() { p_vkMgr_->destroy_buffer(scene_buffer); });
   void* data;
-  vmaMapMemory(vk_mgr_->get_allocator(), scene_buffer.allocation, &data);
+  vmaMapMemory(p_vkMgr_->get_allocator(), scene_buffer.allocation, &data);
   memcpy(data, &scene_, sizeof(scene_));
-  vmaUnmapMemory(vk_mgr_->get_allocator(), scene_buffer.allocation);
+  vmaUnmapMemory(p_vkMgr_->get_allocator(), scene_buffer.allocation);
   VkDescriptorSet global_descriptor_set =
-    current_frame.frame_descriptors.allocate(vk_mgr_->get_dev(), scene_layout_);
+    current_frame.frame_descriptors.allocate(p_vkMgr_->get_dev(),
+                                             scene_layout_);
   mgmt::vulkan::descriptor::Writer writer;
   writer.write_buffer(0,
                       scene_buffer.buffer,
                       sizeof(GPUSceneData),
                       0,
                       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-  writer.update_set(vk_mgr_->get_dev(), global_descriptor_set);
+  writer.update_set(p_vkMgr_->get_dev(), global_descriptor_set);
   asset::mesh::GPUMeshPushConstants push_constants;
 
   for (const render::asset::Object& draw : main_draw_ctx_.opaque_surfaces) {
@@ -331,8 +335,7 @@ render::AssetRenderer::draw(mgmt::vulkan::Swapchain& swapchain, Camera& camera)
 };
 
 void
-render::AssetRenderer::update_scene(mgmt::vulkan::Swapchain& swapchain,
-                                    Camera& camera)
+render::AssetRenderer::update_scene(Camera& camera)
 {
   scene_.view = camera.view_matrix();
   // camera projection

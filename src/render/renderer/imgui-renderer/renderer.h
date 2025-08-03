@@ -7,18 +7,19 @@ namespace render {
 class ImguiRenderer : Renderer
 {
 private:
-  mgmt::window::Manager* window_mgr_;
-  VkDescriptorPool imgui_pool_;
+  mgmt::window::Manager* p_windowMgr_;
+  VkDescriptorPool imguiPool_;
 
 public:
-  core::code init(mgmt::vulkan::Swapchain& swapchain);
-  ImguiRenderer(mgmt::vulkan::Manager* vk_mgr,
-                mgmt::window::Manager* window_mgr);
+  core::code init();
+  ImguiRenderer(mgmt::vulkan::Swapchain* mp_swapchain,
+                mgmt::vulkan::Manager* mp_vkMgr,
+                mgmt::window::Manager* mp_windowMgr);
 
   core::code destroy();
   ~ImguiRenderer();
 
-  void draw(mgmt::vulkan::Swapchain& swapchain);
+  void draw();
 };
 
 } // namespace render

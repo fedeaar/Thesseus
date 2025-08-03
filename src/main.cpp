@@ -6,11 +6,7 @@
 // global
 //
 
-render::Engine::Params global{
-  1280,      // screen_width
-  720,       // screen_height
-  "Thesseus" // name
-};
+render::Engine::Params global{ 1280, 720, "Thesseus" };
 
 //
 // main
@@ -19,8 +15,8 @@ render::Engine::Params global{
 int
 main(int argc, char* args[])
 {
+  Camera camera;
   render::Engine engine{ global };
-  Camera camera{ engine.state.window_mgr.state.aspect_ratio };
   EventLoop main{ &engine, &camera };
   if (main.run() != core::code::SUCCESS) {
     return 1;

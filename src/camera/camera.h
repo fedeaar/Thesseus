@@ -11,9 +11,9 @@ class Camera
 {
 private:
   v3f position_, front_, up_;
-  f32 base_speed_, speed_, fov_, sensitivity_, aspect_ratio_;
+  f32 baseSpeed_, speed_, fov_, sensitivity_, aspectRatio_;
   f32 yaw_, pitch_;
-  m4f view_matrix_, proj_matrix_;
+  m4f viewMatrix_, projMatrix_;
 
 public:
   enum Movement

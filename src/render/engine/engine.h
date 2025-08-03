@@ -10,20 +10,20 @@ class Engine
 public:
   struct Params
   {
-    u32 screen_width, screen_height;
+    u32 screenWidth, screenHeight;
     std::string name;
   };
 
   struct State
   {
     core::status initialized = core::status::NOT_INITIALIZED;
-    mgmt::window::Manager window_mgr;
-    mgmt::vulkan::Manager vk_mgr;
+    mgmt::window::Manager windowMgr;
+    mgmt::vulkan::Manager vkMgr;
     mgmt::vulkan::Swapchain swapchain;
     // renderers
-    BackgroundRenderer bg_renderer;
-    AssetRenderer mesh_renderer;
-    ImguiRenderer imgui_renderer;
+    BackgroundRenderer bgRenderer;
+    AssetRenderer meshRenderer;
+    ImguiRenderer imguiRenderer;
   } state;
 
 public:

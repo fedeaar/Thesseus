@@ -11,7 +11,7 @@ namespace render {
 class AssetRenderer : Renderer
 {
 public:
-  bool initialized = false;
+  core::status initialized = core::status::NOT_INITIALIZED;
 
 private:
   // scene
@@ -41,17 +41,18 @@ private:
   DestructorQueue del_queue_;
 
 public:
-  core::code init(mgmt::vulkan::Swapchain& swapchain);
-  AssetRenderer(mgmt::vulkan::Manager* vk_mgr);
+  core::code init();
+  AssetRenderer(mgmt::vulkan::Swapchain* mp_swapchain,
+                mgmt::vulkan::Manager* mp_vkMgr);
 
   core::code destroy();
   ~AssetRenderer();
 
-  void draw(mgmt::vulkan::Swapchain& swapchain, Camera& camera);
-  void update_scene(mgmt::vulkan::Swapchain& swapchain, Camera& camera);
+  void draw(Camera& camera);
+  void update_scene(Camera& camera);
 
 private:
-  core::code init_pipelines(mgmt::vulkan::Swapchain& swapchain);
+  core::code init_pipelines();
   core::code init_default_data();
   core::code init_meshes();
   core::code init_scene();

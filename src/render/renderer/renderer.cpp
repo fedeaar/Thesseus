@@ -5,24 +5,26 @@
 core::code
 render::Renderer::init()
 {
-  core::Logger::err(FUNCTION_NAME, "base renderer called");
+  ERR("base renderer called");
   return core::code::NOT_IMPLEMENTED;
 };
 
-render::Renderer::Renderer(mgmt::vulkan::Manager* vk_mgr)
-  : vk_mgr_{ vk_mgr } {};
+render::Renderer::Renderer(mgmt::vulkan::Manager* mp_vkMgr,
+                           mgmt::vulkan::Swapchain* mp_swapchain)
+  : p_vkMgr_{ mp_vkMgr }
+  , p_swapchain_{ mp_swapchain } {};
 
 core::code
 render::Renderer::destroy()
 {
-  core::Logger::err(FUNCTION_NAME, "base renderer called");
+  ERR("base renderer called");
   return core::code::NOT_IMPLEMENTED;
 };
 
 render::Renderer::~Renderer() {};
 
 void
-render::Renderer::draw(mgmt::vulkan::Swapchain& swapchain)
+render::Renderer::draw()
 {
-  core::Logger::err(FUNCTION_NAME, "base renderer called");
+  ERR("base renderer called");
 };
