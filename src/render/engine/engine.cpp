@@ -50,7 +50,7 @@ render::Engine::Engine(render::Engine::Params& params, Camera* p_camera)
            .bgRenderer{ &state.swapchain, &state.vkMgr },
            .assetRenderer{ &state.swapchain, &state.vkMgr },
            .imguiRenderer{ &state.swapchain, &state.vkMgr, &state.windowMgr } }
-  , p_camera_{ p_camera_ }
+  , p_camera_{ p_camera }
 {
 }
 
