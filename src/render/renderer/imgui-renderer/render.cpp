@@ -104,7 +104,7 @@ render::ImguiRenderer::destroy()
     return core::code::SUCCESS;
   }
   if (initialized == core::status::ERROR) {
-    return core::code::ERROR;
+    return core::code::IN_ERROR_STATE;
   }
   p_vkMgr_->device_wait_idle();
   ImGui_ImplVulkan_Shutdown();

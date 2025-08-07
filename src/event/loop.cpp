@@ -38,6 +38,35 @@ EventLoop::destroy()
 }
 
 //
+// debug
+//
+
+void
+update_debug_gui(render::Engine& engine)
+{
+  ImGui_ImplVulkan_NewFrame();
+  ImGui_ImplSDL3_NewFrame();
+  ImGui::NewFrame();
+  if (ImGui::Begin("background")) {
+    ImGui::SliderFloat(
+      "Render Scale", &engine.state.swapchain.render_scale, 0.3f, 1.f);
+    auto& selected =
+      engine.state.bgRenderer.effects_[engine.state.bgRenderer.currentEffect_];
+    ImGui::Text("Selected effect: ", selected.name);
+    ImGui::SliderInt("Effect Index",
+                     (i32*)&engine.state.bgRenderer.currentEffect_,
+                     0,
+                     engine.state.bgRenderer.effects_.size() - 1);
+    ImGui::InputFloat4("data1", (float*)&selected.data.data1);
+    ImGui::InputFloat4("data2", (float*)&selected.data.data2);
+    ImGui::InputFloat4("data3", (float*)&selected.data.data3);
+    ImGui::InputFloat4("data4", (float*)&selected.data.data4);
+  }
+  ImGui::End();
+  ImGui::Render();
+}
+
+//
 // run
 //
 
@@ -59,31 +88,10 @@ EventLoop::tick_delta()
 inline void
 EventLoop::tick()
 {
-  engine_->state.swapchain.resize_extent(); // fixme
   input_handler_.poll();
-  // camera_->set_frame_delta(tick_delta()); // TODO: camera should handle this
-  // (?) todo: move
-  ImGui_ImplVulkan_NewFrame();
-  ImGui_ImplSDL3_NewFrame();
-  ImGui::NewFrame();
-  if (ImGui::Begin("background")) {
-    ImGui::SliderFloat(
-      "Render Scale", &engine_->state.swapchain.render_scale, 0.3f, 1.f);
-    auto& selected = engine_->state.bgRenderer
-                       .effects_[engine_->state.bgRenderer.currentEffect_];
-    ImGui::Text("Selected effect: ", selected.name);
-    ImGui::SliderInt("Effect Index",
-                     (i32*)&engine_->state.bgRenderer.currentEffect_,
-                     0,
-                     engine_->state.bgRenderer.effects_.size() - 1);
-    ImGui::InputFloat4("data1", (float*)&selected.data.data1);
-    ImGui::InputFloat4("data2", (float*)&selected.data.data2);
-    ImGui::InputFloat4("data3", (float*)&selected.data.data3);
-    ImGui::InputFloat4("data4", (float*)&selected.data.data4);
-  }
-  ImGui::End();
-  ImGui::Render();
-  engine_->render(*camera_);
+  update_debug_gui(*engine_);
+  camera_->set_frame_delta(tick_delta());
+  engine_->render();
 }
 
 core::code
