@@ -122,6 +122,12 @@ mgmt::window::Manager::get_required_extensions(u32& count)
   return extensions;
 }
 
+u32
+mgmt::window::Manager::get_aspect()
+{
+  return state.aspect_ratio;
+}
+
 //
 // build surface
 //

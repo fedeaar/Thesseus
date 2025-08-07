@@ -29,7 +29,7 @@ render::Engine::init()
     ERR("bg renderer could not be created");
     return core::code::ERROR;
   }
-  if (state.meshRenderer.init() != core::code::SUCCESS) {
+  if (state.assetRenderer.init() != core::code::SUCCESS) {
     ERR("mesh renderer could not be created");
     return core::code::ERROR;
   }
@@ -37,18 +37,20 @@ render::Engine::init()
     ERR("imgui renderer could not be created");
     return core::code::ERROR;
   }
+  p_camera_->set_aspect(state.windowMgr.get_aspect());
   state.initialized = core::status::INITIALIZED;
   return core::code::SUCCESS;
 }
 
-render::Engine::Engine(render::Engine::Params& params)
+render::Engine::Engine(render::Engine::Params& params, Camera* p_camera)
   : state{ .initialized = core::status::NOT_INITIALIZED,
            .windowMgr{ params.screenWidth, params.screenHeight, params.name },
            .vkMgr{ &state.windowMgr },
            .swapchain{ &state.vkMgr },
            .bgRenderer{ &state.swapchain, &state.vkMgr },
-           .meshRenderer{ &state.swapchain, &state.vkMgr },
+           .assetRenderer{ &state.swapchain, &state.vkMgr },
            .imguiRenderer{ &state.swapchain, &state.vkMgr, &state.windowMgr } }
+  , p_camera_{ p_camera_ }
 {
 }
 
@@ -66,7 +68,7 @@ render::Engine::destroy()
     return core::code::ERROR;
   }
   auto imguiRendererStatus = state.imguiRenderer.destroy();
-  auto meshRendererStatus = state.meshRenderer.destroy();
+  auto meshRendererStatus = state.assetRenderer.destroy();
   auto bgRendererStatus = state.bgRenderer.destroy();
   auto swapchainStatus = state.swapchain.destroy();
   auto vkMgrStatus = state.vkMgr.destroy();
@@ -120,9 +122,10 @@ render::Engine::~Engine()
 //
 
 void
-render::Engine::render(Camera& camera)
+render::Engine::render()
 {
   auto& swapchain = state.swapchain;
+  swapchain.resize_extent();
   // we assume we are init
   swapchain.begin_commands();
   // draw
@@ -133,7 +136,7 @@ render::Engine::render(Camera& camera)
                                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
   swapchain.depth_img_transition(VK_IMAGE_LAYOUT_UNDEFINED,
                                  VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
-  state.meshRenderer.draw(camera);
+  state.assetRenderer.draw(*p_camera_);
   swapchain.draw_img_transition(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                                 VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
   swapchain.current_img_transition(VK_IMAGE_LAYOUT_UNDEFINED,

@@ -13,7 +13,6 @@ public:
     u32 screenWidth, screenHeight;
     std::string name;
   };
-
   struct State
   {
     core::status initialized = core::status::NOT_INITIALIZED;
@@ -22,17 +21,18 @@ public:
     mgmt::vulkan::Swapchain swapchain;
     // renderers
     BackgroundRenderer bgRenderer;
-    AssetRenderer meshRenderer;
+    AssetRenderer assetRenderer;
     ImguiRenderer imguiRenderer;
   } state;
+  Camera* p_camera_;
 
   core::code init();
-  Engine(Params& params);
+  Engine(Params& params, Camera* p_camera_);
 
   core::code destroy();
   ~Engine();
 
-  void render(Camera& camera);
+  void render();
 };
 
 } // namespace render

@@ -37,6 +37,7 @@ public:
   State& get_state();
   core::Result<char const* const*, core::code> get_required_extensions(
     u32& count);
+  u32 get_aspect();
 
   core::code build_surface(VkInstance& instance, VkSurfaceKHR* surface);
 };
