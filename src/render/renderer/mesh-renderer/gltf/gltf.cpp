@@ -6,7 +6,7 @@
 #include <variant>
 
 //
-// images
+// constructor
 //
 
 core::code
@@ -16,19 +16,19 @@ load_image_from_uri(mgmt::vulkan::Manager& ir_vkMgr,
 {
   int width, height, nrChannels;
   if (ir_uri.fileByteOffset != 0) {
-    core::Logger::err(FUNCTION_NAME, "image offsets not supported.");
+    ERR("image offsets not supported");
     return core::code::NOT_IMPLEMENTED;
   }
   if (!ir_uri.uri.isLocalPath()) {
-    core::Logger::err(FUNCTION_NAME, "non local paths not supported.");
+    ERR("non local paths not supported");
     return core::code::NOT_IMPLEMENTED;
   }
-  const std::string_view path_view = ir_uri.uri.path();
-  const std::string path = { path_view.begin(), path_view.end() };
+  const std::string_view pathView = ir_uri.uri.path();
+  const std::string path = { pathView.begin(), pathView.end() };
   unsigned char* data =
     core::io::image::raw(path, &width, &height, &nrChannels, 4);
   if (!data) {
-    core::Logger::err(FUNCTION_NAME, "failed to read image.");
+    ERR("failed to read image");
     return core::code::ERROR;
   }
   VkExtent3D extent;
@@ -61,7 +61,7 @@ load_image_from_vector(mgmt::vulkan::Manager& ir_vkMgr,
                          &nrChannels,
                          4);
   if (!data) {
-    core::Logger::err(FUNCTION_NAME, "failed to read vector data.");
+    ERR("failed to read vector data.");
     return core::code::ERROR;
   }
   VkExtent3D extent;
@@ -94,7 +94,7 @@ load_image_from_array(mgmt::vulkan::Manager& ir_vkMgr,
                          &nrChannels,
                          4);
   if (!data) {
-    core::Logger::err(FUNCTION_NAME, "failed to read array data.");
+    ERR("failed to read array data.");
     return core::code::ERROR;
   }
   VkExtent3D extent;
@@ -146,17 +146,14 @@ load_image(mgmt::vulkan::Manager& ir_vkMgr,
                                                        or_alloc);
                      },
                      [&](auto& ir_other) {
-                       core::Logger::wrn(
-                         FUNCTION_NAME,
-                         "tried to load unimplemented buffer format.");
+                       WRN("tried to load unimplemented buffer format.");
                        status = core::code::NOT_IMPLEMENTED;
                      },
                    },
                    buffer.data);
       },
       [&](auto& ir_other) {
-        core::Logger::wrn(FUNCTION_NAME,
-                          "tried to load unimplemented image format.");
+        WRN("tried to load unimplemented image format.");
         status = core::code::NOT_IMPLEMENTED;
       },
     },
@@ -165,36 +162,29 @@ load_image(mgmt::vulkan::Manager& ir_vkMgr,
 }
 
 core::code
-load_images(mgmt::vulkan::Manager& ir_vkMgr,
-            fastgltf::Asset& ir_asset,
-            mgmt::vulkan::image::AllocatedImage& ir_default_image,
-            std::vector<mgmt::vulkan::image::AllocatedImage>& mr_images,
-            render::asset::LoadedGLTF& mr_scene)
+render::gltf::GLTFScene::init_images(
+  fastgltf::Asset& ir_asset,
+  mgmt::vulkan::image::AllocatedImage& ir_default_image,
+  std::vector<mgmt::vulkan::image::AllocatedImage>& mr_images)
 {
   for (fastgltf::Image& image : ir_asset.images) {
     mgmt::vulkan::image::AllocatedImage alloc;
-    auto status = load_image(ir_vkMgr, ir_asset, image, alloc);
+    auto status = load_image(*p_vkMgr_, ir_asset, image, alloc);
     if (status == core::code::SUCCESS) {
       mr_images.push_back(alloc);
-      mr_scene.images[image.name.c_str()] = alloc;
+      images[image.name.c_str()] = alloc;
     } else {
-      core::Logger::wrn(FUNCTION_NAME, "failed to load image {}", image.name);
+      WRN("failed to load image {}", image.name);
       mr_images.push_back(ir_default_image);
     }
   }
   return core::code::SUCCESS;
 }
 
-//
-// samplers
-//
-
 core::code
-load_samplers(mgmt::vulkan::Manager& ir_vkMgr,
-              fastgltf::Asset& ir_asset,
-              render::asset::LoadedGLTF& mr_scene)
+render::gltf::GLTFScene::init_samplers(fastgltf::Asset& ir_asset)
 {
-  auto& dev = ir_vkMgr.get_dev();
+  auto& dev = p_vkMgr_->get_dev();
   for (fastgltf::Sampler& sampler : ir_asset.samplers) {
     VkSamplerCreateInfo sampleInfo = { .sType =
                                          VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
@@ -209,183 +199,167 @@ load_samplers(mgmt::vulkan::Manager& ir_vkMgr,
       sampler.minFilter.value_or(fastgltf::Filter::Nearest));
     VkSampler newSampler;
     vkCreateSampler(
-      dev, &sampleInfo, nullptr, &newSampler); // TODO: create vulkan function?
-    mr_scene.samplers.push_back(newSampler);
+      dev, &sampleInfo, nullptr, &newSampler); // TODO: create mgmt function?
+    samplers.push_back(newSampler);
   }
   return core::code::SUCCESS;
 }
 
-//
-// pools
-//
-
 core::code
-init_pools(mgmt::vulkan::Manager& ir_vkMgr,
-           fastgltf::Asset& ir_asset,
-           render::asset::LoadedGLTF& mr_scene)
+render::gltf::GLTFScene::init_pools(fastgltf::Asset& ir_asset)
 {
   std::vector<mgmt::vulkan::descriptor::PoolSizeRatio> sizes = {
     { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3 },
     { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3 },
     { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1 }
   };
-  mr_scene.descriptor_pool.init(
-    ir_vkMgr.get_dev(), ir_asset.materials.size(), sizes);
+  descriptorPool.init(p_vkMgr_->get_dev(), ir_asset.materials.size(), sizes);
   return core::code::SUCCESS;
 }
 
-//
-// materials
-//
-
 core::code
-load_materials_buffer(
-  mgmt::vulkan::Manager& ir_vkMgr,
+render::gltf::GLTFScene::init_materials(
   mgmt::vulkan::descriptor::Writer& ir_writer,
-  render::asset::material::MaterialPipelines& ir_materialPipes,
-  render::asset::DefaultResources& ir_defaultRes,
+  render::MaterialPassPipelines& ir_materialPipes,
+  render::DefaultResources& ir_defaultRes,
   fastgltf::Asset& ir_asset,
   std::vector<mgmt::vulkan::image::AllocatedImage>& ir_images,
-  std::vector<std::shared_ptr<render::asset::material::Material>>& mr_materials,
-  render::asset::LoadedGLTF& mr_scene)
+  std::vector<std::shared_ptr<render::Material>>& mr_materials)
 {
-  auto res = ir_vkMgr.create_buffer(
-    sizeof(render::asset::material::GPUMaterialConstants) *
-      ir_asset.materials.size(),
+  auto& vkMgr = *p_vkMgr_;
+  auto createBufferResult = vkMgr.create_buffer(
+    sizeof(render::GPUMaterialConstants) * ir_asset.materials.size(),
     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
     VMA_MEMORY_USAGE_CPU_TO_GPU);
-  if (!res.has_value()) {
-    core::Logger::err(FUNCTION_NAME, "failed to create materials buffer.");
+  if (!createBufferResult.has_value()) {
+    ERR("failed to create materials buffer.");
     return core::code::ERROR;
   }
-  mr_scene.material_data_buff = res.value();
-  u32 data_index = 0;
-  render::asset::material::GPUMaterialConstants* scene_material_constants;
-  vmaMapMemory(ir_vkMgr.get_allocator(),
-               mr_scene.material_data_buff.allocation,
-               (void**)&scene_material_constants);
-  for (fastgltf::Material& mat : ir_asset.materials) {
-    std::shared_ptr<render::asset::material::Material> new_material =
-      std::make_shared<render::asset::material::Material>();
-    mr_materials.push_back(new_material);
-    mr_scene.materials[mat.name.c_str()] = new_material;
-    render::asset::material::GPUMaterialConstants constants;
-    constants.color_factors.x =
-      core::clamp(mat.pbrData.baseColorFactor[0], 1e-5f, 1e5f);
-    constants.color_factors.y =
-      core::clamp(mat.pbrData.baseColorFactor[1], 1e-5f, 1e5f);
-    constants.color_factors.z =
-      core::clamp(mat.pbrData.baseColorFactor[2], 1e-5f, 1e5f);
-    constants.color_factors.w =
-      core::clamp(mat.pbrData.baseColorFactor[3], 1e-5f, 1e5f);
-    constants.metal_rough_factors.x =
-      core::clamp(mat.pbrData.metallicFactor, 1e-5f, 1e5f);
-    constants.metal_rough_factors.y =
-      core::clamp(mat.pbrData.roughnessFactor, 1e-5f, 1e5f);
-    scene_material_constants[data_index] = constants;
-    render::asset::material::Type passType =
-      render::asset::material::Type::opaque;
-    if (mat.alphaMode == fastgltf::AlphaMode::Blend) {
-      passType = render::asset::material::Type::transparent;
+  materialDataBuff = createBufferResult.value();
+  u32 idx = 0;
+  render::GPUMaterialConstants* sceneMaterialConsts;
+  vmaMapMemory(vkMgr.get_allocator(),
+               materialDataBuff.allocation,
+               (void**)&sceneMaterialConsts); // TODO: handle errors
+  for (fastgltf::Material& material : ir_asset.materials) {
+    std::shared_ptr<render::Material> newMaterial =
+      std::make_shared<render::Material>();
+    mr_materials.push_back(newMaterial);
+    materials[material.name.c_str()] = newMaterial;
+    render::GPUMaterialConstants constants {
+      .colorFactors = {      
+        core::clamp(material.pbrData.baseColorFactor[0], 1e-5f, 1e5f),
+        core::clamp(material.pbrData.baseColorFactor[1], 1e-5f, 1e5f),
+        core::clamp(material.pbrData.baseColorFactor[2], 1e-5f, 1e5f),
+        core::clamp(material.pbrData.baseColorFactor[3], 1e-5f, 1e5f),
+      },
+      .metalRoughFactors = {
+        core::clamp(material.pbrData.metallicFactor, 1e-5f, 1e5f),
+        core::clamp(material.pbrData.roughnessFactor, 1e-5f, 1e5f),
+        0,
+        0
+      }, 
+    };
+    sceneMaterialConsts[idx] = constants;
+    auto passType = render::MaterialPassType::opaque;
+    if (material.alphaMode == fastgltf::AlphaMode::Blend) {
+      passType = render::MaterialPassType::transparent;
     }
-    render::asset::material::MaterialResources resources;
-    resources.color_img = ir_defaultRes.white_img;
-    resources.color_sampler = ir_defaultRes.default_linear_sampler;
-    resources.metal_img = ir_defaultRes.white_img;
-    resources.metal_sampler = ir_defaultRes.default_linear_sampler;
-    resources.data_buff = mr_scene.material_data_buff.buffer;
-    resources.data_buff_offset =
-      data_index * sizeof(render::asset::material::GPUMaterialConstants);
-    if (mat.pbrData.baseColorTexture.has_value()) {
+    render::MaterialResources resources = {
+      .colorImg = ir_defaultRes.whiteImg,
+      .metalImg = ir_defaultRes.whiteImg,
+      .p_colorSampler = ir_defaultRes.p_linearSampler,
+      .p_metalSampler = ir_defaultRes.p_linearSampler,
+      .p_dataBuff = materialDataBuff.buffer,
+      .dataBuffOffset =
+        static_cast<u32>(idx * sizeof(render::GPUMaterialConstants))
+    };
+    if (material.pbrData.baseColorTexture.has_value()) {
       u32 img =
-        ir_asset.textures[mat.pbrData.baseColorTexture.value().textureIndex]
+        ir_asset
+          .textures[material.pbrData.baseColorTexture.value().textureIndex]
           .imageIndex.value();
       u32 sampler =
-        ir_asset.textures[mat.pbrData.baseColorTexture.value().textureIndex]
+        ir_asset
+          .textures[material.pbrData.baseColorTexture.value().textureIndex]
           .samplerIndex.value();
-      resources.color_img = ir_images[img];
-      resources.color_sampler = mr_scene.samplers[sampler];
+      resources.colorImg = ir_images[img];
+      resources.p_colorSampler = samplers[sampler];
     }
     // build material
-    new_material->data =
-      render::asset::material::write_material(passType,
-                                              resources,
-                                              ir_vkMgr,
-                                              mr_scene.descriptor_pool,
-                                              ir_writer,
-                                              ir_materialPipes);
-    data_index++;
+    newMaterial->data = render::write_material(
+      passType, resources, vkMgr, descriptorPool, ir_writer, ir_materialPipes);
+    idx++;
   }
-  vmaUnmapMemory(ir_vkMgr.get_allocator(),
-                 mr_scene.material_data_buff.allocation);
+  vmaUnmapMemory(vkMgr.get_allocator(), materialDataBuff.allocation);
+  return core::code::SUCCESS;
 }
 
-//
-// load_meshes
-//
-
-core::Result<render::asset::mesh::GPUMeshBuffers, core::code>
+core::code
 upload_mesh(mgmt::vulkan::Manager& ir_vkMgr,
             std::vector<u32>& ir_idxs,
-            std::vector<render::asset::mesh::Vertex>& ir_vtxs)
+            std::vector<render::MeshVertex>& ir_vtxs,
+            render::GPUMeshBuffers& or_meshBuffers)
 {
   VkDevice dev = ir_vkMgr.get_dev();
-  const size_t vb_s = ir_vtxs.size() * sizeof(render::asset::mesh::Vertex);
-  const size_t ib_s = ir_idxs.size() * sizeof(u32);
-  render::asset::mesh::GPUMeshBuffers mesh;
-  auto vertex_buff_result = ir_vkMgr.create_buffer(
-    vb_s,
+  const u32 vbSize = ir_vtxs.size() * sizeof(render::MeshVertex);
+  const u32 ibSize = ir_idxs.size() * sizeof(u32);
+  render::GPUMeshBuffers meshBuffers;
+  auto vertexBuffResult = ir_vkMgr.create_buffer(
+    vbSize,
     VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
       VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
     VMA_MEMORY_USAGE_GPU_ONLY);
-  if (!vertex_buff_result.has_value()) {
-    core::Logger::err(FUNCTION_NAME, "could not create vertex buffer");
+  if (!vertexBuffResult.has_value()) {
+    ERR("could not create vertex buffer");
     return core::code::ERROR;
   }
-  mesh.vertex_buff = vertex_buff_result.value();
-  VkBufferDeviceAddressInfo addr_info = {
+  meshBuffers.vertexBuff = vertexBuffResult.value();
+  VkBufferDeviceAddressInfo addrInfo = {
     .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,
-    .buffer = mesh.vertex_buff.buffer
+    .buffer = meshBuffers.vertexBuff.buffer
   };
-  mesh.vertex_buff_addr = vkGetBufferDeviceAddress(dev, &addr_info);
-  auto index_buff_result = ir_vkMgr.create_buffer(
-    ib_s,
+  meshBuffers.vba = vkGetBufferDeviceAddress(dev, &addrInfo);
+  auto idxBuffResult = ir_vkMgr.create_buffer(
+    ibSize,
     VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
     VMA_MEMORY_USAGE_GPU_ONLY);
-  if (!index_buff_result.has_value()) {
-    core::Logger::err(FUNCTION_NAME, "could not create index buffer");
+  if (!idxBuffResult.has_value()) {
+    ERR("could not create index buffer");
     return core::code::ERROR;
   }
-  mesh.index_buff = index_buff_result.value();
-  auto staging_result = ir_vkMgr.create_buffer(
-    vb_s + ib_s, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
-  if (!index_buff_result.has_value()) {
-    core::Logger::err(FUNCTION_NAME, "could not create staging buffer");
+  meshBuffers.idxBuff = idxBuffResult.value();
+  auto stagingResult = ir_vkMgr.create_buffer(vbSize + ibSize,
+                                              VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                              VMA_MEMORY_USAGE_CPU_ONLY);
+  if (!idxBuffResult.has_value()) {
+    ERR("could not create staging buffer");
     return core::code::ERROR;
   }
-  auto staging = staging_result.value();
+  auto staging = stagingResult.value();
   auto alloc = ir_vkMgr.get_allocator();
   void* data;
   vmaMapMemory(alloc, staging.allocation, &data);
-  memcpy(data, ir_vtxs.data(), vb_s);
-  memcpy((char*)data + vb_s, ir_idxs.data(), ib_s);
+  memcpy(data, ir_vtxs.data(), vbSize);
+  memcpy((char*)data + vbSize, ir_idxs.data(), ibSize);
   vmaUnmapMemory(alloc, staging.allocation);
   ir_vkMgr.imm_submit([&](VkCommandBuffer cmd) {
-    VkBufferCopy vertex_copy{ 0 };
-    vertex_copy.dstOffset = 0;
-    vertex_copy.srcOffset = 0;
-    vertex_copy.size = vb_s;
+    VkBufferCopy vertexCopy{ 0 };
+    vertexCopy.dstOffset = 0;
+    vertexCopy.srcOffset = 0;
+    vertexCopy.size = vbSize;
     vkCmdCopyBuffer(
-      cmd, staging.buffer, mesh.vertex_buff.buffer, 1, &vertex_copy);
-    VkBufferCopy index_copy{ 0 };
-    index_copy.dstOffset = 0;
-    index_copy.srcOffset = vb_s;
-    index_copy.size = ib_s;
+      cmd, staging.buffer, meshBuffers.vertexBuff.buffer, 1, &vertexCopy);
+    VkBufferCopy idxCopy{ 0 };
+    idxCopy.dstOffset = 0;
+    idxCopy.srcOffset = vbSize;
+    idxCopy.size = ibSize;
     vkCmdCopyBuffer(
-      cmd, staging.buffer, mesh.index_buff.buffer, 1, &index_copy);
+      cmd, staging.buffer, meshBuffers.idxBuff.buffer, 1, &idxCopy);
   });
   ir_vkMgr.destroy_buffer(staging);
-  return mesh;
+  or_meshBuffers = meshBuffers;
+  return core::code::SUCCESS;
 };
 
 core::code
@@ -393,25 +367,25 @@ load_mesh_indices(fastgltf::Asset& ir_asset,
                   fastgltf::Primitive& ir_primitive,
                   u32 i_initialVtx,
                   std::vector<u32>& mr_idxs,
-                  render::asset::mesh::Surface& mr_newSurface)
+                  render::MeshSurface& mr_newSurface)
 {
   if (!ir_primitive.indicesAccessor.has_value()) {
     core::Logger::err(FUNCTION_NAME,
                       "gltf asset has an invalid indices accessor.");
     return core::code::ERROR;
   }
-  auto& idx_acc = ir_asset.accessors[ir_primitive.indicesAccessor.value()];
-  mr_newSurface.count = (u32)idx_acc.count;
-  mr_idxs.reserve(mr_idxs.size() + idx_acc.count);
+  auto& idxAcc = ir_asset.accessors[ir_primitive.indicesAccessor.value()];
+  mr_newSurface.count = (u32)idxAcc.count;
+  mr_idxs.reserve(mr_idxs.size() + idxAcc.count);
   fastgltf::iterateAccessor<u32>(
-    ir_asset, idx_acc, [&](u32 idx) { mr_idxs.push_back(idx + i_initialVtx); });
+    ir_asset, idxAcc, [&](u32 idx) { mr_idxs.push_back(idx + i_initialVtx); });
 };
 
 core::code
 load_mesh_positions(fastgltf::Asset& ir_asset,
                     fastgltf::Primitive& ir_primitive,
                     u32 i_initialVtx,
-                    std::vector<render::asset::mesh::Vertex>& mr_vtxs)
+                    std::vector<render::MeshVertex>& mr_vtxs)
 {
   auto pos = ir_primitive.findAttribute("POSITION");
   if (pos == ir_primitive.attributes.end()) {
@@ -419,19 +393,19 @@ load_mesh_positions(fastgltf::Asset& ir_asset,
                       "gltf asset has an invalid position attribute.");
     return core::code::ERROR;
   }
-  auto& pos_acc = ir_asset.accessors[pos->accessorIndex];
-  if (!pos_acc.bufferViewIndex.has_value()) {
+  auto& posAcc = ir_asset.accessors[pos->accessorIndex];
+  if (!posAcc.bufferViewIndex.has_value()) {
     return core::code::SUCCESS;
   }
-  mr_vtxs.resize(mr_vtxs.size() + pos_acc.count);
+  mr_vtxs.resize(mr_vtxs.size() + posAcc.count);
   fastgltf::iterateAccessorWithIndex<v3f>(
-    ir_asset, pos_acc, [&](v3f raw, size_t idx) {
-      render::asset::mesh::Vertex vtx;
+    ir_asset, posAcc, [&](v3f raw, size_t idx) {
+      render::MeshVertex vtx;
       vtx.position = raw;
       vtx.normal = { 1, 0, 0 };
       vtx.color = v4f{ 1.f };
-      vtx.uv_x = 0;
-      vtx.uv_y = 0;
+      vtx.uvX = 0;
+      vtx.uvY = 0;
       mr_vtxs[i_initialVtx + idx] = vtx;
     });
 }
@@ -440,13 +414,13 @@ core::code
 load_mesh_normals(fastgltf::Asset& ir_asset,
                   fastgltf::Primitive& ir_primitive,
                   u32 i_initialVtx,
-                  std::vector<render::asset::mesh::Vertex>& mr_vtxs)
+                  std::vector<render::MeshVertex>& mr_vtxs)
 {
   auto normals = ir_primitive.findAttribute("NORMAL");
   if (normals != ir_primitive.attributes.end()) {
-    auto& normals_acc = ir_asset.accessors[normals->accessorIndex];
+    auto& normalsAcc = ir_asset.accessors[normals->accessorIndex];
     fastgltf::iterateAccessorWithIndex<v3f>(
-      ir_asset, normals_acc, [&](v3f v, size_t index) {
+      ir_asset, normalsAcc, [&](v3f v, size_t index) {
         mr_vtxs[i_initialVtx + index].normal = v;
       });
   }
@@ -456,15 +430,15 @@ core::code
 load_mesh_uvs(fastgltf::Asset& ir_asset,
               fastgltf::Primitive& ir_primitive,
               u32 i_initialVtx,
-              std::vector<render::asset::mesh::Vertex>& mr_vtxs)
+              std::vector<render::MeshVertex>& mr_vtxs)
 {
   auto uv = ir_primitive.findAttribute("TEXCOORD_0");
   if (uv != ir_primitive.attributes.end()) {
-    auto& uv_acc = ir_asset.accessors[uv->accessorIndex];
+    auto& uvAcc = ir_asset.accessors[uv->accessorIndex];
     fastgltf::iterateAccessorWithIndex<v2f>(
-      ir_asset, uv_acc, [&](v2f v, size_t index) {
-        mr_vtxs[i_initialVtx + index].uv_x = v.x;
-        mr_vtxs[i_initialVtx + index].uv_y = v.y;
+      ir_asset, uvAcc, [&](v2f v, size_t index) {
+        mr_vtxs[i_initialVtx + index].uvX = v.x;
+        mr_vtxs[i_initialVtx + index].uvY = v.y;
       });
   }
 }
@@ -473,13 +447,13 @@ core::code
 load_mesh_colors(fastgltf::Asset& ir_asset,
                  fastgltf::Primitive& ir_primitive,
                  u32 i_initialVtx,
-                 std::vector<render::asset::mesh::Vertex>& mr_vtxs)
+                 std::vector<render::MeshVertex>& mr_vtxs)
 {
   auto colors = ir_primitive.findAttribute("COLOR_0");
   if (colors != ir_primitive.attributes.end()) {
-    auto& colors_acc = ir_asset.accessors[colors->accessorIndex];
+    auto& colorsAcc = ir_asset.accessors[colors->accessorIndex];
     fastgltf::iterateAccessorWithIndex<v4f>(
-      ir_asset, colors_acc, [&](v4f v, size_t index) {
+      ir_asset, colorsAcc, [&](v4f v, size_t index) {
         mr_vtxs[i_initialVtx + index].color = v;
       });
   }
@@ -489,84 +463,83 @@ core::code
 load_mesh_materials(
   fastgltf::Asset& ir_asset,
   fastgltf::Primitive& ir_primitive,
-  std::vector<std::shared_ptr<render::asset::material::Material>>& ir_materials,
+  std::vector<std::shared_ptr<render::Material>>& ir_materials,
   u32 i_initialVtx,
-  std::vector<render::asset::mesh::Vertex>& mr_vtxs,
-  render::asset::mesh::Surface& mr_newSurface)
+  std::vector<render::MeshVertex>& mr_vtxs,
+  render::MeshSurface& mr_newSurface)
 {
   if (ir_primitive.materialIndex.has_value()) {
-    mr_newSurface.material = ir_materials[ir_primitive.materialIndex.value()];
+    mr_newSurface.p_material = ir_materials[ir_primitive.materialIndex.value()];
   } else {
-    mr_newSurface.material = ir_materials[0];
+    mr_newSurface.p_material = ir_materials[0];
   }
 }
 
 core::code
-load_meshes(
-  mgmt::vulkan::Manager& ir_vkMgr,
+render::gltf::GLTFScene::init_meshes(
   fastgltf::Asset& ir_asset,
-  std::vector<std::shared_ptr<render::asset::material::Material>>& ir_materials,
-  std::vector<std::shared_ptr<render::asset::mesh::Mesh>>& mr_meshes,
-  render::asset::LoadedGLTF& mr_scene)
+  std::vector<std::shared_ptr<render::Material>>& ir_materials,
+  std::vector<std::shared_ptr<render::Mesh>>& mr_meshes)
 {
   std::vector<u32> idxs;
-  std::vector<render::asset::mesh::Vertex> vtxs;
+  std::vector<render::MeshVertex> vtxs;
   for (auto& ir_mesh : ir_asset.meshes) {
-    std::shared_ptr<render::asset::mesh::Mesh> p_newMesh =
-      std::make_shared<render::asset::mesh::Mesh>();
-    auto& new_mesh = *(p_newMesh.get());
+    std::shared_ptr<render::Mesh> p_newMesh = std::make_shared<render::Mesh>();
+    auto& newMesh = *(p_newMesh.get());
     for (auto&& it : ir_mesh.primitives) {
-      render::asset::mesh::Surface new_surface;
-      new_surface.start_idx = (u32)idxs.size();
-      u32 initial_vtx = vtxs.size();
+      render::MeshSurface newSurface;
+      newSurface.startIdx = (u32)idxs.size();
+      u32 initialVtx = vtxs.size();
       // load indices
-      load_mesh_indices(ir_asset, it, initial_vtx, idxs, new_surface);
+      load_mesh_indices(ir_asset, it, initialVtx, idxs, newSurface);
       // load vertex positions
-      load_mesh_positions(ir_asset, it, initial_vtx, vtxs);
+      load_mesh_positions(ir_asset, it, initialVtx, vtxs);
       // load vertex normals
-      load_mesh_normals(ir_asset, it, initial_vtx, vtxs);
+      load_mesh_normals(ir_asset, it, initialVtx, vtxs);
       // load UVs
-      load_mesh_uvs(ir_asset, it, initial_vtx, vtxs);
+      load_mesh_uvs(ir_asset, it, initialVtx, vtxs);
       // load vertex colors
-      load_mesh_colors(ir_asset, it, initial_vtx, vtxs);
+      load_mesh_colors(ir_asset, it, initialVtx, vtxs);
       // load material
       load_mesh_materials(
-        ir_asset, it, ir_materials, initial_vtx, vtxs, new_surface);
-      new_mesh.surfaces.push_back(new_surface);
+        ir_asset, it, ir_materials, initialVtx, vtxs, newSurface);
+      newMesh.surfaces.push_back(newSurface);
     }
-    auto upload_result = upload_mesh(ir_vkMgr, idxs, vtxs);
-    if (!upload_result.has_value()) {
-      core::Logger::err(FUNCTION_NAME, "could not load gltf asset to gpu.");
+    render::GPUMeshBuffers meshBuffers;
+    auto status = upload_mesh(*p_vkMgr_, idxs, vtxs, meshBuffers);
+    if (status != core::code::SUCCESS) {
+      ERR("could not load gltf asset to gpu.");
       return core::code::ERROR;
     }
-    new_mesh.mesh_buffers = upload_result.value();
-    new_mesh.name = ir_mesh.name;
-    mr_scene.meshes[new_mesh.name.c_str()] = p_newMesh;
+    newMesh.buffers = meshBuffers;
+    newMesh.name = ir_mesh.name;
+    meshes[newMesh.name.c_str()] = p_newMesh;
     mr_meshes.push_back(p_newMesh);
     vtxs.clear();
     idxs.clear();
   }
+  return core::code::SUCCESS;
 };
 
 core::code
-load_nodes(fastgltf::Asset& ir_asset,
-           std::vector<std::shared_ptr<render::asset::mesh::Mesh>>& ir_meshes,
-           std::vector<std::shared_ptr<render::asset::Node>>& mr_nodes,
-           render::asset::LoadedGLTF& mr_scene)
+render::gltf::GLTFScene::init_nodes(
+  fastgltf::Asset& ir_asset,
+  std::vector<std::shared_ptr<render::Mesh>>& ir_meshes,
+  std::vector<std::shared_ptr<render::Node>>& mr_nodes)
 {
   for (fastgltf::Node& node : ir_asset.nodes) {
-    std::shared_ptr<render::asset::Node> newNode;
+    std::shared_ptr<render::Node> newNode;
     if (node.meshIndex.has_value()) {
-      newNode = std::make_shared<render::asset::MeshNode>();
-      static_cast<render::asset::MeshNode*>(newNode.get())->mesh =
+      newNode = std::make_shared<render::MeshNode>();
+      static_cast<render::MeshNode*>(newNode.get())->p_mesh =
         ir_meshes[*node.meshIndex];
     } else {
-      newNode = std::make_shared<render::asset::Node>();
+      newNode = std::make_shared<render::Node>();
     }
     std::visit(
       fastgltf::visitor{
         [&](fastgltf::math::fmat4x4 matrix) {
-          memcpy(&newNode->local_tf, matrix.data(), sizeof(matrix));
+          memcpy(&newNode->local, matrix.data(), sizeof(matrix));
         },
         [&](fastgltf::TRS transform) {
           v3f tv(transform.translation[0],
@@ -580,76 +553,137 @@ load_nodes(fastgltf::Asset& ir_asset,
           m4f tm = glm::translate(m4f(1.f), tv);
           m4f rm = glm::toMat4(rq);
           m4f sm = glm::scale(m4f(1.f), sv);
-          newNode->local_tf = tm * rm * sm;
+          newNode->local = tm * rm * sm;
         },
         [&](auto& ir_other) {
-          core::Logger::wrn(FUNCTION_NAME,
-                            "tried to load unimplemented transform format.");
+          WRN("tried to load unimplemented transform format");
         } },
       node.transform);
     mr_nodes.push_back(newNode);
-    mr_scene.nodes[node.name.c_str()] = newNode;
+    nodes[node.name.c_str()] = newNode;
   }
   // set graph
   for (int i = 0; i < ir_asset.nodes.size(); i++) {
     fastgltf::Node& node = ir_asset.nodes[i];
-    std::shared_ptr<render::asset::Node>& sceneNode = mr_nodes[i];
+    std::shared_ptr<render::Node>& sceneNode = mr_nodes[i];
     for (auto& c : node.children) {
       sceneNode->children.push_back(mr_nodes[c]);
-      mr_nodes[c]->parent = sceneNode;
+      mr_nodes[c]->p_parent = sceneNode;
     }
   }
-  // set top nodes
   for (auto& node : mr_nodes) {
-    if (node->parent.lock() == nullptr) {
-      mr_scene.top_nodes.push_back(node);
+    if (node->p_parent.lock() == nullptr) {
+      root.push_back(node);
       node->refresh_transform(glm::mat4{ 1.f });
     }
   }
+  return core::code::SUCCESS;
 }
 
 core::code
-render::gltf::load_gltf(
-  char* ip_path,
-  mgmt::vulkan::Manager& ir_vkMgr,
-  render::asset::DefaultResources& ir_defaultRes,
-  mgmt::vulkan::descriptor::Writer& ir_writer,
-  render::asset::material::MaterialPipelines& ir_materialPipes,
-  std::shared_ptr<render::asset::LoadedGLTF>& mr_sene)
+render::gltf::GLTFScene::init(render::DefaultResources& ir_defaultRes,
+                              mgmt::vulkan::descriptor::Writer& ir_writer,
+                              render::MaterialPassPipelines& ir_materialPipes)
 {
+  if (initialized == core::status::INITIALIZED) {
+    return core::code::SUCCESS;
+  }
+  if (initialized == core::status::ERROR) {
+    return core::code::IN_ERROR_STATE;
+  }
   auto status = core::code::ERROR;
-  render::asset::LoadedGLTF& scene = *mr_sene.get();
   // load file
   fastgltf::Asset asset;
-  status = core::io::gltf::load(ip_path, &asset);
+  status = core::io::gltf::load(p_path_, &asset);
   if (status != core::code::SUCCESS) {
-    core::Logger::err(
-      FUNCTION_NAME, "failed to load gltf asset. code: {}.", (u32)status);
+    ERR("failed to load gltf asset with code: {}", (u32)status);
     return core::code::ERROR;
   }
-  // init pools
-  init_pools(ir_vkMgr, asset, scene);
-  // init sampler
-  load_samplers(ir_vkMgr, asset, scene);
-  // load all textures
+  status = init_pools(asset);
+  if (status != core::code::SUCCESS) {
+    ERR("failed to initialize pools");
+    return core::code::ERROR;
+  }
+  status = init_samplers(asset);
+  if (status != core::code::SUCCESS) {
+    ERR("failed to initialize samplers");
+    return core::code::ERROR;
+  }
   std::vector<mgmt::vulkan::image::AllocatedImage> images;
-  load_images(ir_vkMgr, asset, ir_defaultRes.error_checker_img, images, scene);
-  // load materials
-  std::vector<std::shared_ptr<render::asset::material::Material>> materials;
-  load_materials_buffer(ir_vkMgr,
-                        ir_writer,
-                        ir_materialPipes,
-                        ir_defaultRes,
-                        asset,
-                        images,
-                        materials,
-                        scene);
-  // load meshes
-  std::vector<std::shared_ptr<render::asset::mesh::Mesh>> meshes;
-  load_meshes(ir_vkMgr, asset, materials, meshes, scene);
-  // load nodes
-  std::vector<std::shared_ptr<render::asset::Node>> nodes;
-  load_nodes(asset, meshes, nodes, scene);
-  scene.vk_mgr = &ir_vkMgr;
-  scene.initialized = true;
+  status = init_images(asset, ir_defaultRes.errorImg, images);
+  if (status != core::code::SUCCESS) {
+    ERR("failed to initialize images");
+    return core::code::ERROR;
+  }
+  std::vector<std::shared_ptr<render::Material>> materials;
+  status = init_materials(
+    ir_writer, ir_materialPipes, ir_defaultRes, asset, images, materials);
+  if (status != core::code::SUCCESS) {
+    ERR("failed to initialize materials");
+    return core::code::ERROR;
+  }
+  std::vector<std::shared_ptr<render::Mesh>> meshes;
+  status = init_meshes(asset, materials, meshes);
+  if (status != core::code::SUCCESS) {
+    ERR("failed to initialize meshes");
+    return core::code::ERROR;
+  }
+  std::vector<std::shared_ptr<render::Node>> nodes;
+  status = init_nodes(asset, meshes, nodes);
+  if (status != core::code::SUCCESS) {
+    ERR("failed to initialize nodes");
+    return core::code::ERROR;
+  }
+  initialized = core::status::INITIALIZED;
+  return core::code::SUCCESS;
 }
+
+render::gltf::GLTFScene::GLTFScene(char* p_path, mgmt::vulkan::Manager* p_vkMgr)
+  : p_path_{ p_path }
+  , p_vkMgr_{ p_vkMgr } {};
+
+//
+// destructor
+//
+
+core::code
+render::gltf::GLTFScene::destroy()
+{
+  if (initialized == core::status::NOT_INITIALIZED) {
+    return core::code::SUCCESS;
+  }
+  if (initialized == core::status::ERROR) {
+    return core::code::IN_ERROR_STATE;
+  }
+  auto& vkMgr = *p_vkMgr_;
+  VkDevice dev = vkMgr.get_dev();
+  descriptorPool.destroy_pools(dev);
+  vkMgr.destroy_buffer(materialDataBuff);
+  for (auto& [k, v] : meshes) {
+    vkMgr.destroy_buffer(v->buffers.idxBuff);
+    vkMgr.destroy_buffer(v->buffers.vertexBuff);
+  }
+  for (auto& sampler : samplers) {
+    vkDestroySampler(dev, sampler, nullptr);
+  }
+  delQueue_.flush();
+  initialized = core::status::NOT_INITIALIZED;
+  return core::code::SUCCESS;
+}
+
+render::gltf::GLTFScene::~GLTFScene()
+{
+  destroy();
+}
+
+//
+// draw
+//
+
+void
+render::gltf::GLTFScene::Draw(const glm::mat4& top, DrawContext& ctx)
+{
+  for (auto& n : root) {
+    n->Draw(top, ctx);
+  }
+};

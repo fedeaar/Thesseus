@@ -15,7 +15,7 @@ render::BackgroundRenderer::init()
   }
   auto& vkMgr = *p_vkMgr_;
   // layout
-  VkPushConstantRange pushConsts{
+  VkPushConstantRange pushConstants{
     .stageFlags = VK_SHADER_STAGE_COMPUTE_BIT,
     .offset = 0,
     .size = sizeof(GPUPushConstants),
@@ -27,7 +27,7 @@ render::BackgroundRenderer::init()
     .setLayoutCount = 1,
     .pSetLayouts = &p_swapchain_->draw_img_descriptor_layout,
     .pushConstantRangeCount = 1,
-    .pPushConstantRanges = &pushConsts
+    .pPushConstantRanges = &pushConstants
   };
   { // gradient init
     auto gradientPipeResult = vkMgr.create_compute_pipeline(
@@ -44,15 +44,15 @@ render::BackgroundRenderer::init()
     effects_.push_back(gradient);
   }
   { // sky init
-    auto sky_pipeline_result =
+    auto skyPipeResult =
       vkMgr.create_compute_pipeline(layoutInfo, "./shaders/sky.comp.spv");
-    if (!sky_pipeline_result.has_value()) {
+    if (!skyPipeResult.has_value()) {
       ERR("failed to create sky pipeline");
       return core::code::ERROR;
     }
     render::BackgroundRenderer::ComputeEffect sky = {
       .name = "sky",
-      .pipeline = sky_pipeline_result.value(),
+      .pipeline = skyPipeResult.value(),
       .data = { .data1 = glm::vec4(0.1, 0.2, 0.4, 0.97) }
     };
     effects_.push_back(sky);
@@ -94,7 +94,7 @@ render::BackgroundRenderer::draw()
 {
   auto& swapchain = *p_swapchain_;
   auto cmd = swapchain.get_current_cmd_buffer();
-  auto& effect = effects_[current_effect_];
+  auto& effect = effects_[currentEffect_];
   vkCmdBindPipeline(
     cmd, VK_PIPELINE_BIND_POINT_COMPUTE, effect.pipeline.pipeline);
   // bind the descriptor set containing the draw image for the compute

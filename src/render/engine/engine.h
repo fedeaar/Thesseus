@@ -26,7 +26,6 @@ public:
     ImguiRenderer imguiRenderer;
   } state;
 
-public:
   core::code init();
   Engine(Params& params);
 

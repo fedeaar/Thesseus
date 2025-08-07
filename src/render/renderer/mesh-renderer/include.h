@@ -1,6 +1,5 @@
 #pragma once
 
-#include "asset/asset.h"
-#include "material/material.h"
-#include "mesh/mesh.h"
-#include "renderer/renderer.h"
+#include "./gltf/gltf.h"
+#include "renderer.h"
+#include "types.h"

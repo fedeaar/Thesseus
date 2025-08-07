@@ -6,7 +6,7 @@ namespace render {
 
 class BackgroundRenderer : Renderer
 {
-public:
+private:
   struct GPUPushConstants
   {
     v4f data1;
@@ -20,10 +20,12 @@ public:
     mgmt::vulkan::pipeline::Pipeline pipeline;
     GPUPushConstants data;
   };
-  // state
+
+public:
   core::status initialized = core::status::NOT_INITIALIZED;
+  // state
   std::vector<ComputeEffect> effects_;
-  u32 current_effect_ = 0;
+  u32 currentEffect_ = 0;
 
   core::code init();
   BackgroundRenderer(mgmt::vulkan::Swapchain* mp_swapchain,

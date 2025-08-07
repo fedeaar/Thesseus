@@ -70,10 +70,10 @@ EventLoop::tick()
     ImGui::SliderFloat(
       "Render Scale", &engine_->state.swapchain.render_scale, 0.3f, 1.f);
     auto& selected = engine_->state.bgRenderer
-                       .effects_[engine_->state.bgRenderer.current_effect_];
+                       .effects_[engine_->state.bgRenderer.currentEffect_];
     ImGui::Text("Selected effect: ", selected.name);
     ImGui::SliderInt("Effect Index",
-                     (i32*)&engine_->state.bgRenderer.current_effect_,
+                     (i32*)&engine_->state.bgRenderer.currentEffect_,
                      0,
                      engine_->state.bgRenderer.effects_.size() - 1);
     ImGui::InputFloat4("data1", (float*)&selected.data.data1);

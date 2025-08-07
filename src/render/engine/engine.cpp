@@ -65,34 +65,34 @@ render::Engine::destroy()
   if (state.initialized == core::status::ERROR) {
     return core::code::ERROR;
   }
-  auto imgui_renderer_status = state.imguiRenderer.destroy();
-  auto mesh_renderer_status = state.meshRenderer.destroy();
-  auto bg_renderer_status = state.bgRenderer.destroy();
-  auto swapchain_status = state.swapchain.destroy();
-  auto vk_mgr_status = state.vkMgr.destroy();
-  auto window_mgr_status = state.windowMgr.destroy();
+  auto imguiRendererStatus = state.imguiRenderer.destroy();
+  auto meshRendererStatus = state.meshRenderer.destroy();
+  auto bgRendererStatus = state.bgRenderer.destroy();
+  auto swapchainStatus = state.swapchain.destroy();
+  auto vkMgrStatus = state.vkMgr.destroy();
+  auto windowMgrStatus = state.windowMgr.destroy();
   bool fail = false;
-  if (imgui_renderer_status != core::code::SUCCESS) {
+  if (imguiRendererStatus != core::code::SUCCESS) {
     ERR("failed to destroy imgui renderer");
     fail = true;
   }
-  if (mesh_renderer_status != core::code::SUCCESS) {
+  if (meshRendererStatus != core::code::SUCCESS) {
     ERR("failed to destroy asset renderer");
     fail = true;
   }
-  if (bg_renderer_status != core::code::SUCCESS) {
+  if (bgRendererStatus != core::code::SUCCESS) {
     ERR("failed to destroy background renderer");
     fail = true;
   }
-  if (swapchain_status != core::code::SUCCESS) {
+  if (swapchainStatus != core::code::SUCCESS) {
     ERR("failed to destroy swapchain");
     fail = true;
   }
-  if (vk_mgr_status != core::code::SUCCESS) {
+  if (vkMgrStatus != core::code::SUCCESS) {
     ERR("failed to destroy vulkan manager");
     fail = true;
   }
-  if (window_mgr_status != core::code::SUCCESS) {
+  if (windowMgrStatus != core::code::SUCCESS) {
     ERR("failed to destroy window manager");
     fail = true;
   }
@@ -122,25 +122,25 @@ render::Engine::~Engine()
 void
 render::Engine::render(Camera& camera)
 {
+  auto& swapchain = state.swapchain;
   // we assume we are init
-  state.swapchain.begin_commands();
+  swapchain.begin_commands();
   // draw
-  state.swapchain.draw_img_transition(VK_IMAGE_LAYOUT_UNDEFINED,
-                                      VK_IMAGE_LAYOUT_GENERAL);
+  swapchain.draw_img_transition(VK_IMAGE_LAYOUT_UNDEFINED,
+                                VK_IMAGE_LAYOUT_GENERAL);
   state.bgRenderer.draw();
-  state.swapchain.draw_img_transition(VK_IMAGE_LAYOUT_GENERAL,
-                                      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-  state.swapchain.depth_img_transition(
-    VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
-  state.meshRenderer.update_scene(camera);
+  swapchain.draw_img_transition(VK_IMAGE_LAYOUT_GENERAL,
+                                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+  swapchain.depth_img_transition(VK_IMAGE_LAYOUT_UNDEFINED,
+                                 VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
   state.meshRenderer.draw(camera);
-  state.swapchain.draw_img_transition(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                                      VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-  state.swapchain.current_img_transition(VK_IMAGE_LAYOUT_UNDEFINED,
-                                         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-  state.swapchain.copy_draw_to_current();
+  swapchain.draw_img_transition(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+  swapchain.current_img_transition(VK_IMAGE_LAYOUT_UNDEFINED,
+                                   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+  swapchain.copy_draw_to_current();
   state.imguiRenderer.draw();
-  state.swapchain.current_img_transition(
-    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-  state.swapchain.end_commands();
+  swapchain.current_img_transition(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                   VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+  swapchain.end_commands();
 }
