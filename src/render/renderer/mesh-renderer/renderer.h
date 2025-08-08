@@ -38,7 +38,8 @@ private:
 public:
   core::code init();
   AssetRenderer(mgmt::vulkan::Swapchain* p_swapchain,
-                mgmt::vulkan::Manager* p_vkMgr);
+                mgmt::vulkan::Manager* p_vkMgr,
+                debug::GlobalStats* p_stats);
 
   core::code destroy();
   ~AssetRenderer();

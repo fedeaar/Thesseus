@@ -10,9 +10,11 @@ render::Renderer::init()
 };
 
 render::Renderer::Renderer(mgmt::vulkan::Manager* mp_vkMgr,
-                           mgmt::vulkan::Swapchain* mp_swapchain)
+                           mgmt::vulkan::Swapchain* mp_swapchain,
+                           debug::GlobalStats* mp_stats)
   : p_vkMgr_{ mp_vkMgr }
-  , p_swapchain_{ mp_swapchain } {};
+  , p_swapchain_{ mp_swapchain }
+  , p_stats_{ mp_stats } {};
 
 core::code
 render::Renderer::destroy()

@@ -5,95 +5,6 @@
 #include <vulkan/vulkan_core.h>
 
 //
-// write_material
-//
-
-render::Material::Instance
-render::write_material(MaterialPassType pass,
-                       MaterialResources const& ir_resources,
-                       mgmt::vulkan::Manager& ir_vkMgr,
-                       mgmt::vulkan::descriptor::DynamicAllocator& ir_allocator,
-                       mgmt::vulkan::descriptor::Writer& ir_writer,
-                       MaterialPassPipelines& ir_materialPipes)
-{
-  auto dev = ir_vkMgr.get_dev();
-  Material::Instance data;
-  data.type = pass;
-  if (pass == MaterialPassType::transparent) {
-    data.pipeline = &ir_materialPipes.transparent;
-  } else {
-    data.pipeline = &ir_materialPipes.opaque;
-  }
-  data.p_materialSet = ir_allocator.allocate(dev, ir_materialPipes.layout);
-  ir_writer.clear();
-  ir_writer.write_buffer(0,
-                         ir_resources.p_dataBuff,
-                         sizeof(GPUMaterialConstants),
-                         ir_resources.dataBuffOffset,
-                         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-  ir_writer.write_image(1,
-                        ir_resources.colorImg.view,
-                        ir_resources.p_colorSampler,
-                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-  ir_writer.write_image(2,
-                        ir_resources.metalImg.view,
-                        ir_resources.p_metalSampler,
-                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-  ir_writer.update_set(dev, data.p_materialSet);
-  return data;
-}
-
-//
-// Node
-//
-
-void
-render::Node::refresh_transform(const m4f& parent)
-{
-  world = parent * local;
-  for (auto c : children) {
-    c->refresh_transform(world);
-  }
-}
-
-void
-render::Node::Draw(const m4f& top, DrawContext& ctx)
-{
-  // draw children
-  for (auto& c : children) {
-    c->Draw(top, ctx);
-  }
-}
-
-//
-// MeshNode
-//
-
-void
-render::MeshNode::Draw(const m4f& top, render::DrawContext& ctx)
-{
-  m4f local = top * world;
-  for (auto& s : p_mesh->surfaces) {
-    Asset asset = {
-      .idxCount = s.count,
-      .startIdx = s.startIdx,
-      .transform = local,
-      .p_material = &s.p_material->data,
-      .p_idxBuff = p_mesh->buffers.idxBuff.buffer,
-      .p_vba = p_mesh->buffers.vba,
-    };
-    if (s.p_material->data.type == MaterialPassType::opaque) {
-      ctx.opaqueSurfaces.push_back(asset);
-    } else {
-      ctx.transparentSurfaces.push_back(asset);
-    }
-  }
-  Node::Draw(top, ctx);
-}
-
-//
 // constructor
 //
 
@@ -318,7 +229,7 @@ render::AssetRenderer::init_scenes()
     return core::code::ERROR;
   }
   loadedScenes_["structure"] = p_scene;
-  p_scene->Draw(glm::mat4{ 1.f }, mainDrawCtx_);
+  p_scene->Draw(m4f{ 1.f }, mainDrawCtx_);
   delQueue_.push([=]() { loadedScenes_["structure"]->destroy(); });
   return core::code::SUCCESS;
 }
@@ -350,8 +261,9 @@ render::AssetRenderer::init()
 }
 
 render::AssetRenderer::AssetRenderer(mgmt::vulkan::Swapchain* p_swapchain,
-                                     mgmt::vulkan::Manager* p_vkMgr)
-  : render::Renderer{ p_vkMgr, p_swapchain } {};
+                                     mgmt::vulkan::Manager* p_vkMgr,
+                                     debug::GlobalStats* p_stats)
+  : render::Renderer{ p_vkMgr, p_swapchain, p_stats } {};
 
 //
 // destructor
@@ -382,6 +294,33 @@ render::AssetRenderer::~AssetRenderer()
 // draw
 //
 
+std::array<v3f, 8> frustrumCorners{
+  v3f{ 1, 1, 1 },  v3f{ 1, 1, -1 },  v3f{ 1, -1, 1 },  v3f{ 1, -1, -1 },
+  v3f{ -1, 1, 1 }, v3f{ -1, 1, -1 }, v3f{ -1, -1, 1 }, v3f{ -1, -1, -1 },
+};
+
+inline bool
+visible(render::Asset const& ir_asset, m4f const& viewproj)
+{
+  m4f matrix = viewproj * ir_asset.transform;
+  v3f min = { 1.5, 1.5, 1.5 };
+  v3f max = { -1.5, -1.5, -1.5 };
+  auto& origin = ir_asset.bounds.origin;
+  auto& extents = ir_asset.bounds.extents;
+  for (u32 c = 0; c < 8; ++c) {
+    glm::vec4 v =
+      matrix * glm::vec4(origin + (frustrumCorners[c] * extents), 1.f);
+    // perspective correction
+    v.x = v.x / v.w;
+    v.y = v.y / v.w;
+    v.z = v.z / v.w;
+    min = glm::min(v3f{ v.x, v.y, v.z }, min);
+    max = glm::max(v3f{ v.x, v.y, v.z }, max);
+  }
+  return !(min.z > 1.f || max.z < 0.f || min.x > 1.f || max.x < -1.f ||
+           min.y > 1.f || max.y < -1.f);
+}
+
 void
 render::AssetRenderer::update_scene(Camera& camera)
 {
@@ -396,32 +335,45 @@ render::AssetRenderer::update_scene(Camera& camera)
   sceneData_.sunDir = glm::vec4(0, 1, 0.5, 1.f);
 }
 
+mgmt::vulkan::pipeline::Pipeline* gLastPipeline = nullptr;
+render::Material::Instance* gLastMaterial = nullptr;
+VkBuffer gLastIndexBuffer = VK_NULL_HANDLE;
+
 inline void
 cmd_draw(render::Asset const& ir_asset,
          VkDescriptorSet& ir_descriptorSet,
          VkCommandBuffer& mr_cmd,
          render::GPUMeshPushConstants& mr_pushConstants)
 {
-  vkCmdBindPipeline(mr_cmd,
-                    VK_PIPELINE_BIND_POINT_GRAPHICS,
-                    ir_asset.p_material->pipeline->pipeline);
-  vkCmdBindDescriptorSets(mr_cmd,
-                          VK_PIPELINE_BIND_POINT_GRAPHICS,
-                          ir_asset.p_material->pipeline->layout,
-                          0,
-                          1,
-                          &ir_descriptorSet,
-                          0,
-                          nullptr);
-  vkCmdBindDescriptorSets(mr_cmd,
-                          VK_PIPELINE_BIND_POINT_GRAPHICS,
-                          ir_asset.p_material->pipeline->layout,
-                          1,
-                          1,
-                          &ir_asset.p_material->p_materialSet,
-                          0,
-                          nullptr);
-  vkCmdBindIndexBuffer(mr_cmd, ir_asset.p_idxBuff, 0, VK_INDEX_TYPE_UINT32);
+  auto& pipeline = ir_asset.p_material->pipeline;
+  if (ir_asset.p_material != gLastMaterial) {
+    gLastMaterial = ir_asset.p_material;
+    if (pipeline != gLastPipeline) {
+      gLastPipeline = pipeline;
+      vkCmdBindPipeline(
+        mr_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipeline);
+      vkCmdBindDescriptorSets(mr_cmd,
+                              VK_PIPELINE_BIND_POINT_GRAPHICS,
+                              pipeline->layout,
+                              0,
+                              1,
+                              &ir_descriptorSet,
+                              0,
+                              nullptr);
+    }
+    vkCmdBindDescriptorSets(mr_cmd,
+                            VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            pipeline->layout,
+                            1,
+                            1,
+                            &ir_asset.p_material->p_materialSet,
+                            0,
+                            nullptr);
+  }
+  if (ir_asset.p_idxBuff != gLastIndexBuffer) {
+    gLastIndexBuffer = ir_asset.p_idxBuff;
+    vkCmdBindIndexBuffer(mr_cmd, ir_asset.p_idxBuff, 0, VK_INDEX_TYPE_UINT32);
+  }
   mr_pushConstants.world = ir_asset.transform;
   mr_pushConstants.vba = ir_asset.p_vba;
   vkCmdPushConstants(mr_cmd,
@@ -436,6 +388,7 @@ cmd_draw(render::Asset const& ir_asset,
 void
 render::AssetRenderer::draw(Camera& camera)
 {
+  auto start = std::chrono::system_clock::now();
   // update
   update_scene(camera);
   auto& swapchain = *p_swapchain_;
@@ -472,11 +425,31 @@ render::AssetRenderer::draw(Camera& camera)
                       VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
   writer.update_set(p_vkMgr_->get_dev(), globalDescriptorSet);
   GPUMeshPushConstants pushConstants;
-  for (const Asset& draw : mainDrawCtx_.opaqueSurfaces) {
-    cmd_draw(draw, globalDescriptorSet, cmd, pushConstants);
+  u32 drawCount = 0;
+  u32 triangleCount = 0;
+  for (auto& drawMaterial : mainDrawCtx_.opaqueSurfaces) {
+    for (auto& draw : drawMaterial.second) {
+      if (!visible(draw, sceneData_.viewproj)) {
+        continue;
+      }
+      cmd_draw(draw, globalDescriptorSet, cmd, pushConstants);
+      drawCount++;
+      triangleCount += draw.idxCount / 3;
+    }
   }
   for (const Asset& draw : mainDrawCtx_.transparentSurfaces) {
+    if (!visible(draw, sceneData_.viewproj)) {
+      continue;
+    }
     cmd_draw(draw, globalDescriptorSet, cmd, pushConstants);
+    drawCount++;
+    triangleCount += draw.idxCount / 3;
   }
+  p_stats_->drawcallCount = drawCount;
+  p_stats_->triangleCount = triangleCount;
   vkCmdEndRendering(cmd);
+  auto end = std::chrono::system_clock::now();
+  auto elapsed =
+    std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+  p_stats_->meshDrawTime = elapsed.count() / 1000.f;
 };

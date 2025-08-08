@@ -14,12 +14,12 @@ class EventLoop;
 class InputHandler
 {
 private:
-  EventLoop* loop_;
-  render::Engine* engine_;
-  Camera* camera_;
-  SDL_Event event_;
-  const bool* keyboard_state_ = SDL_GetKeyboardState(NULL);
-  bool first_mouse_ = true, mouse_lock_ = true;
+  EventLoop* p_loop_;
+  render::Engine* p_engine_;
+  Camera* p_camera_;
+  SDL_Event p_event_;
+  const bool* p_keyboardState_ = SDL_GetKeyboardState(NULL);
+  bool firstMouse_ = true, mouseLock_ = true;
 
   inline void handle_mouse_motion();
 
@@ -28,7 +28,7 @@ private:
 
 public:
   core::code init();
-  InputHandler(EventLoop* loop, render::Engine* engine, Camera* camera);
+  InputHandler(EventLoop* p_loop, render::Engine* p_engine, Camera* p_camera);
 
   void poll();
 };
@@ -38,11 +38,12 @@ class EventLoop
   friend InputHandler;
 
 private:
-  render::Engine* engine_;
-  Camera* camera_;
-  InputHandler input_handler_;
+  render::Engine* p_engine_;
+  Camera* p_camera_;
+  InputHandler p_inputHandler_;
   bool quit_ = false;
-  f32 last_tick_ = 0.0f;
+  f32 lastTick_ = 0.0f;
+  debug::GlobalStats* p_stats_;
 
   core::code init();
   core::code destroy();
@@ -53,6 +54,8 @@ private:
   inline void tick();
 
 public:
-  EventLoop(render::Engine* engine, Camera* camera);
+  EventLoop(render::Engine* p_engine,
+            Camera* p_camera,
+            debug::GlobalStats* p_stats);
   core::code run();
 };

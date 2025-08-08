@@ -42,15 +42,21 @@ render::Engine::init()
   return core::code::SUCCESS;
 }
 
-render::Engine::Engine(render::Engine::Params& params, Camera* p_camera)
+render::Engine::Engine(render::Engine::Params& params,
+                       Camera* p_camera,
+                       debug::GlobalStats* p_stats)
   : state{ .initialized = core::status::NOT_INITIALIZED,
            .windowMgr{ params.screenWidth, params.screenHeight, params.name },
            .vkMgr{ &state.windowMgr },
            .swapchain{ &state.vkMgr },
-           .bgRenderer{ &state.swapchain, &state.vkMgr },
-           .assetRenderer{ &state.swapchain, &state.vkMgr },
-           .imguiRenderer{ &state.swapchain, &state.vkMgr, &state.windowMgr } }
+           .bgRenderer{ &state.swapchain, &state.vkMgr, p_stats },
+           .assetRenderer{ &state.swapchain, &state.vkMgr, p_stats },
+           .imguiRenderer{ &state.swapchain,
+                           &state.vkMgr,
+                           &state.windowMgr,
+                           p_stats } }
   , p_camera_{ p_camera }
+  , p_stats_{ p_stats }
 {
 }
 

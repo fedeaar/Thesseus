@@ -3,6 +3,7 @@
 #include <backends/imgui_impl_sdl3.h>
 #include <backends/imgui_impl_vulkan.h>
 #include <imgui.h>
+#include <numeric>
 
 //
 // constructor
@@ -89,8 +90,9 @@ render::ImguiRenderer::init()
 
 render::ImguiRenderer::ImguiRenderer(mgmt::vulkan::Swapchain* mp_swapchain,
                                      mgmt::vulkan::Manager* mp_vkMgr,
-                                     mgmt::window::Manager* mp_windowMgr)
-  : render::Renderer{ mp_vkMgr, mp_swapchain }
+                                     mgmt::window::Manager* mp_windowMgr,
+                                     debug::GlobalStats* p_stats)
+  : render::Renderer{ mp_vkMgr, mp_swapchain, p_stats }
   , p_windowMgr_{ mp_windowMgr } {};
 
 //
@@ -122,8 +124,23 @@ render::ImguiRenderer::~ImguiRenderer()
 //
 
 void
+draw_global_stats(debug::GlobalStats& stats)
+{
+  ImGui::NewFrame();
+  if (ImGui::Begin("Stats")) {
+    ImGui::Text("frametime %f ms", stats.frametime);
+    ImGui::Text("draw time %f ms", stats.meshDrawTime);
+    ImGui::Text("triangles %i", stats.triangleCount);
+    ImGui::Text("draws %i", stats.drawcallCount);
+  }
+  ImGui::End();
+  ImGui::Render();
+}
+
+void
 render::ImguiRenderer::draw()
 {
+  draw_global_stats(*p_stats_);
   mgmt::vulkan::Swapchain& swapchain = *p_swapchain_;
   // we assume we are init
   auto cmd = swapchain.get_current_cmd_buffer();

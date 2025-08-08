@@ -476,6 +476,26 @@ load_mesh_materials(
 }
 
 core::code
+load_mesh_bounds(fastgltf::Asset& ir_asset,
+                 u32 i_initialVtx,
+                 std::vector<render::MeshVertex>& mr_vtxs,
+                 render::MeshSurface& mr_newSurface)
+{
+  v3f minpos = mr_vtxs[i_initialVtx].position;
+  v3f maxpos = mr_vtxs[i_initialVtx].position;
+  for (int i = i_initialVtx; i < mr_vtxs.size(); i++) {
+    minpos = glm::min(minpos, mr_vtxs[i].position);
+    maxpos = glm::max(maxpos, mr_vtxs[i].position);
+  }
+  v3f extents = (maxpos - minpos) / 2.f;
+  mr_newSurface.bounds = {
+    .origin = (maxpos + minpos) / 2.f,
+    .sphereRadius = glm::length(extents),
+    .extents = extents,
+  };
+}
+
+core::code
 render::gltf::GLTFScene::init_meshes(
   fastgltf::Asset& ir_asset,
   std::vector<std::shared_ptr<render::Material>>& ir_materials,
@@ -492,17 +512,13 @@ render::gltf::GLTFScene::init_meshes(
       u32 initialVtx = vtxs.size();
       // load indices
       load_mesh_indices(ir_asset, it, initialVtx, idxs, newSurface);
-      // load vertex positions
       load_mesh_positions(ir_asset, it, initialVtx, vtxs);
-      // load vertex normals
       load_mesh_normals(ir_asset, it, initialVtx, vtxs);
-      // load UVs
       load_mesh_uvs(ir_asset, it, initialVtx, vtxs);
-      // load vertex colors
       load_mesh_colors(ir_asset, it, initialVtx, vtxs);
-      // load material
       load_mesh_materials(
         ir_asset, it, ir_materials, initialVtx, vtxs, newSurface);
+      load_mesh_bounds(ir_asset, initialVtx, vtxs, newSurface);
       newMesh.surfaces.push_back(newSurface);
     }
     render::GPUMeshBuffers meshBuffers;

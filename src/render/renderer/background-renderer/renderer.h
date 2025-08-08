@@ -25,11 +25,12 @@ public:
   core::status initialized = core::status::NOT_INITIALIZED;
   // state
   std::vector<ComputeEffect> effects_;
-  u32 currentEffect_ = 0;
+  u32 currentEffect_ = 1;
 
   core::code init();
   BackgroundRenderer(mgmt::vulkan::Swapchain* mp_swapchain,
-                     mgmt::vulkan::Manager* mp_vkMgr);
+                     mgmt::vulkan::Manager* mp_vkMgr,
+                     debug::GlobalStats* p_stats);
 
   core::code destroy();
   ~BackgroundRenderer();

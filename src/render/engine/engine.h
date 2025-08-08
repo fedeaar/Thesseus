@@ -25,9 +25,10 @@ public:
     ImguiRenderer imguiRenderer;
   } state;
   Camera* p_camera_;
+  debug::GlobalStats* p_stats_;
 
   core::code init();
-  Engine(Params& params, Camera* p_camera_);
+  Engine(Params& params, Camera* p_camera_, debug::GlobalStats* p_stats_);
 
   core::code destroy();
   ~Engine();

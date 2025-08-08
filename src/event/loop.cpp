@@ -8,19 +8,22 @@ core::code
 EventLoop::init()
 {
   // TODO: proper error handling
-  if (engine_->init() != core::code::SUCCESS) {
+  if (p_engine_->init() != core::code::SUCCESS) {
     return core::code::ERROR;
   }
-  if (input_handler_.init() != core::code::SUCCESS) {
+  if (p_inputHandler_.init() != core::code::SUCCESS) {
     return core::code::ERROR;
   }
   return core::code::SUCCESS;
 }
 
-EventLoop::EventLoop(render::Engine* engine, Camera* camera)
-  : engine_{ engine }
-  , camera_{ camera }
-  , input_handler_{ this, engine, camera } {};
+EventLoop::EventLoop(render::Engine* engine,
+                     Camera* camera,
+                     debug::GlobalStats* p_stats)
+  : p_engine_{ engine }
+  , p_camera_{ camera }
+  , p_stats_(p_stats)
+  , p_inputHandler_{ this, engine, camera } {};
 
 //
 // destructor
@@ -30,40 +33,11 @@ core::code
 EventLoop::destroy()
 {
   // TODO: proper error handling
-  if (engine_->destroy() != core::code::SUCCESS) {
+  if (p_engine_->destroy() != core::code::SUCCESS) {
     return core::code::ERROR;
   }
   SDL_Quit(); // TODO: this should not be here
   return core::code::SUCCESS;
-}
-
-//
-// debug
-//
-
-void
-update_debug_gui(render::Engine& engine)
-{
-  ImGui_ImplVulkan_NewFrame();
-  ImGui_ImplSDL3_NewFrame();
-  ImGui::NewFrame();
-  if (ImGui::Begin("background")) {
-    ImGui::SliderFloat(
-      "Render Scale", &engine.state.swapchain.render_scale, 0.3f, 1.f);
-    auto& selected =
-      engine.state.bgRenderer.effects_[engine.state.bgRenderer.currentEffect_];
-    ImGui::Text("Selected effect: ", selected.name);
-    ImGui::SliderInt("Effect Index",
-                     (i32*)&engine.state.bgRenderer.currentEffect_,
-                     0,
-                     engine.state.bgRenderer.effects_.size() - 1);
-    ImGui::InputFloat4("data1", (float*)&selected.data.data1);
-    ImGui::InputFloat4("data2", (float*)&selected.data.data2);
-    ImGui::InputFloat4("data3", (float*)&selected.data.data3);
-    ImGui::InputFloat4("data4", (float*)&selected.data.data4);
-  }
-  ImGui::End();
-  ImGui::Render();
 }
 
 //
@@ -80,18 +54,19 @@ inline f32
 EventLoop::tick_delta()
 {
   f32 tick = SDL_GetTicks();
-  f32 delta = (tick - last_tick_) / tick;
-  last_tick_ = tick;
+  f32 delta = (tick - lastTick_) / tick;
+  lastTick_ = tick;
   return delta;
 }
 
 inline void
 EventLoop::tick()
 {
-  input_handler_.poll();
-  update_debug_gui(*engine_);
-  camera_->set_frame_delta(tick_delta());
-  engine_->render();
+  ImGui_ImplVulkan_NewFrame();
+  ImGui_ImplSDL3_NewFrame();
+  p_inputHandler_.poll();
+  p_camera_->set_frame_delta(tick_delta());
+  p_engine_->render();
 }
 
 core::code
@@ -102,7 +77,12 @@ EventLoop::run()
     return destroy();
   }
   while (!quit_) {
+    auto start = std::chrono::system_clock::now();
     tick();
+    auto end = std::chrono::system_clock::now();
+    auto elapsed =
+      std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    p_stats_->frametime = elapsed.count() / 1000.f;
   }
   return destroy();
 }

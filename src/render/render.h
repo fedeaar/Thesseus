@@ -2,6 +2,7 @@
 
 #include "../camera/camera.h"
 #include "../core/include.h"
+#include "../debug/debug.h"
 #include "../mgmt/include.h"
 
 #include <vulkan/vulkan.h>

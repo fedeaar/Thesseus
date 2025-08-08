@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../renderer.h"
+#include <unordered_map>
 
 namespace render {
 
@@ -67,9 +68,17 @@ struct MeshVertex
   v4f color;
 };
 
+struct MeshBounds
+{
+  v3f origin;
+  f32 sphereRadius;
+  v3f extents;
+};
+
 struct MeshSurface
 {
   u32 startIdx, count;
+  MeshBounds bounds;
   std::shared_ptr<Material> p_material;
 };
 
@@ -101,13 +110,15 @@ struct Asset
   u32 idxCount, startIdx;
   m4f transform;
   Material::Instance* p_material;
+  MeshBounds bounds;
   VkBuffer p_idxBuff;
   VkDeviceAddress p_vba;
 };
 
 struct DrawContext
 {
-  std::vector<Asset> opaqueSurfaces, transparentSurfaces;
+  std::unordered_map<Material*, std::vector<Asset>> opaqueSurfaces;
+  std::vector<Asset> transparentSurfaces;
 };
 
 class IRenderable

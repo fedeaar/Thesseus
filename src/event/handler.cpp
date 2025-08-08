@@ -7,22 +7,22 @@
 core::code
 InputHandler::init()
 {
-  if (mouse_lock_) {
+  if (mouseLock_) {
     SDL_HideCursor();
   } else {
     SDL_ShowCursor();
   }
-  SDL_SetWindowRelativeMouseMode(engine_->state.windowMgr.get_window(),
-                                 mouse_lock_);
+  SDL_SetWindowRelativeMouseMode(p_engine_->state.windowMgr.get_window(),
+                                 mouseLock_);
   return core::code::SUCCESS;
 }
 
 InputHandler::InputHandler(EventLoop* loop,
                            render::Engine* engine,
                            Camera* camera)
-  : loop_{ loop }
-  , engine_{ engine }
-  , camera_{ camera } {};
+  : p_loop_{ loop }
+  , p_engine_{ engine }
+  , p_camera_{ camera } {};
 
 //
 // handlers
@@ -32,30 +32,30 @@ inline void
 InputHandler::handle_mouse_motion()
 {
   // TODO: this should be handled by the camera (?)
-  if (first_mouse_) {
-    first_mouse_ = false;
+  if (firstMouse_) {
+    firstMouse_ = false;
     return;
   }
-  if (!mouse_lock_) {
+  if (!mouseLock_) {
     return;
   }
-  camera_->rotate(Camera::YAW, event_.motion.xrel);
-  camera_->rotate(Camera::PITCH, event_.motion.yrel);
+  p_camera_->rotate(Camera::YAW, p_event_.motion.xrel);
+  p_camera_->rotate(Camera::PITCH, p_event_.motion.yrel);
 }
 
 inline void
 InputHandler::poll_events()
 {
-  while (SDL_PollEvent(&event_) != 0) {
-    switch (event_.type) {
+  while (SDL_PollEvent(&p_event_) != 0) {
+    switch (p_event_.type) {
       case SDL_EVENT_QUIT:
-        loop_->quit();
+        p_loop_->quit();
         break;
       case SDL_EVENT_MOUSE_MOTION:
         handle_mouse_motion();
         break;
     }
-    ImGui_ImplSDL3_ProcessEvent(&event_);
+    ImGui_ImplSDL3_ProcessEvent(&p_event_);
   };
 }
 
@@ -63,29 +63,29 @@ inline void
 InputHandler::poll_keyboard()
 {
   // TODO: this should be handled by the camera (?)
-  if (keyboard_state_[SDL_SCANCODE_W]) {
-    camera_->move(Camera::TOWARDS);
+  if (p_keyboardState_[SDL_SCANCODE_W]) {
+    p_camera_->move(Camera::TOWARDS);
   }
-  if (keyboard_state_[SDL_SCANCODE_S]) {
-    camera_->move(Camera::AGAINST);
+  if (p_keyboardState_[SDL_SCANCODE_S]) {
+    p_camera_->move(Camera::AGAINST);
   }
-  if (keyboard_state_[SDL_SCANCODE_SPACE]) {
-    camera_->move(Camera::UPWARDS);
+  if (p_keyboardState_[SDL_SCANCODE_SPACE]) {
+    p_camera_->move(Camera::UPWARDS);
   }
-  if (keyboard_state_[SDL_SCANCODE_LSHIFT]) {
-    camera_->move(Camera::DOWNWARDS);
+  if (p_keyboardState_[SDL_SCANCODE_LSHIFT]) {
+    p_camera_->move(Camera::DOWNWARDS);
   }
-  if (keyboard_state_[SDL_SCANCODE_A]) {
-    camera_->move(Camera::LEFT);
+  if (p_keyboardState_[SDL_SCANCODE_A]) {
+    p_camera_->move(Camera::LEFT);
   }
-  if (keyboard_state_[SDL_SCANCODE_D]) {
-    camera_->move(Camera::RIGHT);
+  if (p_keyboardState_[SDL_SCANCODE_D]) {
+    p_camera_->move(Camera::RIGHT);
   }
-  if (keyboard_state_[SDL_SCANCODE_LALT] && keyboard_state_[SDL_SCANCODE_W]) {
-    loop_->quit();
+  if (p_keyboardState_[SDL_SCANCODE_LALT] && p_keyboardState_[SDL_SCANCODE_W]) {
+    p_loop_->quit();
   }
-  if (keyboard_state_[SDL_SCANCODE_ESCAPE]) {
-    mouse_lock_ = !mouse_lock_;
+  if (p_keyboardState_[SDL_SCANCODE_ESCAPE]) {
+    mouseLock_ = !mouseLock_;
     init(); // FIXME
   }
 }

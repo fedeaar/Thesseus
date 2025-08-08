@@ -64,8 +64,9 @@ render::BackgroundRenderer::init()
 
 render::BackgroundRenderer::BackgroundRenderer(
   mgmt::vulkan::Swapchain* mp_swapchain,
-  mgmt::vulkan::Manager* mp_vkMgr)
-  : render::Renderer{ mp_vkMgr, mp_swapchain } {};
+  mgmt::vulkan::Manager* mp_vkMgr,
+  debug::GlobalStats* mp_stats)
+  : render::Renderer{ mp_vkMgr, mp_swapchain, mp_stats } {};
 
 //
 // destructor
