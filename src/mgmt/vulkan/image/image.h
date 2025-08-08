@@ -30,6 +30,10 @@ copy_image(VkCommandBuffer cmd,
            VkImage destination,
            VkExtent2D src_size,
            VkExtent2D dst_size);
+
+core::code
+generate_mipmaps(VkCommandBuffer cmd, VkImage image, VkExtent2D extent);
+
 } // namespace image
 
 } // namespace vulkan

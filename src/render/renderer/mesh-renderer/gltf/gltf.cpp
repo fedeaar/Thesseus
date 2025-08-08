@@ -39,7 +39,7 @@ load_image_from_uri(mgmt::vulkan::Manager& ir_vkMgr,
                                       extent,
                                       VK_FORMAT_R8G8B8A8_UNORM,
                                       VK_IMAGE_USAGE_SAMPLED_BIT,
-                                      false,
+                                      true,
                                       or_alloc);
   core::io::image::free(data);
   return status;
@@ -72,7 +72,7 @@ load_image_from_vector(mgmt::vulkan::Manager& ir_vkMgr,
                                       extent,
                                       VK_FORMAT_R8G8B8A8_UNORM,
                                       VK_IMAGE_USAGE_SAMPLED_BIT,
-                                      false,
+                                      true,
                                       or_alloc);
   core::io::image::free(data);
   return status;
@@ -105,7 +105,7 @@ load_image_from_array(mgmt::vulkan::Manager& ir_vkMgr,
                                       extent,
                                       VK_FORMAT_R8G8B8A8_UNORM,
                                       VK_IMAGE_USAGE_SAMPLED_BIT,
-                                      false,
+                                      true,
                                       or_alloc);
   core::io::image::free(data);
   return status;

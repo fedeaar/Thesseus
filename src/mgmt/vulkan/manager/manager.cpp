@@ -465,10 +465,17 @@ mgmt::vulkan::Manager::create_image(void* data,
                            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                            1,
                            &cpy_region);
-    image::transition_image(cmd,
-                            image.image,
-                            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    if (mipmapped) {
+      image::generate_mipmaps(
+        cmd,
+        image.image,
+        VkExtent2D{ image.extent_2d.width, image.extent_2d.height });
+    } else {
+      image::transition_image(cmd,
+                              image.image,
+                              VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                              VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    }
   });
   if (status != core::code::SUCCESS) {
     // TODO: destroy buffer nevertheless
