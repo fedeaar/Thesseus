@@ -335,21 +335,20 @@ render::AssetRenderer::update_scene(Camera& camera)
   sceneData_.sunDir = glm::vec4(0, 1, 0.5, 1.f);
 }
 
-mgmt::vulkan::pipeline::Pipeline* gLastPipeline = nullptr;
-render::Material::Instance* gLastMaterial = nullptr;
-VkBuffer gLastIndexBuffer = VK_NULL_HANDLE;
-
 inline void
 cmd_draw(render::Asset const& ir_asset,
          VkDescriptorSet& ir_descriptorSet,
          VkCommandBuffer& mr_cmd,
-         render::GPUMeshPushConstants& mr_pushConstants)
+         render::GPUMeshPushConstants& mr_pushConstants,
+         mgmt::vulkan::pipeline::Pipeline* mr_lastPipeline,
+         render::Material::Instance* mr_lastMaterial,
+         VkBuffer mr_lastIndexBuffer)
 {
   auto& pipeline = ir_asset.p_material->pipeline;
-  if (ir_asset.p_material != gLastMaterial) {
-    gLastMaterial = ir_asset.p_material;
-    if (pipeline != gLastPipeline) {
-      gLastPipeline = pipeline;
+  if (ir_asset.p_material != mr_lastMaterial) {
+    mr_lastMaterial = ir_asset.p_material;
+    if (pipeline != mr_lastPipeline) {
+      mr_lastPipeline = pipeline;
       vkCmdBindPipeline(
         mr_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipeline);
       vkCmdBindDescriptorSets(mr_cmd,
@@ -370,8 +369,8 @@ cmd_draw(render::Asset const& ir_asset,
                             0,
                             nullptr);
   }
-  if (ir_asset.p_idxBuff != gLastIndexBuffer) {
-    gLastIndexBuffer = ir_asset.p_idxBuff;
+  if (ir_asset.p_idxBuff != mr_lastIndexBuffer) {
+    mr_lastIndexBuffer = ir_asset.p_idxBuff;
     vkCmdBindIndexBuffer(mr_cmd, ir_asset.p_idxBuff, 0, VK_INDEX_TYPE_UINT32);
   }
   mr_pushConstants.world = ir_asset.transform;
@@ -427,12 +426,21 @@ render::AssetRenderer::draw(Camera& camera)
   GPUMeshPushConstants pushConstants;
   u32 drawCount = 0;
   u32 triangleCount = 0;
+  mgmt::vulkan::pipeline::Pipeline* lastPipeline = nullptr;
+  render::Material::Instance* lastMaterial = nullptr;
+  VkBuffer lastIndexBuffer = VK_NULL_HANDLE;
   for (auto& drawMaterial : mainDrawCtx_.opaqueSurfaces) {
     for (auto& draw : drawMaterial.second) {
       if (!visible(draw, sceneData_.viewproj)) {
         continue;
       }
-      cmd_draw(draw, globalDescriptorSet, cmd, pushConstants);
+      cmd_draw(draw,
+               globalDescriptorSet,
+               cmd,
+               pushConstants,
+               lastPipeline,
+               lastMaterial,
+               lastIndexBuffer);
       drawCount++;
       triangleCount += draw.idxCount / 3;
     }
@@ -441,7 +449,13 @@ render::AssetRenderer::draw(Camera& camera)
     if (!visible(draw, sceneData_.viewproj)) {
       continue;
     }
-    cmd_draw(draw, globalDescriptorSet, cmd, pushConstants);
+    cmd_draw(draw,
+             globalDescriptorSet,
+             cmd,
+             pushConstants,
+             lastPipeline,
+             lastMaterial,
+             lastIndexBuffer);
     drawCount++;
     triangleCount += draw.idxCount / 3;
   }
