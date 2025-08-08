@@ -1,6 +1,0 @@
-services:
-  dev-thessesus:
-    image: dev-thesseus
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile

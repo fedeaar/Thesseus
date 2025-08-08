@@ -1,54 +1,78 @@
 cmake_minimum_required(VERSION 3.5)
+project(Thesseus 
+  VERSION 0.1
+  DESCRIPTION "A procedurally generated dungeon crawler that continually learns how to kill you"
+  LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-project(Thesseus)
+#
+# config
+#
 
-# deps
-find_package(OpenGL REQUIRED)
-include_directories("./lib/stb" "./lib/glm" "./lib/glew-cmake/include")
-add_subdirectory(./lib/SDL/)
-add_subdirectory(./lib/glew-cmake/)
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/lib)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# bin
-set(build_dir "bin")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${build_dir}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${build_dir}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${build_dir})
+#
+# dependencies
+#
 
-file(REMOVE_RECURSE ${build_dir})
-file(COPY res DESTINATION ${build_dir})
-file(COPY src/shader DESTINATION ${build_dir} FILES_MATCHING REGEX "^.+(\.vs|\.fs)$")
+# extern - vulkan
+find_package(Vulkan REQUIRED)
+add_library(lib::vulkan ALIAS Vulkan::Vulkan)
 
-# options
-set(BUILD "build" CACHE STRING "type of output: debug | build | test")
-set(SCENE "two_cubes.scene.cpp" CACHE STRING "what scene to render from scene/collection")
-set(FLAGS -std=c++1y -Wconversion -Wnarrowing -Wall -Wfloat-conversion -w)
-set(LINK GL GLU SDL3::SDL3 libglew_static)
+# local
+add_subdirectory(lib)
+include(CompileShaders)
 
+#
 # build
-file(GLOB_RECURSE sources_main src/*.cpp src/*.h)
+#
 
-if (${BUILD} STREQUAL "build")
-  list(FILTER sources_main EXCLUDE REGEX ".*\\.(test|scene)\\.cpp")
-  add_executable(build ${sources_main} src/scene/collection/${SCENE})
+# clear
+file(REMOVE_RECURSE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/)
+file(COPY res DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+# find sources 
+file(GLOB_RECURSE SOURCES_MAIN src/*.cpp src/*.h)
+
+# flags
+set(FLAGS -Wconversion -Wnarrowing -Wall -Wfloat-conversion -w)
+set(LINK 
+  lib::fmt 
+  lib::vulkan 
+  lib::vkb 
+  lib::vma 
+  lib::sdl 
+  lib::imgui 
+  lib::stb
+  lib::fastgltf 
+  lib::glm)
+
+# build shaders
+compile_shaders()
+
+# build 
+if (${CMAKE_BUILD_TYPE} STREQUAL Release)
+  list(FILTER SOURCES_MAIN EXCLUDE REGEX ".*\\.test\\.cpp")
+  add_executable(build ${SOURCES_MAIN})
   target_compile_options(build PUBLIC ${FLAGS})
   target_link_libraries(build PUBLIC ${LINK})
 
-elseif (${BUILD} STREQUAL "debug")
-  list(FILTER sources_main EXCLUDE REGEX ".*\\.(test|scene)\\.cpp")
-  add_executable(debug ${sources_main} src/scene/collection/${SCENE})
-  target_compile_options(debug PUBLIC ${FLAGS} --debug)
-  target_link_libraries(debug PUBLIC ${LINK})
+elseif (${CMAKE_BUILD_TYPE} STREQUAL Debug)
+  list(FILTER SOURCES_MAIN EXCLUDE REGEX ".*\\.test\\.cpp")
+  add_executable(debug ${SOURCES_MAIN})
+  target_compile_options(debug PUBLIC ${FLAGS})
+  target_link_libraries(debug PUBLIC -lm ${LINK})
 
-elseif (${BUILD} STREQUAL "tests")
-  list(FILTER sources_main EXCLUDE REGEX ".*\\.(scene)\\.cpp")
-  add_subdirectory("./lib/googletest")
-  include_directories("./lib/googletest/googletest/include")
-  list(FILTER sources_main EXCLUDE REGEX "main\\.cpp")
-  add_executable(tests ${sources_main} src/scene/collection/${SCENE})
+elseif (${CMAKE_BUILD_TYPE} STREQUAL Test)
+  list(FILTER SOURCES_MAIN EXCLUDE REGEX "main\\.cpp")
+  add_executable(tests ${SOURCES_MAIN})
   target_compile_options(tests PUBLIC ${FLAGS})
-  target_link_libraries(tests PUBLIC ${LINK} gtest gtest_main)
+  target_link_libraries(tests PUBLIC ${LINK} lib::gtest lib::gtest_main)
   
 endif()
