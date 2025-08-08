@@ -58,7 +58,7 @@ build/build.sh -t -r
 
 3. use pascalcase for classes and structs. 
 
-4. use snakecase for functions.
+4. use snakecase for functions and uppercase snakecase for enum variables.
 
 5. each folder should ideally be considered its own module. It should:
 
@@ -72,9 +72,7 @@ build/build.sh -t -r
 
 7. prefer the `core` enums for return codes and state codes, as well as the `core` types.
 
-8. prefer core::Logger over other logging mechanisms. 
-
-    i. Use FUNCTION_NAME for the where argument.
+8. prefer ERR, WRN and LOG macros over other logging mechanisms. 
 
 9. avoid `using` directives in header files.
 
